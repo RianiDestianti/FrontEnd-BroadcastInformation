@@ -33,8 +33,8 @@ class _MainLayoutState extends State<MainLayout> {
         }
         break;
       case 1:
-        if (ModalRoute.of(context)?.settings.name != '/bookmarks') {
-          Navigator.pushReplacementNamed(context, '/bookmarks');
+        if (ModalRoute.of(context)?.settings.name != '/save') {
+          Navigator.pushReplacementNamed(context, '/save');
         }
         break;
       case 2:
@@ -42,6 +42,7 @@ class _MainLayoutState extends State<MainLayout> {
           Navigator.pushReplacementNamed(context, '/profile');
         }
         break;
+        
     }
   }
 

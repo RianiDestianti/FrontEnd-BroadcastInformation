@@ -1,93 +1,163 @@
+// File: lib/screens/save_screen.dart
 import 'package:flutter/material.dart';
+import '../layouts/layout.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class SaveScreen extends StatefulWidget {
+  const SaveScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Record Information',
-      debugShowCheckedModeBanner: false,
-      home: const RecordInformationPage(),
-    );
+  State<SaveScreen> createState() => _SaveScreenState();
+}
+
+class _SaveScreenState extends State<SaveScreen> {
+  // List of events with their saved status
+  List<Map<String, dynamic>> events = [
+    {
+      'title': 'Jam Perpustakaan\nDiperpanjang Selama ...',
+      'time': '10:00 AM - 12:00 PM',
+      'location': 'Perpustakaan',
+      'badgeText': 'Academy',
+      'badgeColor': Colors.blue,
+      'indicatorColor': Colors.grey,
+      'isBookmarked': true,
+    },
+    {
+      'title': 'Upacara Bendera\nHari Senin',
+      'time': '10:00 AM - 12:00 PM',
+      'location': 'Lapangan Sekolah',
+      'badgeText': 'Announcements',
+      'badgeColor': Colors.red,
+      'indicatorColor': Colors.grey,
+      'isBookmarked': true,
+    },
+    {
+      'title': 'Lomba Cerdas Cermat\nAntar Kelas',
+      'time': '10:00 AM - 12:00 PM',
+      'location': 'Aula Tertutup',
+      'badgeText': 'News',
+      'badgeColor': Colors.blue,
+      'indicatorColor': Colors.grey,
+      'isBookmarked': true,
+    },
+    // Additional events to demonstrate scrolling
+    {
+      'title': 'Pembagian Rapor\nSemester Ganjil',
+      'time': '08:00 AM - 01:00 PM',
+      'location': 'Ruang Kelas',
+      'badgeText': 'Announcements',
+      'badgeColor': Colors.orange,
+      'indicatorColor': Colors.grey,
+      'isBookmarked': true,
+    },
+    {
+      'title': 'Kompetisi Olahraga\nAntar Sekolah',
+      'time': '09:00 AM - 03:00 PM',
+      'location': 'Stadion Utama',
+      'badgeText': 'Sports',
+      'badgeColor': Colors.green,
+      'indicatorColor': Colors.grey,
+      'isBookmarked': true,
+    },
+  ];
+
+  void toggleBookmark(int index) {
+    setState(() {
+      events[index]['isBookmarked'] = !events[index]['isBookmarked'];
+
+      // Optional: Remove from list if unsaved
+      if (!events[index]['isBookmarked']) {
+        // Show a snackbar notification
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Event telah dihapus dari daftar tersimpan'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        // Delay removal to allow animation to complete
+        Future.delayed(Duration(milliseconds: 300), () {
+          if (mounted) {
+            setState(() {
+              events.removeAt(index);
+            });
+          }
+        });
+      }
+    });
   }
-}
-
-class RecordInformationPage extends StatelessWidget {
-  const RecordInformationPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bookmark, size: 30),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: '',
-          ),
-        ],
-        backgroundColor: const Color(0xFF61C2C8),
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white,
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+    return MainLayout(
+      selectedIndex: 1, // Karena ini halaman Save
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Record information',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              // Header
+              const Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Record information',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 20),
+
+              // Event list
               Expanded(
-                child: ListView(
-                  children: [
-                    RecordCard(
-                      title: 'Jam Perpustakaan Diperpanjang Selama ...',
-                      time: '10:00 AM - 12:00 PM',
-                      location: 'Pwepustakaan',
-                      category: 'Academy',
-                      categoryColor: Colors.blue,
-                      leadingColor: Colors.blue,
-                    ),
-                    const SizedBox(height: 16),
-                    RecordCard(
-                      title: 'Upacara Bendera Hari Senin',
-                      time: '10:00 AM - 12:00 PM',
-                      location: 'Lapangan Sekolah',
-                      category: 'Announcements',
-                      categoryColor: Colors.orange,
-                      leadingColor: Colors.redAccent,
-                    ),
-                    const SizedBox(height: 16),
-                    RecordCard(
-                      title: 'Lomba Cerdas Cermat Antar Kelas',
-                      time: '10:00 AM - 12:00 PM',
-                      location: 'Aula Tertutup',
-                      category: 'News',
-                      categoryColor: Colors.blueAccent,
-                      leadingColor: Colors.blue,
-                    ),
-                  ],
-                ),
+                child:
+                    events.isEmpty
+                        ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.bookmark_border,
+                                size: 64,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'Tidak ada item tersimpan',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                        : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          itemCount: events.length,
+                          itemBuilder: (context, index) {
+                            final event = events[index];
+                            return Column(
+                              children: [
+                                InteractiveEventCard(
+                                  title: event['title'],
+                                  time: event['time'],
+                                  location: event['location'],
+                                  badgeText: event['badgeText'],
+                                  badgeColor: event['badgeColor'],
+                                  indicatorColor: event['indicatorColor'],
+                                  isBookmarked: event['isBookmarked'],
+                                  onBookmarkToggle: () => toggleBookmark(index),
+                                ),
+                                SizedBox(height: 16),
+                              ],
+                            );
+                          },
+                        ),
               ),
             ],
           ),
@@ -97,100 +167,196 @@ class RecordInformationPage extends StatelessWidget {
   }
 }
 
-class RecordCard extends StatelessWidget {
+// File: lib/widgets/event_card.dart
+
+class InteractiveEventCard extends StatelessWidget {
   final String title;
   final String time;
   final String location;
-  final String category;
-  final Color categoryColor;
-  final Color leadingColor;
+  final String badgeText;
+  final Color badgeColor;
+  final Color indicatorColor;
+  final bool isBookmarked;
+  final VoidCallback onBookmarkToggle;
 
-  const RecordCard({
-    super.key,
+  const InteractiveEventCard({
+    Key? key,
     required this.title,
     required this.time,
     required this.location,
-    required this.category,
-    required this.categoryColor,
-    required this.leadingColor,
-  });
+    required this.badgeText,
+    required this.badgeColor,
+    required this.indicatorColor,
+    required this.isBookmarked,
+    required this.onBookmarkToggle,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: Container(
-          width: 6,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            color: leadingColor,
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: IntrinsicHeight(
+        child: Row(
           children: [
-            Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              time,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              location,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+            // Left colored indicator
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              width: 8,
               decoration: BoxDecoration(
-                color: categoryColor.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                category,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: categoryColor,
-                  fontWeight: FontWeight.bold,
+                color: indicatorColor,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  bottomLeft: Radius.circular(12),
                 ),
               ),
             ),
-            const Icon(Icons.bookmark_border),
+
+            // Content
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 16.0,
+                  horizontal: 12.0,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title and badge
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: badgeColor,
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Text(
+                            badgeText,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Time
+                    Text(
+                      time,
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    // Location and bookmark
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          location,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                        InkWell(
+                          onTap: onBookmarkToggle,
+                          borderRadius: BorderRadius.circular(50),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: AnimatedSwitcher(
+                              duration: Duration(milliseconds: 300),
+                              child: Icon(
+                                isBookmarked
+                                    ? Icons.bookmark
+                                    : Icons.bookmark_border,
+                                key: ValueKey<bool>(isBookmarked),
+                                color: Colors.grey, // <- fix! selalu abu
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 }
+
+// Update in your main.dart file to include Poppins font
+// Inside the build method of your MyApp class:
+
+@override
+Widget build(BuildContext context) {
+  return MaterialApp(
+    debugShowCheckedModeBanner: false,
+    theme: ThemeData(
+      primarySwatch: Colors.blue,
+      primaryColor: Color(0xFF57B4BA),
+      fontFamily: 'Poppins', // Set default font to Poppins
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide.none,
+        ),
+        filled: true,
+        fillColor: Colors.grey[200],
+      ),
+    ),
+  );
+}
+
+// Add this to your pubspec.yaml file to include Poppins font:
+/*
+fonts:
+  - family: Poppins
+    fonts:
+      - asset: assets/fonts/Poppins-Regular.ttf
+      - asset: assets/fonts/Poppins-Medium.ttf
+        weight: 500
+      - asset: assets/fonts/Poppins-SemiBold.ttf
+        weight: 600
+      - asset: assets/fonts/Poppins-Bold.ttf
+        weight: 700
+*/

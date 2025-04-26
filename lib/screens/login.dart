@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(const MyApp());
@@ -6,13 +7,28 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
+    // Definisi warna tema #57B4BA
+    final themeColor = Color(0xFF57B4BA);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: MaterialColor(themeColor.value, <int, Color>{
+          50: themeColor.withOpacity(0.1),
+          100: themeColor.withOpacity(0.2),
+          200: themeColor.withOpacity(0.3),
+          300: themeColor.withOpacity(0.4),
+          400: themeColor.withOpacity(0.5),
+          500: themeColor.withOpacity(0.6),
+          600: themeColor.withOpacity(0.7),
+          700: themeColor.withOpacity(0.8),
+          800: themeColor.withOpacity(0.9),
+          900: themeColor.withOpacity(1.0),
+        }),
+        // Menggunakan font Poppins
+        textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme),
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
@@ -29,9 +45,10 @@ class MyApp extends StatelessWidget {
 
 class SignInPage extends StatelessWidget {
   const SignInPage({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
+    final themeColor = Color(0xFF57B4BA);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -44,51 +61,54 @@ class SignInPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 40),
-                  const Text(
+                  Text(
                     'Sign In',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.poppins(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Hi! Welcome back, you\'ve been missed',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: Colors.black54),
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: Colors.black54,
+                    ),
                   ),
                   const SizedBox(height: 40),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Email',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
+                  Text(
+                    'Email',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 8),
                   TextField(
                     decoration: InputDecoration(
                       hintText: 'Enter your email',
+                      hintStyle: GoogleFonts.poppins(),
                       contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                        horizontal: 20,
                         vertical: 16,
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(20),
                         borderSide: const BorderSide(color: Colors.grey),
                       ),
+                      filled: true,
+                      fillColor: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Password',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
+                  Text(
+                    'Password',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -96,23 +116,28 @@ class SignInPage extends StatelessWidget {
                     obscureText: true,
                     decoration: InputDecoration(
                       hintText: 'Enter your password',
+                      hintStyle: GoogleFonts.poppins(),
                       contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                        horizontal: 20,
                         vertical: 16,
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(20),
                         borderSide: const BorderSide(color: Colors.grey),
                       ),
+                      filled: true,
+                      fillColor: Colors.white,
                     ),
                   ),
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () {},
-                      child: const Text(
+                      child: Text(
                         'forgot password?',
-                        style: TextStyle(color: Colors.teal),
+                        style: GoogleFonts.poppins(
+                          color: Colors.black,
+                        ), // Mengubah warna menjadi hitam
                       ),
                     ),
                   ),
@@ -120,15 +145,15 @@ class SignInPage extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2D4356),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: themeColor,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Sign In',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -143,10 +168,9 @@ class SignInPage extends StatelessWidget {
                       height: 24,
                       width: 24,
                     ),
-
-                    label: const Text(
+                    label: Text(
                       'Sign in with Google',
-                      style: TextStyle(color: Colors.black87),
+                      style: GoogleFonts.poppins(color: Colors.black),
                     ),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -160,15 +184,15 @@ class SignInPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
+                      Text(
                         'Don\'t have account?',
-                        style: TextStyle(color: Colors.black54),
+                        style: GoogleFonts.poppins(color: Colors.black),
                       ),
                       TextButton(
                         onPressed: () {},
-                        child: const Text(
+                        child: Text(
                           'Sign Up',
-                          style: TextStyle(color: Colors.teal),
+                          style: GoogleFonts.poppins(color: themeColor),
                         ),
                       ),
                     ],

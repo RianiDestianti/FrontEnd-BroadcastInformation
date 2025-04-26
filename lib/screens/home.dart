@@ -229,6 +229,7 @@ class HomePage extends StatelessWidget {
             Text(
               title,
               style: GoogleFonts.poppins(
+                
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),

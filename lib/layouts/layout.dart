@@ -42,6 +42,11 @@ class _MainLayoutState extends State<MainLayout> {
           Navigator.pushReplacementNamed(context, '/profile');
         }
         break;
+      case 3:
+        if (ModalRoute.of(context)?.settings.name != '/change-password') {
+          Navigator.pushReplacementNamed(context, '/change-password');
+        }
+        break;
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'home.dart'; // Karena berada di folder yang sama (screens/)
 
 void main() {
   runApp(const MyApp());
@@ -143,7 +144,13 @@ class SignInPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // Tambahkan navigasi ke HomePage
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => HomePage()),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: themeColor,
                       padding: const EdgeInsets.symmetric(vertical: 12),

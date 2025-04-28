@@ -3,6 +3,7 @@ import 'screens/login.dart';
 import 'screens/home.dart';
 import 'screens/profile.dart';
 import 'screens/changepassword.dart';
+import 'screens/save.dart'; // <- tambahkan import save.dart juga
 
 void main() {
   runApp(const MyApp());
@@ -33,6 +34,8 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const HomePage(),
         '/login': (context) => const SignInPage(),
         '/profile': (context) => const ProfilePage(),
+        '/save':
+            (context) => const SaveScreen(), // <- tambahkan route untuk save
         '/change-password': (context) => const ChangePasswordScreen(),
       },
     );

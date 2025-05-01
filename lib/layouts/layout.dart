@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:broadcastinformation/screens/calendar.dart';  
 
 void main() {
   runApp(MyApp());
@@ -18,13 +19,13 @@ class MyApp extends StatelessWidget {
       routes: {
         '/home': (context) => HomePage(),
         '/save': (context) => SaveScreen(),
+        '/calendar': (context) => CalendarPage(), 
         '/profile': (context) => ProfilePage(),
       },
     );
   }
 }
 
-// Example pages
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -47,11 +48,28 @@ class SaveScreen extends StatelessWidget {
   }
 }
 
+class CalendarPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MainLayout(
+      selectedIndex: 2,  
+      child: _CalendarScreen(),  
+    );
+  }
+}
+
+class _CalendarScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CalendarPage();
+  }
+}
+
 class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      selectedIndex: 2,
+      selectedIndex: 3, 
       child: Center(
         child: Text('Profile Page', style: TextStyle(fontSize: 24)),
       ),
@@ -62,113 +80,89 @@ class ProfilePage extends StatelessWidget {
 class MainLayout extends StatefulWidget {
   final Widget child;
   final int selectedIndex;
-
   const MainLayout({Key? key, required this.child, this.selectedIndex = 0})
     : super(key: key);
-
   @override
   State<MainLayout> createState() => _MainLayoutState();
 }
 
 class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   late int _selectedIndex;
-
-  // Animation controllers for different effects
+  final int _navItemCount = 4;
   late List<AnimationController> _floatControllers;
   late List<Animation<double>> _floatAnimations;
-
   late List<AnimationController> _scaleControllers;
   late List<Animation<double>> _scaleAnimations;
-
   late List<AnimationController> _rotateControllers;
   late List<Animation<double>> _rotateAnimations;
-
   late List<AnimationController> _rippleControllers;
   late List<Animation<double>> _rippleAnimations;
   late List<Animation<double>> _opacityAnimations;
-
-  // White circle background animation
   late List<AnimationController> _bgCircleControllers;
   late List<Animation<double>> _bgCircleAnimations;
-
-  // Track states
   late List<bool> _isActive;
-
-  // Colors
   final Color _navBarColor = Color(0xFF57B4BA);
   final Color _activeIconColor = Color(0xFF45969B);
   final Color _inactiveIconColor = Colors.white;
   final Color _rippleColor = Colors.white;
   final Color _bgCircleColor = Colors.white;
-
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.selectedIndex;
-
-    // Initialize animation controllers
     _floatControllers = List.generate(
-      3,
+      _navItemCount,
       (index) => AnimationController(
         duration: const Duration(milliseconds: 400),
         vsync: this,
       ),
     );
-
     _scaleControllers = List.generate(
-      3,
+      _navItemCount,
       (index) => AnimationController(
         duration: const Duration(milliseconds: 300),
         vsync: this,
       ),
     );
-
     _rotateControllers = List.generate(
-      3,
+      _navItemCount,
       (index) => AnimationController(
         duration: const Duration(milliseconds: 400),
         vsync: this,
       ),
     );
-
     _rippleControllers = List.generate(
-      3,
+      _navItemCount,
       (index) => AnimationController(
         duration: const Duration(milliseconds: 700),
         vsync: this,
       ),
     );
-
     _bgCircleControllers = List.generate(
-      3,
+      _navItemCount,
       (index) => AnimationController(
         duration: const Duration(milliseconds: 300),
         vsync: this,
       ),
     );
-
-    // Create animations
     _floatAnimations =
         _floatControllers.map((controller) {
           return Tween<double>(begin: 0, end: -40).animate(
             CurvedAnimation(parent: controller, curve: Curves.elasticOut),
           );
         }).toList();
-
     _scaleAnimations =
         _scaleControllers.map((controller) {
           return Tween<double>(begin: 1.0, end: 1.2).animate(
             CurvedAnimation(parent: controller, curve: Curves.easeOutBack),
           );
         }).toList();
-
     _rotateAnimations =
         _rotateControllers.map((controller) {
           return Tween<double>(begin: 0, end: 2 * math.pi).animate(
             CurvedAnimation(parent: controller, curve: Curves.easeInOutCubic),
           );
         }).toList();
-
     _rippleAnimations =
         _rippleControllers.map((controller) {
           return Tween<double>(
@@ -176,7 +170,6 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
             end: 60.0,
           ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut));
         }).toList();
-
     _opacityAnimations =
         _rippleControllers.map((controller) {
           return Tween<double>(
@@ -184,7 +177,6 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
             end: 0.0,
           ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut));
         }).toList();
-
     _bgCircleAnimations =
         _bgCircleControllers.map((controller) {
           return Tween<double>(
@@ -193,9 +185,9 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
           ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut));
         }).toList();
 
-    _isActive = List.generate(3, (index) => false);
+    _isActive = List.generate(_navItemCount, (index) => false);
 
-    // Activate initially selected item
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _activateItem(_selectedIndex, initial: true);
     });
@@ -203,7 +195,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    // Dispose all controllers
+   
     for (var controller in _floatControllers) {
       controller.dispose();
     }
@@ -223,8 +215,8 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   }
 
   void _activateItem(int index, {bool initial = false}) {
-    // Stop and reverse any active animations
-    for (var i = 0; i < 3; i++) {
+    
+    for (var i = 0; i < _navItemCount; i++) {
       if (i != index && _isActive[i]) {
         _floatControllers[i].reverse();
         _scaleControllers[i].reverse();
@@ -233,14 +225,14 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
       }
     }
 
-    // Start new animations for tapped item
+    
     if (!_isActive[index]) {
       _floatControllers[index].forward();
       _scaleControllers[index].forward();
       _bgCircleControllers[index].forward();
 
       if (!initial) {
-        // Only play these animations when explicitly tapped, not on initial load
+      
         _rotateControllers[index].reset();
         _rotateControllers[index].forward();
 
@@ -265,7 +257,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
 
       _activateItem(index);
 
-      // Navigation logic
+     
       switch (index) {
         case 0:
           if (ModalRoute.of(context)?.settings.name != '/home') {
@@ -278,13 +270,18 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
           }
           break;
         case 2:
+          if (ModalRoute.of(context)?.settings.name != '/calendar') {
+            Navigator.pushReplacementNamed(context, '/calendar');
+          }
+          break;
+        case 3:
           if (ModalRoute.of(context)?.settings.name != '/profile') {
             Navigator.pushReplacementNamed(context, '/profile');
           }
           break;
       }
     } else {
-      // Toggle state
+     
       _activateItem(index);
     }
   }
@@ -298,7 +295,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
         child: Stack(
           alignment: Alignment.bottomCenter,
           children: [
-            // Base navigation bar
+        
             Container(
               height: 70,
               decoration: BoxDecoration(
@@ -317,17 +314,17 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(3, (index) {
-                  // Display the icon in the navbar when not active
+                children: List.generate(_navItemCount, (index) {
+                
                   return AnimatedBuilder(
                     animation: _floatAnimations[index],
                     builder: (context, child) {
-                      // Only show icon in navbar when not floating
+                     
                       if (_isActive[index]) {
                         return SizedBox(width: 60);
                       }
 
-                      // Icon to display
+                      
                       IconData iconData;
                       switch (index) {
                         case 0:
@@ -337,6 +334,9 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                           iconData = Icons.bookmark_border;
                           break;
                         case 2:
+                          iconData = Icons.calendar_today_outlined;
+                          break;
+                        case 3:
                           iconData = Icons.person_outline;
                           break;
                         default:
@@ -362,10 +362,10 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
               ),
             ),
 
-            // Transparent dividers (gap) between icons and navbar
+            
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(3, (index) {
+              children: List.generate(_navItemCount, (index) {
                 return AnimatedBuilder(
                   animation: _floatAnimations[index],
                   builder: (context, child) {
@@ -382,10 +382,9 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
               }),
             ),
 
-            // White circular backgrounds
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(3, (index) {
+              children: List.generate(_navItemCount, (index) {
                 return AnimatedBuilder(
                   animation: _bgCircleAnimations[index],
                   builder: (context, child) {
@@ -397,11 +396,11 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                       offset: Offset(
                         0,
                         _floatAnimations[index].value + 5,
-                      ), // Position it slightly below the button
+                      ), 
                       child: Opacity(
                         opacity:
                             _bgCircleAnimations[index].value *
-                            0.3, // Make it semi-transparent
+                            0.3, 
                         child: Container(
                           width: 70,
                           height: 70,
@@ -417,10 +416,9 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
               }),
             ),
 
-            // Ripple effects
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(3, (index) {
+              children: List.generate(_navItemCount, (index) {
                 return AnimatedBuilder(
                   animation: _rippleAnimations[index],
                   builder: (context, child) {
@@ -440,11 +438,10 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
               }),
             ),
 
-            // Floating buttons with animations
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(3, (index) {
-                // Define active icon based on index
+              children: List.generate(_navItemCount, (index) {
+               
                 IconData activeIconData;
                 switch (index) {
                   case 0:
@@ -454,6 +451,9 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                     activeIconData = Icons.bookmark;
                     break;
                   case 2:
+                    activeIconData = Icons.calendar_today;
+                    break;
+                  case 3:
                     activeIconData = Icons.person;
                     break;
                   default:
@@ -467,7 +467,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                     _rotateAnimations[index],
                   ]),
                   builder: (context, child) {
-                    // Only show when active
+                   
                     if (!_isActive[index]) {
                       return SizedBox(width: 50);
                     }
@@ -505,7 +505,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                                 ),
                               ),
                               child: Transform.rotate(
-                                // Counter-rotate the icon to keep it upright
+                               
                                 angle: -_rotateAnimations[index].value,
                                 child: Icon(
                                   activeIconData,
@@ -529,13 +529,10 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   }
 }
 
-// Custom painter for transparent gap
 class TransparentGapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    // No painting for transparency
   }
-
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'screens/login.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'screens/home.dart';
+import 'screens/login.dart';
 import 'screens/profile.dart';
 import 'screens/changepassword.dart';
-import 'screens/save.dart'; // <- tambahkan import save.dart juga
+import 'screens/save.dart';
+import 'screens/calendar.dart';
+import 'screens/splashscreen.dart'; 
 
 void main() {
   runApp(const MyApp());
@@ -11,14 +14,29 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
+  
   @override
   Widget build(BuildContext context) {
+    // Define theme color #57B4BA
+    final themeColor = Color(0xFF57B4BA);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        primaryColor: Color(0xFF57B4BA), // Tema utama sesuai dengan layout Anda
+        primarySwatch: MaterialColor(themeColor.value, <int, Color>{
+          50: themeColor.withOpacity(0.1),
+          100: themeColor.withOpacity(0.2),
+          200: themeColor.withOpacity(0.3),
+          300: themeColor.withOpacity(0.4),
+          400: themeColor.withOpacity(0.5),
+          500: themeColor.withOpacity(0.6),
+          600: themeColor.withOpacity(0.7),
+          700: themeColor.withOpacity(0.8),
+          800: themeColor.withOpacity(0.9),
+          900: themeColor.withOpacity(1.0),
+        }),
+        // Using Poppins font
+        textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme),
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
@@ -28,16 +46,16 @@ class MyApp extends StatelessWidget {
           fillColor: Colors.grey[200],
         ),
       ),
-      home: const SignInPage(),
-      // Pendefinisian routes
+      home: const SplashScreen(), // Set the splash screen as the initial screen
       routes: {
         '/home': (context) => const HomePage(),
         '/login': (context) => const SignInPage(),
         '/profile': (context) => const ProfilePage(),
-        '/save':
-            (context) => const SaveScreen(), // <- tambahkan route untuk save
+        '/save': (context) => const SaveScreen(),
         '/change-password': (context) => const ChangePasswordScreen(),
+        '/calendar': (context) => CalendarPage(),
       },
+      
     );
   }
 }

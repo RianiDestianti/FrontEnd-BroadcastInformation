@@ -550,8 +550,7 @@ Daftar sekarang melalui link: bit.ly/workshopuxui2025
       ),
     );
   }
-
-  // Helper method to get category color by name
+  
   Color _getCategoryColor(String categoryName) {
     final category = _categories.firstWhere(
       (cat) => cat.name == categoryName,
@@ -742,6 +741,7 @@ class CategoryItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

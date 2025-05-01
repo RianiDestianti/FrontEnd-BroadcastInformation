@@ -21,3 +21,27 @@ class Announcement {
     required this.department,
   });
 }
+
+class Event {
+  final String id;
+  final String title;
+  final String description;
+  final String category;
+  final Color color;
+  
+  // Optional fields
+  final String? location;
+  final DateTime? startTime;
+  final DateTime? endTime;
+  
+  Event({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.category,
+    required this.color,
+    this.location,
+    this.startTime,
+    this.endTime,
+  });
+}

@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    // Definisi warna tema #57B4BA
+ 
     final themeColor = Color(0xFF57B4BA);
 
     return MaterialApp(

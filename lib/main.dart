@@ -16,8 +16,8 @@ class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
   
   @override
-  Widget build(BuildContext context) {
-    // Define theme color #57B4BA
+  Widget build(BuildContext context) 
+  {
     final themeColor = Color(0xFF57B4BA);
 
     return MaterialApp(
@@ -35,7 +35,6 @@ class MyApp extends StatelessWidget {
           800: themeColor.withOpacity(0.9),
           900: themeColor.withOpacity(1.0),
         }),
-        // Using Poppins font
         textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme),
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
@@ -46,7 +45,7 @@ class MyApp extends StatelessWidget {
           fillColor: Colors.grey[200],
         ),
       ),
-      home: const SplashScreen(), // Set the splash screen as the initial screen
+      home: const SplashScreen(), 
       routes: {
         '/home': (context) => const HomePage(),
         '/login': (context) => const SignInPage(),

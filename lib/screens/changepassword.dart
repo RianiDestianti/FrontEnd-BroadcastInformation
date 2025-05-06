@@ -9,15 +9,12 @@ class ChangePasswordScreen extends StatefulWidget {
 }
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
-  // Constants
   static const _themeColor = Color(0xFF57B4BA);
-  
-  // Controllers
+
   final _usernameController = TextEditingController();
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
-  
-  // State variables
+
   bool _isCurrentPasswordVisible = false;
   bool _isNewPasswordVisible = false;
   bool _isLoading = false;
@@ -158,15 +155,16 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           ),
           padding: const EdgeInsets.symmetric(vertical: 12),
         ),
-        child: _isLoading
-            ? const CircularProgressIndicator(color: Colors.white)
-            : Text(
-                'Change Password',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+        child:
+            _isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : Text(
+                  'Change Password',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
       ),
     );
   }
@@ -214,15 +212,16 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         ),
         filled: true,
         fillColor: Colors.white,
-        suffixIcon: toggleVisibility != null
-            ? IconButton(
-                icon: Icon(
-                  isVisible ? Icons.visibility : Icons.visibility_off,
-                  color: Colors.grey,
-                ),
-                onPressed: toggleVisibility,
-              )
-            : null,
+        suffixIcon:
+            toggleVisibility != null
+                ? IconButton(
+                  icon: Icon(
+                    isVisible ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.grey,
+                  ),
+                  onPressed: toggleVisibility,
+                )
+                : null,
       ),
     );
   }
@@ -237,14 +236,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       setState(() {
         _isLoading = false;
       });
-
       _showSuccessDialog();
-
-      // Automatically navigate back after success
       Future.delayed(const Duration(seconds: 2), () {
         Navigator.of(context)
-          ..pop() // Close dialog
-          ..pop(); // Return to previous screen
+          ..pop()
+          ..pop();
       });
     });
   }
@@ -324,10 +320,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         Text(
           'Your password has been changed successfully',
           textAlign: TextAlign.center,
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            color: Colors.black54,
-          ),
+          style: GoogleFonts.poppins(fontSize: 16, color: Colors.black54),
         ),
       ],
     );
@@ -346,8 +339,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         ),
         onPressed: () {
           Navigator.of(context)
-            ..pop() // Close dialog
-            ..pop(); // Return to previous screen
+            ..pop()
+            ..pop();
         },
         child: Text(
           'Done',

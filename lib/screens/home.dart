@@ -654,6 +654,7 @@ Daftar sekarang melalui link: bit.ly/workshopuxui2025
                 ),
               ),
             ),
+            
             const SizedBox(width: 10),
             Text(
               announcement.timeAgo,

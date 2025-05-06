@@ -196,6 +196,7 @@ class SignInPage extends StatelessWidget {
   
   Widget _buildSignInButton(BuildContext context) {
     return ElevatedButton(
+      
       onPressed: () => _navigateToHome(context),
       style: ElevatedButton.styleFrom(
         backgroundColor: themeColor,

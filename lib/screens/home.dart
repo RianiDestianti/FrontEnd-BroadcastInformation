@@ -12,13 +12,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Controller for search field
   final TextEditingController _searchController = TextEditingController();
-
-  // Selected category filter
-  String? _selectedCategory;
-
-  // List of all announcements
+    String? _selectedCategory;
+  List<Announcement> _filteredAnnouncements = [];
+  
   final List<Announcement> _allAnnouncements = [
     Announcement(
       id: '1',
@@ -120,7 +117,6 @@ Terima kasih atas pengertian dan kerjasamanya.
       ''',
       department: 'Dari: Bagian Umum',
     ),
-    // Added more announcements for each category for testing
     Announcement(
       id: '4',
       tag: 'Announcements',
@@ -216,10 +212,6 @@ Daftar sekarang melalui link: bit.ly/workshopuxui2025
     ),
   ];
 
-  // Filtered announcements based on search and category
-  List<Announcement> _filteredAnnouncements = [];
-
-  // List of available categories
   final List<CategoryData> _categories = [
     CategoryData(
       name: 'Announcements',
@@ -252,10 +244,7 @@ Daftar sekarang melalui link: bit.ly/workshopuxui2025
   @override
   void initState() {
     super.initState();
-    // Initialize filtered list with all announcements
     _filteredAnnouncements = List.from(_allAnnouncements);
-
-    // Add listener to search controller
     _searchController.addListener(_filterAnnouncements);
   }
 
@@ -265,103 +254,85 @@ Daftar sekarang melalui link: bit.ly/workshopuxui2025
     super.dispose();
   }
 
-  // Filter announcements based on search text and selected category
   void _filterAnnouncements() {
     final query = _searchController.text.toLowerCase();
 
     setState(() {
-      _filteredAnnouncements =
-          _allAnnouncements.where((announcement) {
-            // First check if it matches category filter (if any)
-            bool matchesCategory =
-                _selectedCategory == null ||
-                announcement.tag == _selectedCategory;
+      _filteredAnnouncements = _allAnnouncements.where((announcement) {
+        bool matchesCategory = _selectedCategory == null ||
+            announcement.tag == _selectedCategory;
 
-            // Then check if it matches search query (if any)
-            bool matchesQuery =
-                query.isEmpty ||
-                announcement.title.toLowerCase().contains(query) ||
-                announcement.description.toLowerCase().contains(query) ||
-                announcement.department.toLowerCase().contains(query) ||
-                announcement.tag.toLowerCase().contains(query);
+        bool matchesQuery = query.isEmpty ||
+            announcement.title.toLowerCase().contains(query) ||
+            announcement.description.toLowerCase().contains(query) ||
+            announcement.department.toLowerCase().contains(query) ||
+            announcement.tag.toLowerCase().contains(query);
 
-            return matchesCategory && matchesQuery;
-          }).toList();
+        return matchesCategory && matchesQuery;
+      }).toList();
     });
   }
 
-  // Handle category selection
   void _selectCategory(String categoryName) {
     setState(() {
-      // If the same category is tapped again, clear the filter
       if (_selectedCategory == categoryName) {
         _selectedCategory = null;
       } else {
         _selectedCategory = categoryName;
       }
-
-      // Update filtered list
       _filterAnnouncements();
     });
   }
 
+  Color _getCategoryColor(String categoryName) {
+    final category = _categories.firstWhere(
+      (cat) => cat.name == categoryName,
+      orElse: () => CategoryData(
+        name: 'Default',
+        color: Colors.grey,
+        icon: Icons.circle,
+      ),
+    );
+    return category.color;
+  }
+
+  void _showAnnouncementDetail(BuildContext context, Announcement announcement) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: AnnouncementDetailPopup(announcement: announcement),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Get screen dimensions for better padding calculation
     final screenWidth = MediaQuery.of(context).size.width;
-    final horizontalPadding =
-        screenWidth * 0.08; // Increased from 0.05 to 0.08 for more padding
+    final horizontalPadding = screenWidth * 0.08;
 
     return MainLayout(
-      selectedIndex: 0, // 0 for home page
+      selectedIndex: 0,
       child: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            vertical: 20.0,
-          ), // Increased vertical padding
+          padding: const EdgeInsets.symmetric(vertical: 20.0),
           physics: const BouncingScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Search Bar
               _buildSearchBar(horizontalPadding),
-
-              const SizedBox(height: 24), // Increased spacing
-              // Categories Section with Clear Filter option if category is selected
+              const SizedBox(height: 24),
               _buildCategorySectionHeader(horizontalPadding),
-
-              const SizedBox(height: 16), // Increased spacing
-              // Categories Icons - Scrollable
-              _buildCategoriesScrollView(horizontalPadding),
-
-              const SizedBox(height: 30), // Increased spacing
-              // Recent Announcements Header with category filter indicator
-              _buildAnnouncementsHeader(horizontalPadding),
-
               const SizedBox(height: 16),
-
-              // Display filtered announcements
-              if (_filteredAnnouncements.isEmpty)
-                _buildEmptyState(horizontalPadding)
-              else
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _filteredAnnouncements.length,
-                  separatorBuilder:
-                      (context, index) => const SizedBox(height: 16),
-                  itemBuilder: (context, index) {
-                    final announcement = _filteredAnnouncements[index];
-                    return _buildAnnouncementCard(
-                      context: context,
-                      announcement: announcement,
-                      horizontalPadding: horizontalPadding,
-                      onTap:
-                          () => _showAnnouncementDetail(context, announcement),
-                    );
-                  },
-                ),
-
+              _buildCategoriesScrollView(horizontalPadding),
+              const SizedBox(height: 30),
+              _buildAnnouncementsHeader(horizontalPadding),
+              const SizedBox(height: 16),
+              _buildAnnouncementsList(horizontalPadding),
               const SizedBox(height: 24),
             ],
           ),
@@ -370,7 +341,198 @@ Daftar sekarang melalui link: bit.ly/workshopuxui2025
     );
   }
 
-  // Empty state widget
+  Widget _buildSearchBar(double horizontalPadding) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      child: Container(
+        height: 52,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(26),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.15),
+              spreadRadius: 2,
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: TextField(
+          controller: _searchController,
+          decoration: InputDecoration(
+            hintText: 'Search',
+            hintStyle: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.grey[500],
+            ),
+            prefixIcon: Icon(Icons.search, color: Colors.grey[500], size: 22),
+            suffixIcon: _searchController.text.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.clear, size: 18),
+                    onPressed: () {
+                      _searchController.clear();
+                    },
+                  )
+                : null,
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(vertical: 16),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategorySectionHeader(double horizontalPadding) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Categories',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          if (_selectedCategory != null) _buildClearFilterButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClearFilterButton() {
+    return TextButton.icon(
+      onPressed: () {
+        setState(() {
+          _selectedCategory = null;
+          _filterAnnouncements();
+        });
+      },
+      icon: Icon(Icons.close, size: 16, color: Colors.blue[800]),
+      label: Text(
+        'Clear filter',
+        style: GoogleFonts.poppins(
+          fontSize: 13,
+          color: Colors.blue[800],
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 6,
+        ),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+    );
+  }
+
+  Widget _buildAnnouncementsHeader(double horizontalPadding) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Recent Announcements',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          if (_selectedCategory != null) _buildFilterIndicator(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterIndicator() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4.0),
+      child: Row(
+        children: [
+          Text(
+            'Filtered by: ',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              color: Colors.grey[600],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 3,
+            ),
+            decoration: BoxDecoration(
+              color: _getCategoryColor(_selectedCategory!),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              _selectedCategory!,
+              style: GoogleFonts.poppins(
+                color: _selectedCategory == 'News' ? Colors.white : Colors.black87,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoriesScrollView(double horizontalPadding) {
+    return SizedBox(
+      height: 110,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+        itemCount: _categories.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 20),
+        itemBuilder: (context, index) => _buildCategoryItem(index),
+      ),
+    );
+  }
+
+  Widget _buildCategoryItem(int index) {
+    final category = _categories[index];
+    final bool isSelected = _selectedCategory == category.name;
+
+    return CategoryItem(
+      color: category.color,
+      icon: category.icon,
+      label: category.name,
+      isSelected: isSelected,
+      onTap: () => _selectCategory(category.name),
+    );
+  }
+
+  Widget _buildAnnouncementsList(double horizontalPadding) {
+    if (_filteredAnnouncements.isEmpty) {
+      return _buildEmptyState(horizontalPadding);
+    }
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _filteredAnnouncements.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 16),
+      itemBuilder: (context, index) {
+        final announcement = _filteredAnnouncements[index];
+        return _buildAnnouncementCard(
+          context: context,
+          announcement: announcement,
+          horizontalPadding: horizontalPadding,
+          onTap: () => _showAnnouncementDetail(context, announcement),
+        );
+      },
+    );
+  }
+
   Widget _buildEmptyState(double horizontalPadding) {
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -407,198 +569,13 @@ Daftar sekarang melalui link: bit.ly/workshopuxui2025
     );
   }
 
-  // Search Bar Widget with improved styling
-  Widget _buildSearchBar(double horizontalPadding) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-      child: Container(
-        height: 52, // Increased height
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(26), // Increased radius
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.15),
-              spreadRadius: 2,
-              blurRadius: 6,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: TextField(
-          controller: _searchController,
-          decoration: InputDecoration(
-            hintText: 'Search',
-            hintStyle: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.grey[500],
-            ),
-            prefixIcon: Icon(Icons.search, color: Colors.grey[500], size: 22),
-            suffixIcon:
-                _searchController.text.isNotEmpty
-                    ? IconButton(
-                      icon: const Icon(Icons.clear, size: 18),
-                      onPressed: () {
-                        _searchController.clear();
-                      },
-                    )
-                    : null,
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(vertical: 16),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Categories Section Header with Clear Filter option
-  Widget _buildCategorySectionHeader(double horizontalPadding) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Categories',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          if (_selectedCategory != null)
-            TextButton.icon(
-              onPressed: () {
-                setState(() {
-                  _selectedCategory = null;
-                  _filterAnnouncements();
-                });
-              },
-              icon: Icon(Icons.close, size: 16, color: Colors.blue[800]),
-              label: Text(
-                'Clear filter',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  color: Colors.blue[800],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  // Announcements Header with category indicator
-  Widget _buildAnnouncementsHeader(double horizontalPadding) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Recent Announcements',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          if (_selectedCategory != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4.0),
-              child: Row(
-                children: [
-                  Text(
-                    'Filtered by: ',
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _getCategoryColor(_selectedCategory!),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      _selectedCategory!,
-                      style: GoogleFonts.poppins(
-                        color:
-                            _selectedCategory == 'News'
-                                ? Colors.white
-                                : Colors.black87,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-  
-  Color _getCategoryColor(String categoryName) {
-    final category = _categories.firstWhere(
-      (cat) => cat.name == categoryName,
-      orElse:
-          () => CategoryData(
-            name: 'Default',
-            color: Colors.grey,
-            icon: Icons.circle,
-          ),
-    );
-    return category.color;
-  }
-
-  // Categories Scrollable Widget with selection functionality
-  Widget _buildCategoriesScrollView(double horizontalPadding) {
-    return SizedBox(
-      height: 110, // Slightly increased height
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-        itemCount: _categories.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 20),
-        itemBuilder: (context, index) {
-          final category = _categories[index];
-          final bool isSelected = _selectedCategory == category.name;
-
-          return CategoryItem(
-            color: category.color,
-            icon: category.icon,
-            label: category.name,
-            isSelected: isSelected,
-            onTap: () => _selectCategory(category.name),
-          );
-        },
-      ),
-    );
-  }
-
-  // Announcement Card Widget - Updated with improved styling
   Widget _buildAnnouncementCard({
     required BuildContext context,
     required Announcement announcement,
     required double horizontalPadding,
     required VoidCallback onTap,
   }) {
-    final bool isDarkTag =
-        announcement.tag == 'News'; // For text color on dark backgrounds
+    final bool isDarkTag = announcement.tag == 'News';
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
@@ -617,46 +594,7 @@ Daftar sekarang melalui link: bit.ly/workshopuxui2025
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: announcement.tagColor,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            announcement.tag,
-                            style: GoogleFonts.poppins(
-                              color: isDarkTag ? Colors.white : Colors.black87,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          announcement.timeAgo,
-                          style: GoogleFonts.poppins(
-                            color: Colors.grey,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Icon(
-                      Icons.bookmark_border,
-                      size: 18,
-                      color: Colors.grey[400],
-                    ),
-                  ],
-                ),
+                _buildAnnouncementCardHeader(announcement, isDarkTag),
                 const SizedBox(height: 12),
                 Text(
                   announcement.title,
@@ -692,26 +630,50 @@ Daftar sekarang melalui link: bit.ly/workshopuxui2025
     );
   }
 
-  // Show announcement detail in a popup modal
-  void _showAnnouncementDetail(
-    BuildContext context,
-    Announcement announcement,
-  ) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: AnnouncementDetailPopup(announcement: announcement),
-        );
-      },
+  Widget _buildAnnouncementCardHeader(Announcement announcement, bool isDarkTag) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 5,
+              ),
+              decoration: BoxDecoration(
+                color: announcement.tagColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                announcement.tag,
+                style: GoogleFonts.poppins(
+                  color: isDarkTag ? Colors.white : Colors.black87,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              announcement.timeAgo,
+              style: GoogleFonts.poppins(
+                color: Colors.grey,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        Icon(
+          Icons.bookmark_border,
+          size: 18,
+          color: Colors.grey[400],
+        ),
+      ],
     );
   }
 }
 
-// Category Data model for organization
 class CategoryData {
   final String name;
   final Color color;
@@ -720,7 +682,6 @@ class CategoryData {
   CategoryData({required this.name, required this.color, required this.icon});
 }
 
-// Extract Category Item to a separate widget with selection functionality
 class CategoryItem extends StatelessWidget {
   final Color color;
   final IconData icon;
@@ -741,65 +702,66 @@ class CategoryItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Container with selection indicator
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              border:
-                  isSelected
-                      ? Border.all(color: Colors.black, width: 2.5)
-                      : null,
-              boxShadow:
-                  isSelected
-                      ? [
-                        BoxShadow(
-                          color: color.withOpacity(0.4),
-                          spreadRadius: 1,
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                      : null,
-            ),
-            child: Icon(icon, color: Colors.white, size: 26),
-          ),
+          _buildIconContainer(),
           const SizedBox(height: 8),
-          // Label with selection indicator
-          SizedBox(
-            width: 75,
-            child: Column(
-              children: [
-                Text(
-                  label,
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                    color: isSelected ? Colors.black : Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+          _buildLabelContainer(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIconContainer() {
+    return Container(
+      width: 64,
+      height: 64,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: isSelected ? Border.all(color: Colors.black, width: 2.5) : null,
+        boxShadow: isSelected
+            ? [
+                BoxShadow(
+                  color: color.withOpacity(0.4),
+                  spreadRadius: 1,
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
-                if (isSelected)
-                  Container(
-                    margin: const EdgeInsets.only(top: 4),
-                    width: 16,
-                    height: 3,
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-              ],
+              ]
+            : null,
+      ),
+      child: Icon(icon, color: Colors.white, size: 26),
+    );
+  }
+
+  Widget _buildLabelContainer() {
+    return SizedBox(
+      width: 75,
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              color: isSelected ? Colors.black : Colors.black87,
             ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
+          if (isSelected)
+            Container(
+              margin: const EdgeInsets.only(top: 4),
+              width: 16,
+              height: 3,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
         ],
       ),
     );

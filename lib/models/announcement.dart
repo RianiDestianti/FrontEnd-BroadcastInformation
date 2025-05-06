@@ -29,7 +29,6 @@ class Event {
   final String category;
   final Color color;
   
-  // Optional fields
   final String? location;
   final DateTime? startTime;
   final DateTime? endTime;

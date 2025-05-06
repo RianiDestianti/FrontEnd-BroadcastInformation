@@ -4,20 +4,16 @@ import 'package:intl/intl.dart';
 import '../layouts/layout.dart';
 import '../models/announcement.dart';
 
-
-
 class CalendarPage extends StatefulWidget {
   const CalendarPage({Key? key}) : super(key: key);
-  
+
   @override
   State<CalendarPage> createState() => _CalendarPageState();
 }
 
 class _CalendarPageState extends State<CalendarPage> {
   DateTime _selectedDate = DateTime.now();
-  
-  // Sample event data - Replace with your actual data
-  // Each event has a category with corresponding color
+
   final Map<DateTime, List<Event>> _events = {
     DateTime(2025, 3, 5): [
       Event(
@@ -47,15 +43,15 @@ class _CalendarPageState extends State<CalendarPage> {
       ),
     ],
   };
-  
+
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      selectedIndex: 2, // Set calendar index
+      selectedIndex: 2,
       child: _buildCalendarContent(),
     );
   }
-  
+
   Widget _buildCalendarContent() {
     return SafeArea(
       child: Padding(
@@ -63,7 +59,6 @@ class _CalendarPageState extends State<CalendarPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title
             Text(
               'kalendar',
               style: GoogleFonts.poppins(
@@ -73,7 +68,6 @@ class _CalendarPageState extends State<CalendarPage> {
               ),
             ),
             const SizedBox(height: 16),
-            // Calendar container
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
@@ -90,15 +84,11 @@ class _CalendarPageState extends State<CalendarPage> {
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   children: [
-                    // Month navigation
                     _buildMonthNavigation(),
                     const SizedBox(height: 24),
-                    // Weekday headers
                     _buildWeekdayHeaders(),
                     const SizedBox(height: 20),
-                    // Calendar grid
                     Expanded(child: _buildCalendarGrid()),
-                    // Legend for event categories
                     const SizedBox(height: 16),
                     _buildEventLegend(),
                   ],
@@ -115,7 +105,6 @@ class _CalendarPageState extends State<CalendarPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Month title
         Container(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
           decoration: BoxDecoration(
@@ -131,11 +120,8 @@ class _CalendarPageState extends State<CalendarPage> {
             ),
           ),
         ),
-        
-        // Navigation buttons
         Row(
           children: [
-            // Previous month button
             Container(
               width: 40,
               height: 40,
@@ -158,7 +144,6 @@ class _CalendarPageState extends State<CalendarPage> {
               ),
             ),
             const SizedBox(width: 8),
-            // Next month button
             Container(
               width: 40,
               height: 40,
@@ -191,35 +176,35 @@ class _CalendarPageState extends State<CalendarPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: weekdays
-          .map((day) => SizedBox(
-                width: 36,
-                child: Text(
-                  day,
-                  style: GoogleFonts.poppins(
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14,
-                  ),
-                  textAlign: TextAlign.center,
+          .map(
+            (day) => SizedBox(
+              width: 36,
+              child: Text(
+                day,
+                style: GoogleFonts.poppins(
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
                 ),
-              ))
+                textAlign: TextAlign.center,
+              ),
+            ),
+          )
           .toList(),
     );
   }
 
   Widget _buildCalendarGrid() {
-    // Get days in month
-    final daysInMonth = DateTime(
-      _selectedDate.year,
-      _selectedDate.month + 1,
-      0,
-    ).day;
+    final daysInMonth =
+        DateTime(_selectedDate.year, _selectedDate.month + 1, 0).day;
 
-    // Get first day of month weekday (0 - 6 where 0 is Sunday)
-    final firstDayOfMonth = DateTime(_selectedDate.year, _selectedDate.month, 1);
+    final firstDayOfMonth = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      1,
+    );
     final firstWeekdayOfMonth = firstDayOfMonth.weekday % 7;
 
-    // Calculate rows needed
     final totalDays = firstWeekdayOfMonth + daysInMonth;
     final rowCount = (totalDays / 7).ceil();
 
@@ -229,23 +214,23 @@ class _CalendarPageState extends State<CalendarPage> {
         crossAxisCount: 7,
         mainAxisSpacing: 16,
         crossAxisSpacing: 4,
-        childAspectRatio: 0.8, // Adjust for better spacing
+        childAspectRatio: 0.8,
       ),
-      itemCount: rowCount * 7, // 7 days per week
+      itemCount: rowCount * 7,
       itemBuilder: (context, index) {
-        // Calculate day number (1-31) or empty
         final dayOffset = index - firstWeekdayOfMonth;
         final dayNumber = dayOffset + 1;
 
-        // Return empty container for leading/trailing empty cells
         if (dayOffset < 0 || dayNumber > daysInMonth) {
           return Container();
         }
 
-        // Current date to check for events
-        final currentDate = DateTime(_selectedDate.year, _selectedDate.month, dayNumber);
-        
-        // Check if date has events
+        final currentDate = DateTime(
+          _selectedDate.year,
+          _selectedDate.month,
+          dayNumber,
+        );
+
         final dateKey = DateTime(
           currentDate.year,
           currentDate.month,
@@ -253,36 +238,34 @@ class _CalendarPageState extends State<CalendarPage> {
         );
         final hasEvents = _events.containsKey(dateKey);
         final eventsList = hasEvents ? _events[dateKey]! : [];
-        
+
         return GestureDetector(
-          // onTap: () {
-          //   if (hasEvents) {
-          //     _showEventPopup(context, currentDate, eventsList);
-          //   }
-          // },
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Day number
               Container(
                 width: 40,
                 height: 40,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _isToday(currentDate) ? const Color(0xFFE8F5F6) : Colors.transparent,
+                  color: _isToday(currentDate)
+                      ? const Color(0xFFE8F5F6)
+                      : Colors.transparent,
                 ),
                 child: Text(
                   dayNumber.toString(),
                   style: GoogleFonts.poppins(
-                    fontWeight: _isToday(currentDate) ? FontWeight.bold : FontWeight.w500,
+                    fontWeight: _isToday(currentDate)
+                        ? FontWeight.bold
+                        : FontWeight.w500,
                     fontSize: 16,
-                    color: _isToday(currentDate) ? const Color(0xFF57B4BA) : Colors.black87,
+                    color: _isToday(currentDate)
+                        ? const Color(0xFF57B4BA)
+                        : Colors.black87,
                   ),
                 ),
               ),
-              
-              // Event indicators
               if (hasEvents)
                 Positioned(
                   bottom: 0,
@@ -307,21 +290,22 @@ class _CalendarPageState extends State<CalendarPage> {
       },
     );
   }
-  
+
   bool _isToday(DateTime date) {
     final now = DateTime.now();
-    return date.year == now.year && date.month == now.month && date.day == now.day;
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
   }
-  
+
   Widget _buildEventLegend() {
-    // Event categories and their colors
     final categories = {
       'Academic': const Color(0xFF9db7e0),
       'Events': const Color(0xFFdfed90),
       'News': const Color(0xFF1665a5),
       'Announcements': const Color(0xFFf08e79),
     };
-    
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: categories.entries.map((entry) {
@@ -351,8 +335,12 @@ class _CalendarPageState extends State<CalendarPage> {
       }).toList(),
     );
   }
-  
-  void _showEventPopup(BuildContext context, DateTime date, List<Event> events) {
+
+  void _showEventPopup(
+    BuildContext context,
+    DateTime date,
+    List<Event> events,
+  ) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -370,13 +358,10 @@ class _CalendarPageState extends State<CalendarPage> {
 class CalendarEventPopup extends StatelessWidget {
   final DateTime date;
   final List<Event> events;
-  
-  const CalendarEventPopup({
-    Key? key,
-    required this.date,
-    required this.events,
-  }) : super(key: key);
-  
+
+  const CalendarEventPopup({Key? key, required this.date, required this.events})
+      : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -389,7 +374,6 @@ class CalendarEventPopup extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Date header
           Container(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             decoration: BoxDecoration(
@@ -406,8 +390,6 @@ class CalendarEventPopup extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          
-          // Events list
           Flexible(
             child: ListView.separated(
               shrinkWrap: true,
@@ -419,9 +401,11 @@ class CalendarEventPopup extends StatelessWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Category tag
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: event.color,
                         borderRadius: BorderRadius.circular(8),
@@ -431,13 +415,13 @@ class CalendarEventPopup extends StatelessWidget {
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: event.category == 'News' ? Colors.white : Colors.black87,
+                          color: event.category == 'News'
+                              ? Colors.white
+                              : Colors.black87,
                         ),
                       ),
                     ),
                     const SizedBox(height: 10),
-                    
-                    // Event title
                     Text(
                       event.title,
                       style: GoogleFonts.poppins(
@@ -446,8 +430,6 @@ class CalendarEventPopup extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 5),
-                    
-                    // Event description
                     Text(
                       event.description,
                       style: GoogleFonts.poppins(
@@ -456,13 +438,10 @@ class CalendarEventPopup extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    
-                    // View details button
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          // Navigate to detailed view or expand details
                           print('View details for event ${event.id}');
                         },
                         child: Text(
@@ -480,8 +459,6 @@ class CalendarEventPopup extends StatelessWidget {
               },
             ),
           ),
-          
-          // Home button
           const SizedBox(height: 10),
           Center(
             child: Container(

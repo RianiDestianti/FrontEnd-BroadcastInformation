@@ -6,7 +6,7 @@ import 'screens/profile.dart';
 import 'screens/changepassword.dart';
 import 'screens/save.dart';
 import 'screens/calendar.dart';
-import 'screens/splashscreen.dart'; 
+import 'screens/splashscreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,10 +14,9 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-  
+
   @override
-  Widget build(BuildContext context) 
-  {
+  Widget build(BuildContext context) {
     final themeColor = Color(0xFF57B4BA);
 
     return MaterialApp(
@@ -45,7 +44,7 @@ class MyApp extends StatelessWidget {
           fillColor: Colors.grey[200],
         ),
       ),
-      home: const SplashScreen(), 
+      home: const SplashScreen(),
       routes: {
         '/home': (context) => const HomePage(),
         '/login': (context) => const SignInPage(),
@@ -54,7 +53,6 @@ class MyApp extends StatelessWidget {
         '/change-password': (context) => const ChangePasswordScreen(),
         '/calendar': (context) => CalendarPage(),
       },
-      
     );
   }
 }

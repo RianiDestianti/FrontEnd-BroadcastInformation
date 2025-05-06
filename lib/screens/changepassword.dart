@@ -9,9 +9,15 @@ class ChangePasswordScreen extends StatefulWidget {
 }
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _currentPasswordController = TextEditingController();
-  final TextEditingController _newPasswordController = TextEditingController();
+  // Constants
+  static const _themeColor = Color(0xFF57B4BA);
+  
+  // Controllers
+  final _usernameController = TextEditingController();
+  final _currentPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  
+  // State variables
   bool _isCurrentPasswordVisible = false;
   bool _isNewPasswordVisible = false;
   bool _isLoading = false;
@@ -26,18 +32,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final themeColor = const Color(0xFF57B4BA);
-
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+      appBar: _buildAppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -45,91 +42,15 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              Text(
-                'Create New Password',
-                style: GoogleFonts.poppins(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Your new password must be different from previous used password',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  color: Colors.black54,
-                ),
-              ),
+              _buildHeader(),
               const SizedBox(height: 40),
-
-              // Username
-              buildLabel('Username'),
-              const SizedBox(height: 8),
-              buildTextField(_usernameController, hintText: 'Elara Zafira'),
-
+              _buildUsernameField(),
               const SizedBox(height: 24),
-
-              // Current Password
-              buildLabel('Password'),
-              const SizedBox(height: 8),
-              buildTextField(
-                _currentPasswordController,
-                hintText: 'Enter your current password',
-                obscureText: !_isCurrentPasswordVisible,
-                toggleVisibility: () {
-                  setState(() {
-                    _isCurrentPasswordVisible = !_isCurrentPasswordVisible;
-                  });
-                },
-                isVisible: _isCurrentPasswordVisible,
-              ),
-
+              _buildCurrentPasswordField(),
               const SizedBox(height: 24),
-
-              // New Password
-              buildLabel('New Password'),
-              const SizedBox(height: 8),
-              buildTextField(
-                _newPasswordController,
-                hintText: 'Enter your new password',
-                obscureText: !_isNewPasswordVisible,
-                toggleVisibility: () {
-                  setState(() {
-                    _isNewPasswordVisible = !_isNewPasswordVisible;
-                  });
-                },
-                isVisible: _isNewPasswordVisible,
-              ),
-
+              _buildNewPasswordField(),
               const SizedBox(height: 40),
-
-              // Change Password Button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleChangePassword,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: themeColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : Text(
-                          'Change Password',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
-              ),
-
+              _buildChangePasswordButton(),
               const SizedBox(height: 40),
             ],
           ),
@@ -138,7 +59,119 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     );
   }
 
-  Widget buildLabel(String text) {
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.black),
+        onPressed: () => Navigator.pop(context),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Create New Password',
+          style: GoogleFonts.poppins(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Your new password must be different from previous used password',
+          style: GoogleFonts.poppins(fontSize: 16, color: Colors.black54),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUsernameField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel('Username'),
+        const SizedBox(height: 8),
+        _buildTextField(_usernameController, hintText: 'Elara Zafira'),
+      ],
+    );
+  }
+
+  Widget _buildCurrentPasswordField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel('Password'),
+        const SizedBox(height: 8),
+        _buildTextField(
+          _currentPasswordController,
+          hintText: 'Enter your current password',
+          obscureText: !_isCurrentPasswordVisible,
+          toggleVisibility: () {
+            setState(() {
+              _isCurrentPasswordVisible = !_isCurrentPasswordVisible;
+            });
+          },
+          isVisible: _isCurrentPasswordVisible,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNewPasswordField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel('New Password'),
+        const SizedBox(height: 8),
+        _buildTextField(
+          _newPasswordController,
+          hintText: 'Enter your new password',
+          obscureText: !_isNewPasswordVisible,
+          toggleVisibility: () {
+            setState(() {
+              _isNewPasswordVisible = !_isNewPasswordVisible;
+            });
+          },
+          isVisible: _isNewPasswordVisible,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildChangePasswordButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _handleChangePassword,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _themeColor,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+        ),
+        child: _isLoading
+            ? const CircularProgressIndicator(color: Colors.white)
+            : Text(
+                'Change Password',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildLabel(String text) {
     return Text(
       text,
       style: GoogleFonts.poppins(
@@ -149,7 +182,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     );
   }
 
-  Widget buildTextField(
+  Widget _buildTextField(
     TextEditingController controller, {
     required String hintText,
     bool obscureText = false,
@@ -173,7 +206,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: Color(0xFF57B4BA)),
+          borderSide: const BorderSide(color: _themeColor),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,
@@ -199,27 +232,24 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       _isLoading = true;
     });
 
-    // Simulasi proses password change
+    // Simulate API call
     Future.delayed(const Duration(seconds: 2), () {
       setState(() {
         _isLoading = false;
       });
 
-      // Munculkan popup sukses dengan animasi dan desain yang lebih baik
       _showSuccessDialog();
 
-      // Setelah 2 detik, tutup dialog dan kembali ke halaman sebelumnya
+      // Automatically navigate back after success
       Future.delayed(const Duration(seconds: 2), () {
         Navigator.of(context)
-          ..pop() // Tutup AlertDialog
-          ..pop(); // Kembali ke halaman sebelumnya (Profile)
+          ..pop() // Close dialog
+          ..pop(); // Return to previous screen
       });
     });
   }
 
   void _showSuccessDialog() {
-    final themeColor = const Color(0xFF57B4BA);
-    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -230,89 +260,104 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           ),
           elevation: 0,
           backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.rectangle,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 10.0,
-                  offset: Offset(0.0, 10.0),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Success animation or icon
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: themeColor.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.check_circle_rounded,
-                    color: Color(0xFF57B4BA),
-                    size: 75,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                
-                // Success message
-                Text(
-                  'Success!',
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Your password has been changed successfully',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    color: Colors.black54,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                
-                // Done button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: themeColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context)
-                        ..pop() // Tutup AlertDialog
-                        ..pop(); // Kembali ke halaman sebelumnya
-                    },
-                    child: Text(
-                      'Done',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          child: _buildSuccessDialogContent(),
         );
       },
+    );
+  }
+
+  Widget _buildSuccessDialogContent() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.rectangle,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10.0,
+            offset: Offset(0.0, 10.0),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildSuccessIcon(),
+          const SizedBox(height: 24),
+          _buildSuccessMessage(),
+          const SizedBox(height: 24),
+          _buildDoneButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuccessIcon() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _themeColor.withOpacity(0.1),
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(
+        Icons.check_circle_rounded,
+        color: _themeColor,
+        size: 75,
+      ),
+    );
+  }
+
+  Widget _buildSuccessMessage() {
+    return Column(
+      children: [
+        Text(
+          'Success!',
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Your password has been changed successfully',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            color: Colors.black54,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDoneButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _themeColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+        ),
+        onPressed: () {
+          Navigator.of(context)
+            ..pop() // Close dialog
+            ..pop(); // Return to previous screen
+        },
+        child: Text(
+          'Done',
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
+        ),
+      ),
     );
   }
 }

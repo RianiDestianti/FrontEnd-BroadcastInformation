@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:broadcastinformation/screens/calendar.dart';
 
+void main() {
+  runApp(MyApp());
+}
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -15,7 +19,7 @@ class MyApp extends StatelessWidget {
       routes: _buildAppRoutes(),
     );
   }
-  
+
   Map<String, WidgetBuilder> _buildAppRoutes() {
     return {
       '/home': (context) => const HomePage(),
@@ -25,6 +29,8 @@ class MyApp extends StatelessWidget {
     };
   }
 }
+
+// ------------------- Screen Pages -------------------
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -57,12 +63,12 @@ class CalendarPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MainLayout(selectedIndex: 2, child: _CalendarScreen());
+    return const MainLayout(selectedIndex: 2, child: CalendarContent());
   }
 }
 
-class _CalendarScreen extends StatelessWidget {
-  const _CalendarScreen({Key? key}) : super(key: key);
+class CalendarContent extends StatelessWidget {
+  const CalendarContent({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -84,49 +90,22 @@ class ProfilePage extends StatelessWidget {
   }
 }
 
+// ------------------- Main Layout -------------------
+
 class MainLayout extends StatefulWidget {
   final Widget child;
   final int selectedIndex;
-  
-  const MainLayout({
-    Key? key, 
-    required this.child, 
-    this.selectedIndex = 0
-  }) : super(key: key);
-  
+
+  const MainLayout({Key? key, required this.child, this.selectedIndex = 0})
+    : super(key: key);
+
   @override
   State<MainLayout> createState() => _MainLayoutState();
 }
 
 class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
-  static const int _navItemCount = 4;
-  static const Duration _floatAnimationDuration = Duration(milliseconds: 400);
-  static const Duration _scaleAnimationDuration = Duration(milliseconds: 300);
-  static const Duration _rotateAnimationDuration = Duration(milliseconds: 400);
-  static const Duration _rippleAnimationDuration = Duration(milliseconds: 700);
-  static const Duration _bgCircleAnimationDuration = Duration(milliseconds: 300);
-  
-  final Color _navBarColor = const Color(0xFF57B4BA);
-  final Color _activeIconColor = const Color(0xFF45969B);
-  final Color _inactiveIconColor = Colors.white;
-  final Color _rippleColor = Colors.white;
-  final Color _bgCircleColor = Colors.white;
-  
   late int _selectedIndex;
   late List<bool> _isActive;
-  
-  late List<AnimationController> _floatControllers;
-  late List<AnimationController> _scaleControllers;
-  late List<AnimationController> _rotateControllers;
-  late List<AnimationController> _rippleControllers;
-  late List<AnimationController> _bgCircleControllers;
-  
-  late List<Animation<double>> _floatAnimations;
-  late List<Animation<double>> _scaleAnimations;
-  late List<Animation<double>> _rotateAnimations;
-  late List<Animation<double>> _rippleAnimations;
-  late List<Animation<double>> _opacityAnimations;
-  late List<Animation<double>> _bgCircleAnimations;
 
   @override
   void initState() {
@@ -134,70 +113,29 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
     _selectedIndex = widget.selectedIndex;
     _initializeControllers();
     _initializeAnimations();
-    _isActive = List.generate(_navItemCount, (index) => false);
+    _isActive = List.generate(NavigationConfig.navItemCount, (index) => false);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _activateItem(_selectedIndex, initial: true);
     });
   }
 
-  void _initializeControllers() {
-    _floatControllers = _createControllers(_floatAnimationDuration);
-    _scaleControllers = _createControllers(_scaleAnimationDuration);
-    _rotateControllers = _createControllers(_rotateAnimationDuration);
-    _rippleControllers = _createControllers(_rippleAnimationDuration);
-    _bgCircleControllers = _createControllers(_bgCircleAnimationDuration);
-  }
-
-  List<AnimationController> _createControllers(Duration duration) {
-    return List.generate(
-      _navItemCount,
-      (index) => AnimationController(
-        duration: duration,
-        vsync: this,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(child: widget.child),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        isActive: _isActive,
+        floatAnimations: _floatAnimations,
+        scaleAnimations: _scaleAnimations,
+        rotateAnimations: _rotateAnimations,
+        rippleAnimations: _rippleAnimations,
+        opacityAnimations: _opacityAnimations,
+        bgCircleAnimations: _bgCircleAnimations,
+        onItemTapped: _onItemTapped,
       ),
     );
-  }
-
-  void _initializeAnimations() {
-    _floatAnimations = _floatControllers.map((controller) {
-      return Tween<double>(begin: 0, end: -40).animate(
-        CurvedAnimation(parent: controller, curve: Curves.elasticOut),
-      );
-    }).toList();
-    
-    _scaleAnimations = _scaleControllers.map((controller) {
-      return Tween<double>(begin: 1.0, end: 1.2).animate(
-        CurvedAnimation(parent: controller, curve: Curves.easeOutBack),
-      );
-    }).toList();
-    
-    _rotateAnimations = _rotateControllers.map((controller) {
-      return Tween<double>(begin: 0, end: 2 * math.pi).animate(
-        CurvedAnimation(parent: controller, curve: Curves.easeInOutCubic),
-      );
-    }).toList();
-    
-    _rippleAnimations = _rippleControllers.map((controller) {
-      return Tween<double>(
-        begin: 0.0,
-        end: 60.0,
-      ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut));
-    }).toList();
-    
-    _opacityAnimations = _rippleControllers.map((controller) {
-      return Tween<double>(
-        begin: 0.3,
-        end: 0.0,
-      ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut));
-    }).toList();
-    
-    _bgCircleAnimations = _bgCircleControllers.map((controller) {
-      return Tween<double>(
-        begin: 0.0,
-        end: 1.0,
-      ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut));
-    }).toList();
   }
 
   @override
@@ -210,14 +148,116 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  // ------------------- Animation Controllers -------------------
+
+  late List<AnimationController> _floatControllers;
+  late List<AnimationController> _scaleControllers;
+  late List<AnimationController> _rotateControllers;
+  late List<AnimationController> _rippleControllers;
+  late List<AnimationController> _bgCircleControllers;
+
+  late List<Animation<double>> _floatAnimations;
+  late List<Animation<double>> _scaleAnimations;
+  late List<Animation<double>> _rotateAnimations;
+  late List<Animation<double>> _rippleAnimations;
+  late List<Animation<double>> _opacityAnimations;
+  late List<Animation<double>> _bgCircleAnimations;
+
+  void _initializeControllers() {
+    _floatControllers = _createControllers(
+      NavigationConfig.floatAnimationDuration,
+    );
+    _scaleControllers = _createControllers(
+      NavigationConfig.scaleAnimationDuration,
+    );
+    _rotateControllers = _createControllers(
+      NavigationConfig.rotateAnimationDuration,
+    );
+    _rippleControllers = _createControllers(
+      NavigationConfig.rippleAnimationDuration,
+    );
+    _bgCircleControllers = _createControllers(
+      NavigationConfig.bgCircleAnimationDuration,
+    );
+  }
+
+  List<AnimationController> _createControllers(Duration duration) {
+    return List.generate(
+      NavigationConfig.navItemCount,
+      (index) => AnimationController(duration: duration, vsync: this),
+    );
+  }
+
+  void _initializeAnimations() {
+    _floatAnimations =
+        _floatControllers.map((controller) {
+          return Tween<double>(begin: 0, end: -40).animate(
+            CurvedAnimation(parent: controller, curve: Curves.elasticOut),
+          );
+        }).toList();
+
+    _scaleAnimations =
+        _scaleControllers.map((controller) {
+          return Tween<double>(begin: 1.0, end: 1.2).animate(
+            CurvedAnimation(parent: controller, curve: Curves.easeOutBack),
+          );
+        }).toList();
+
+    _rotateAnimations =
+        _rotateControllers.map((controller) {
+          return Tween<double>(begin: 0, end: 2 * math.pi).animate(
+            CurvedAnimation(parent: controller, curve: Curves.easeInOutCubic),
+          );
+        }).toList();
+
+    _rippleAnimations =
+        _rippleControllers.map((controller) {
+          return Tween<double>(
+            begin: 0.0,
+            end: 60.0,
+          ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut));
+        }).toList();
+
+    _opacityAnimations =
+        _rippleControllers.map((controller) {
+          return Tween<double>(
+            begin: 0.3,
+            end: 0.0,
+          ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut));
+        }).toList();
+
+    _bgCircleAnimations =
+        _bgCircleControllers.map((controller) {
+          return Tween<double>(
+            begin: 0.0,
+            end: 1.0,
+          ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut));
+        }).toList();
+  }
+
   void _disposeControllers(List<AnimationController> controllers) {
     for (var controller in controllers) {
       controller.dispose();
     }
   }
 
+  // ------------------- Navigation Methods -------------------
+
+  void _onItemTapped(int index) {
+    if (_selectedIndex != index) {
+      setState(() {
+        _selectedIndex = index;
+      });
+
+      _activateItem(index);
+      _navigateToPage(index);
+    } else {
+      _activateItem(index);
+    }
+  }
+
   void _activateItem(int index, {bool initial = false}) {
-    for (var i = 0; i < _navItemCount; i++) {
+    for (var i = 0; i < NavigationConfig.navItemCount; i++) {
       if (i != index && _isActive[i]) {
         _deactivateItem(i);
       }
@@ -253,72 +293,53 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
     _isActive[index] = false;
   }
 
-  void _onItemTapped(int index) {
-    if (_selectedIndex != index) {
-      setState(() {
-        _selectedIndex = index;
-      });
-
-      _activateItem(index);
-      _navigateToPage(index);
-    } else {
-      _activateItem(index);
-    }
-  }
-
   void _navigateToPage(int index) {
-    final String routeName = _getRouteNameByIndex(index);
+    final String routeName = NavigationConfig.getRouteNameByIndex(index);
     if (ModalRoute.of(context)?.settings.name != routeName) {
       Navigator.pushReplacementNamed(context, routeName);
     }
   }
+}
 
-  String _getRouteNameByIndex(int index) {
-    switch (index) {
-      case 0: return '/home';
-      case 1: return '/save';
-      case 2: return '/calendar';
-      case 3: return '/profile';
-      default: return '/home';
-    }
-  }
+// ------------------- Navigation Bar Widget -------------------
 
-  IconData _getIconByIndex(int index, {bool isActive = false}) {
-    if (isActive) {
-      switch (index) {
-        case 0: return Icons.home;
-        case 1: return Icons.bookmark;
-        case 2: return Icons.calendar_today;
-        case 3: return Icons.person;
-        default: return Icons.home;
-      }
-    } else {
-      switch (index) {
-        case 0: return Icons.home_outlined;
-        case 1: return Icons.bookmark_border;
-        case 2: return Icons.calendar_today_outlined;
-        case 3: return Icons.person_outline;
-        default: return Icons.home_outlined;
-      }
-    }
-  }
+class NavigationBar extends StatelessWidget {
+  final int selectedIndex;
+  final List<bool> isActive;
+  final List<Animation<double>> floatAnimations;
+  final List<Animation<double>> scaleAnimations;
+  final List<Animation<double>> rotateAnimations;
+  final List<Animation<double>> rippleAnimations;
+  final List<Animation<double>> opacityAnimations;
+  final List<Animation<double>> bgCircleAnimations;
+  final Function(int) onItemTapped;
+
+  const NavigationBar({
+    Key? key,
+    required this.selectedIndex,
+    required this.isActive,
+    required this.floatAnimations,
+    required this.scaleAnimations,
+    required this.rotateAnimations,
+    required this.rippleAnimations,
+    required this.opacityAnimations,
+    required this.bgCircleAnimations,
+    required this.onItemTapped,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(child: widget.child),
-      bottomNavigationBar: Container(
-        height: 80,
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            _buildNavBar(),
-            _buildTransparentGaps(),
-            _buildBackgroundCircles(),
-            _buildRippleEffects(),
-            _buildActiveIcons(),
-          ],
-        ),
+    return Container(
+      height: 80,
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          _buildNavBar(),
+          _buildTransparentGaps(),
+          _buildBackgroundCircles(),
+          _buildRippleEffects(),
+          _buildActiveIcons(),
+        ],
       ),
     );
   }
@@ -327,7 +348,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
     return Container(
       height: 70,
       decoration: BoxDecoration(
-        color: _navBarColor,
+        color: NavigationConfig.navBarColor,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
@@ -342,23 +363,23 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(_navItemCount, (index) {
+        children: List.generate(NavigationConfig.navItemCount, (index) {
           return AnimatedBuilder(
-            animation: _floatAnimations[index],
+            animation: floatAnimations[index],
             builder: (context, child) {
-              if (_isActive[index]) {
+              if (isActive[index]) {
                 return const SizedBox(width: 60);
               }
 
               return InkWell(
-                onTap: () => _onItemTapped(index),
+                onTap: () => onItemTapped(index),
                 customBorder: const CircleBorder(),
                 child: SizedBox(
                   width: 60,
                   height: 60,
                   child: Icon(
-                    _getIconByIndex(index),
-                    color: _inactiveIconColor,
+                    NavigationConfig.getIconByIndex(index),
+                    color: NavigationConfig.inactiveIconColor,
                     size: 24,
                   ),
                 ),
@@ -373,11 +394,11 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   Widget _buildTransparentGaps() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: List.generate(_navItemCount, (index) {
+      children: List.generate(NavigationConfig.navItemCount, (index) {
         return AnimatedBuilder(
-          animation: _floatAnimations[index],
+          animation: floatAnimations[index],
           builder: (context, child) {
-            if (!_isActive[index]) {
+            if (!isActive[index]) {
               return const SizedBox(width: 50);
             }
 
@@ -394,23 +415,23 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   Widget _buildBackgroundCircles() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: List.generate(_navItemCount, (index) {
+      children: List.generate(NavigationConfig.navItemCount, (index) {
         return AnimatedBuilder(
-          animation: _bgCircleAnimations[index],
+          animation: bgCircleAnimations[index],
           builder: (context, child) {
-            if (!_isActive[index]) {
+            if (!isActive[index]) {
               return const SizedBox(width: 70);
             }
 
             return Transform.translate(
-              offset: Offset(0, _floatAnimations[index].value + 5),
+              offset: Offset(0, floatAnimations[index].value + 5),
               child: Opacity(
-                opacity: _bgCircleAnimations[index].value * 0.3,
+                opacity: bgCircleAnimations[index].value * 0.3,
                 child: Container(
                   width: 70,
                   height: 70,
                   decoration: BoxDecoration(
-                    color: _bgCircleColor,
+                    color: NavigationConfig.bgCircleColor,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -425,17 +446,17 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   Widget _buildRippleEffects() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: List.generate(_navItemCount, (index) {
+      children: List.generate(NavigationConfig.navItemCount, (index) {
         return AnimatedBuilder(
-          animation: _rippleAnimations[index],
+          animation: rippleAnimations[index],
           builder: (context, child) {
             return Opacity(
-              opacity: _opacityAnimations[index].value,
+              opacity: opacityAnimations[index].value,
               child: Container(
-                width: _rippleAnimations[index].value,
-                height: _rippleAnimations[index].value,
+                width: rippleAnimations[index].value,
+                height: rippleAnimations[index].value,
                 decoration: BoxDecoration(
-                  color: _rippleColor.withOpacity(0.3),
+                  color: NavigationConfig.rippleColor.withOpacity(0.3),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -449,35 +470,37 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   Widget _buildActiveIcons() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: List.generate(_navItemCount, (index) {
+      children: List.generate(NavigationConfig.navItemCount, (index) {
         return AnimatedBuilder(
           animation: Listenable.merge([
-            _floatAnimations[index],
-            _scaleAnimations[index],
-            _rotateAnimations[index],
+            floatAnimations[index],
+            scaleAnimations[index],
+            rotateAnimations[index],
           ]),
           builder: (context, child) {
-            if (!_isActive[index]) {
+            if (!isActive[index]) {
               return const SizedBox(width: 50);
             }
 
             return Transform.translate(
-              offset: Offset(0, _floatAnimations[index].value),
+              offset: Offset(0, floatAnimations[index].value),
               child: Transform.scale(
-                scale: _scaleAnimations[index].value,
+                scale: scaleAnimations[index].value,
                 child: Transform.rotate(
-                  angle: _rotateAnimations[index].value,
+                  angle: rotateAnimations[index].value,
                   child: GestureDetector(
-                    onTap: () => _onItemTapped(index),
+                    onTap: () => onItemTapped(index),
                     child: Container(
                       width: 50,
                       height: 50,
                       decoration: BoxDecoration(
-                        color: _activeIconColor,
+                        color: NavigationConfig.activeIconColor,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: _activeIconColor.withOpacity(0.5),
+                            color: NavigationConfig.activeIconColor.withOpacity(
+                              0.5,
+                            ),
                             blurRadius: 12,
                             spreadRadius: 2,
                             offset: const Offset(0, 2),
@@ -485,8 +508,8 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                         ],
                         gradient: RadialGradient(
                           colors: [
-                            _activeIconColor.withOpacity(0.8),
-                            _activeIconColor,
+                            NavigationConfig.activeIconColor.withOpacity(0.8),
+                            NavigationConfig.activeIconColor,
                           ],
                           center: const Alignment(0.1, 0.1),
                           focal: const Alignment(0, 0),
@@ -494,9 +517,12 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                         ),
                       ),
                       child: Transform.rotate(
-                        angle: -_rotateAnimations[index].value,
+                        angle: -rotateAnimations[index].value,
                         child: Icon(
-                          _getIconByIndex(index, isActive: true),
+                          NavigationConfig.getIconByIndex(
+                            index,
+                            isActive: true,
+                          ),
                           color: Colors.white,
                           size: 24,
                         ),
@@ -513,10 +539,74 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   }
 }
 
+// ------------------- Custom Painter -------------------
+
 class TransparentGapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {}
-  
+
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// ------------------- Navigation Configuration -------------------
+
+class NavigationConfig {
+  static const int navItemCount = 4;
+  static const Duration floatAnimationDuration = Duration(milliseconds: 400);
+  static const Duration scaleAnimationDuration = Duration(milliseconds: 300);
+  static const Duration rotateAnimationDuration = Duration(milliseconds: 400);
+  static const Duration rippleAnimationDuration = Duration(milliseconds: 700);
+  static const Duration bgCircleAnimationDuration = Duration(milliseconds: 300);
+
+  static final Color navBarColor = const Color(0xFF57B4BA);
+  static final Color activeIconColor = const Color(0xFF45969B);
+  static final Color inactiveIconColor = Colors.white;
+  static final Color rippleColor = Colors.white;
+  static final Color bgCircleColor = Colors.white;
+
+  static String getRouteNameByIndex(int index) {
+    switch (index) {
+      case 0:
+        return '/home';
+      case 1:
+        return '/save';
+      case 2:
+        return '/calendar';
+      case 3:
+        return '/profile';
+      default:
+        return '/home';
+    }
+  }
+
+  static IconData getIconByIndex(int index, {bool isActive = false}) {
+    if (isActive) {
+      switch (index) {
+        case 0:
+          return Icons.home;
+        case 1:
+          return Icons.bookmark;
+        case 2:
+          return Icons.calendar_today;
+        case 3:
+          return Icons.person;
+        default:
+          return Icons.home;
+      }
+    } else {
+      switch (index) {
+        case 0:
+          return Icons.home_outlined;
+        case 1:
+          return Icons.bookmark_border;
+        case 2:
+          return Icons.calendar_today_outlined;
+        case 3:
+          return Icons.person_outline;
+        default:
+          return Icons.home_outlined;
+      }
+    }
+  }
 }

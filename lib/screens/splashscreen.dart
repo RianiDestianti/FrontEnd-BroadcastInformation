@@ -11,7 +11,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
   static const _animationDuration = Duration(milliseconds: 1500);
   static const _rotationDuration = Duration(milliseconds: 5000);
   static const _pulseDuration = Duration(milliseconds: 1500);
@@ -20,14 +21,12 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   static const _navigationDelay = Duration(milliseconds: 6000);
   static const _navigationTransitionDuration = Duration(milliseconds: 800);
   static const _themeColor = Color(0xFF57B4BA);
-
   late final AnimationController _logoAnimationController;
   late final AnimationController _smknLogoController;
   late final AnimationController _rotationController;
   late final AnimationController _pulseController;
   late final AnimationController _textAnimationController;
   late final AnimationController _loadingAnimationController;
-
   late final Animation<double> _fadeInAnimation;
   late final Animation<Offset> _slideAnimation;
   late final Animation<double> _pulseAnimation;
@@ -111,16 +110,15 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   void _scheduleNavigation() {
     Timer(_navigationDelay, () {
       if (!mounted) return;
-      
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const SignInPage(),
+          pageBuilder:
+              (context, animation, secondaryAnimation) => const SignInPage(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             final fadeAnimation = CurvedAnimation(
               parent: animation,
               curve: Curves.easeOut,
             );
-
             return FadeTransition(opacity: fadeAnimation, child: child);
           },
           transitionDuration: _navigationTransitionDuration,
@@ -142,50 +140,78 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.white, _themeColor.withOpacity(0.15)],
-          ),
-        ),
+      body: SplashBackground(
         child: SafeArea(
           child: Stack(
             fit: StackFit.expand,
             children: [
-              _buildRotatingBackgroundLogo(screenSize),
-              _buildContentColumn(),
-              _buildFooterText(),
-              _buildVersionText(),
+              RotatingBackgroundLogo(controller: _rotationController),
+              SplashContent(
+                rotationController: _rotationController,
+                logoAnimationController: _logoAnimationController,
+                pulseAnimation: _pulseAnimation,
+                smknLogoController: _smknLogoController,
+                smknFadeAnimation: _smknFadeAnimation,
+                fadeInAnimation: _fadeInAnimation,
+                slideAnimation: _slideAnimation,
+                loadingAnimationController: _loadingAnimationController,
+              ),
+              FooterText(fadeInAnimation: _fadeInAnimation),
+              VersionText(fadeInAnimation: _fadeInAnimation),
             ],
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildRotatingBackgroundLogo(Size screenSize) {
+class SplashBackground extends StatelessWidget {
+  final Widget child;
+  static const _themeColor = Color(0xFF57B4BA);
+  const SplashBackground({Key? key, required this.child}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.white, _themeColor.withOpacity(0.15)],
+        ),
+      ),
+      child: child,
+    );
+  }
+}
+
+class RotatingBackgroundLogo extends StatelessWidget {
+  final AnimationController controller;
+  const RotatingBackgroundLogo({Key? key, required this.controller})
+    : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
     return Center(
       child: AnimatedBuilder(
-        animation: _rotationController,
+        animation: controller,
         builder: (context, child) {
-          return Transform.rotate(
-            angle: _rotationController.value * 2 * math.pi,
-            child: Opacity(
-              opacity: 0.08,
-              child: SizedBox(
-                width: screenSize.width * 1.5,
-                height: screenSize.width * 1.5,
-                child: Image.asset(
-                  'assets/logo.png',
-                  fit: BoxFit.contain,
+          return Transform.translate(
+            offset: const Offset(0, -80),
+            child: Transform.rotate(
+              angle: controller.value * 2 * math.pi,
+              child: Opacity(
+                opacity: 0.08,
+                child: SizedBox(
+                  width: screenSize.width * 1.5,
+                  height: screenSize.width * 1.5,
+                  child: Image.asset('assets/logo.png', fit: BoxFit.contain),
                 ),
               ),
             ),
@@ -194,8 +220,32 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       ),
     );
   }
+}
 
-  Widget _buildContentColumn() {
+class SplashContent extends StatelessWidget {
+  final AnimationController rotationController;
+  final AnimationController logoAnimationController;
+  final Animation<double> pulseAnimation;
+  final AnimationController smknLogoController;
+  final Animation<double> smknFadeAnimation;
+  final Animation<double> fadeInAnimation;
+  final Animation<Offset> slideAnimation;
+  final AnimationController loadingAnimationController;
+  static const _themeColor = Color(0xFF57B4BA);
+  const SplashContent({
+    Key? key,
+    required this.rotationController,
+    required this.logoAnimationController,
+    required this.pulseAnimation,
+    required this.smknLogoController,
+    required this.smknFadeAnimation,
+    required this.fadeInAnimation,
+    required this.slideAnimation,
+    required this.loadingAnimationController,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -205,29 +255,51 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
             child: Stack(
               alignment: Alignment.center,
               children: [
-                _buildRotatingGradientCircle(),
-                _buildRotatingDots(),
-                _buildLogosRow(),
+                RotatingGradientCircle(controller: rotationController),
+                RotatingDots(controller: rotationController),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: LogosRow(
+                    logoAnimationController: logoAnimationController,
+                    pulseAnimation: pulseAnimation,
+                    smknLogoController: smknLogoController,
+                    smknFadeAnimation: smknFadeAnimation,
+                  ),
+                ),
               ],
             ),
           ),
           const SizedBox(height: 40),
-          _buildAppTitle(),
+          AppTitle(
+            fadeInAnimation: fadeInAnimation,
+            slideAnimation: slideAnimation,
+          ),
           const SizedBox(height: 8),
-          _buildAppSubtitle(),
+          AppSubtitle(
+            fadeInAnimation: fadeInAnimation,
+            slideAnimation: slideAnimation,
+          ),
           const SizedBox(height: 50),
-          _buildLoadingIndicator(),
+          LoadingIndicator(controller: loadingAnimationController),
         ],
       ),
     );
   }
+}
 
-  Widget _buildRotatingGradientCircle() {
+class RotatingGradientCircle extends StatelessWidget {
+  final AnimationController controller;
+  static const _themeColor = Color(0xFF57B4BA);
+  const RotatingGradientCircle({Key? key, required this.controller})
+    : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _rotationController,
+      animation: controller,
       builder: (context, child) {
         return Transform.rotate(
-          angle: -_rotationController.value * 2 * math.pi,
+          angle: -controller.value * 2 * math.pi,
           child: Container(
             width: 280,
             height: 280,
@@ -246,13 +318,20 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       },
     );
   }
+}
 
-  Widget _buildRotatingDots() {
+class RotatingDots extends StatelessWidget {
+  final AnimationController controller;
+  static const _themeColor = Color(0xFF57B4BA);
+  const RotatingDots({Key? key, required this.controller}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _rotationController,
+      animation: controller,
       builder: (context, child) {
         return Transform.rotate(
-          angle: _rotationController.value * 2 * math.pi * 1.5,
+          angle: controller.value * 2 * math.pi * 1.5,
           child: SizedBox(
             width: 320,
             height: 320,
@@ -278,57 +357,109 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       },
     );
   }
+}
 
-  Widget _buildLogosRow() {
+class LogosRow extends StatelessWidget {
+  final AnimationController logoAnimationController;
+  final Animation<double> pulseAnimation;
+  final AnimationController smknLogoController;
+  final Animation<double> smknFadeAnimation;
+
+  const LogosRow({
+    Key? key,
+    required this.logoAnimationController,
+    required this.pulseAnimation,
+    required this.smknLogoController,
+    required this.smknFadeAnimation,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        _buildPrimaryLogo(),
-        _buildLogoSeparator(),
-        _buildSecondaryLogo(),
+        PrimaryLogo(
+          logoAnimationController: logoAnimationController,
+          pulseAnimation: pulseAnimation,
+        ),
+        LogoSeparator(),
+        SecondaryLogo(
+          smknLogoController: smknLogoController,
+          smknFadeAnimation: smknFadeAnimation,
+          pulseAnimation: pulseAnimation,
+        ),
       ],
     );
   }
+}
 
-  Widget _buildPrimaryLogo() {
+class PrimaryLogo extends StatelessWidget {
+  final AnimationController logoAnimationController;
+  final Animation<double> pulseAnimation;
+
+  const PrimaryLogo({
+    Key? key,
+    required this.logoAnimationController,
+    required this.pulseAnimation,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return ScaleTransition(
-      scale: _logoAnimationController,
+      scale: logoAnimationController,
       child: AnimatedBuilder(
-        animation: _pulseAnimation,
+        animation: pulseAnimation,
         builder: (context, child) {
           return Transform.scale(
-            scale: _pulseAnimation.value,
-            child: _buildLogoContainer(
-              logoPath: 'assets/logo.png',
-            ),
+            scale: pulseAnimation.value,
+            child: LogoContainer(logoPath: 'assets/logo.png'),
           );
         },
       ),
     );
   }
+}
 
-  Widget _buildSecondaryLogo() {
+class SecondaryLogo extends StatelessWidget {
+  final AnimationController smknLogoController;
+  final Animation<double> smknFadeAnimation;
+  final Animation<double> pulseAnimation;
+
+  const SecondaryLogo({
+    Key? key,
+    required this.smknLogoController,
+    required this.smknFadeAnimation,
+    required this.pulseAnimation,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return ScaleTransition(
-      scale: _smknLogoController,
+      scale: smknLogoController,
       child: FadeTransition(
-        opacity: _smknFadeAnimation,
+        opacity: smknFadeAnimation,
         child: AnimatedBuilder(
-          animation: _pulseAnimation,
+          animation: pulseAnimation,
           builder: (context, child) {
             return Transform.scale(
-              scale: _pulseAnimation.value,
-              child: _buildLogoContainer(
-                logoPath: 'assets/smkn.png',
-              ),
+              scale: pulseAnimation.value,
+              child: LogoContainer(logoPath: 'assets/smkn.png'),
             );
           },
         ),
       ),
     );
   }
+}
 
-  Widget _buildLogoContainer({required String logoPath}) {
+class LogoContainer extends StatelessWidget {
+  final String logoPath;
+  static const _themeColor = Color(0xFF57B4BA);
+  const LogoContainer({Key? key, required this.logoPath}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -341,52 +472,50 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
             spreadRadius: 2,
           ),
         ],
-        border: Border.all(
-          color: _themeColor.withOpacity(0.15),
-          width: 2,
-        ),
+        border: Border.all(color: _themeColor.withOpacity(0.15), width: 2),
       ),
       child: SizedBox(
         height: 90,
         width: 90,
-        child: Image.asset(
-          logoPath,
-          fit: BoxFit.contain,
-        ),
+        child: Image.asset(logoPath, fit: BoxFit.contain),
       ),
     );
   }
+}
 
-  Widget _buildLogoSeparator() {
+class LogoSeparator extends StatelessWidget {
+  static const _themeColor = Color(0xFF57B4BA);
+  const LogoSeparator({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildSeparatorLine(
-          colors: [
-            _themeColor.withOpacity(0.3),
-            _themeColor.withOpacity(0.7),
-          ],
+        SeparatorLine(
+          colors: [_themeColor.withOpacity(0.3), _themeColor.withOpacity(0.7)],
         ),
         const SizedBox(height: 5),
-        _buildSeparatorDot(),
+        SeparatorDot(),
         const SizedBox(height: 5),
-        _buildSeparatorLine(
-          colors: [
-            _themeColor.withOpacity(0.7),
-            _themeColor.withOpacity(0.3),
-          ],
+        SeparatorLine(
+          colors: [_themeColor.withOpacity(0.7), _themeColor.withOpacity(0.3)],
         ),
       ],
     );
   }
+}
 
-  Widget _buildSeparatorLine({required List<Color> colors}) {
+class SeparatorLine extends StatelessWidget {
+  final List<Color> colors;
+  const SeparatorLine({Key? key, required this.colors}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       width: 3,
       height: 25,
-      margin: const EdgeInsets.symmetric(
-        horizontal: 25,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 25),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -397,8 +526,14 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       ),
     );
   }
+}
 
-  Widget _buildSeparatorDot() {
+class SeparatorDot extends StatelessWidget {
+  static const _themeColor = Color(0xFF57B4BA);
+  const SeparatorDot({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       width: 7,
       height: 7,
@@ -415,12 +550,24 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       ),
     );
   }
+}
 
-  Widget _buildAppTitle() {
+class AppTitle extends StatelessWidget {
+  final Animation<double> fadeInAnimation;
+  final Animation<Offset> slideAnimation;
+
+  const AppTitle({
+    Key? key,
+    required this.fadeInAnimation,
+    required this.slideAnimation,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return FadeTransition(
-      opacity: _fadeInAnimation,
+      opacity: fadeInAnimation,
       child: SlideTransition(
-        position: _slideAnimation,
+        position: slideAnimation,
         child: const Text(
           'EduInform',
           style: TextStyle(
@@ -433,12 +580,24 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       ),
     );
   }
+}
 
-  Widget _buildAppSubtitle() {
+class AppSubtitle extends StatelessWidget {
+  final Animation<double> fadeInAnimation;
+  final Animation<Offset> slideAnimation;
+
+  const AppSubtitle({
+    Key? key,
+    required this.fadeInAnimation,
+    required this.slideAnimation,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return FadeTransition(
-      opacity: _fadeInAnimation,
+      opacity: fadeInAnimation,
       child: SlideTransition(
-        position: _slideAnimation,
+        position: slideAnimation,
         child: const Text(
           'Ruang Informasi Sekolah',
           style: TextStyle(fontSize: 18, color: Colors.black54),
@@ -446,10 +605,18 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       ),
     );
   }
+}
 
-  Widget _buildLoadingIndicator() {
+class LoadingIndicator extends StatelessWidget {
+  final AnimationController controller;
+  static const _themeColor = Color(0xFF57B4BA);
+  const LoadingIndicator({Key? key, required this.controller})
+    : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _loadingAnimationController,
+      animation: controller,
       builder: (context, child) {
         return SizedBox(
           width: 60,
@@ -457,16 +624,23 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(3, (index) {
-              final delayedValue = (_loadingAnimationController.value + index * 0.2) % 1.0;
-              return _buildLoadingDot(delayedValue);
+              final delayedValue = (controller.value + index * 0.2) % 1.0;
+              return LoadingDot(animationValue: delayedValue);
             }),
           ),
         );
       },
     );
   }
+}
 
-  Widget _buildLoadingDot(double animationValue) {
+class LoadingDot extends StatelessWidget {
+  final double animationValue;
+  static const _themeColor = Color(0xFF57B4BA);
+  const LoadingDot({Key? key, required this.animationValue}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 3),
       width: 10,
@@ -478,22 +652,25 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       child: Transform.scale(
         scale: 0.7 + animationValue * 0.5,
         child: const DecoratedBox(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: _themeColor,
-          ),
+          decoration: BoxDecoration(shape: BoxShape.circle, color: _themeColor),
         ),
       ),
     );
   }
+}
 
-  Widget _buildFooterText() {
+class FooterText extends StatelessWidget {
+  final Animation<double> fadeInAnimation;
+  const FooterText({Key? key, required this.fadeInAnimation}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Positioned(
       bottom: 40,
       left: 0,
       right: 0,
       child: FadeTransition(
-        opacity: _fadeInAnimation,
+        opacity: fadeInAnimation,
         child: const Center(
           child: Text(
             'SMK Negeri 11 Bandung',
@@ -507,14 +684,21 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       ),
     );
   }
+}
 
-  Widget _buildVersionText() {
+class VersionText extends StatelessWidget {
+  final Animation<double> fadeInAnimation;
+  const VersionText({Key? key, required this.fadeInAnimation})
+    : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Positioned(
       bottom: 20,
       left: 0,
       right: 0,
       child: FadeTransition(
-        opacity: _fadeInAnimation,
+        opacity: fadeInAnimation,
         child: const Center(
           child: Text(
             'Version 1.0.0',

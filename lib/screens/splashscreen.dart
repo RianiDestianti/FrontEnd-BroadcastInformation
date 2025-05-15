@@ -13,6 +13,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
+      
   static const _animationDuration = Duration(milliseconds: 1500);
   static const _rotationDuration = Duration(milliseconds: 5000);
   static const _pulseDuration = Duration(milliseconds: 1500);

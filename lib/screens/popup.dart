@@ -88,7 +88,7 @@ class TagLabel extends StatelessWidget {
       child: Text(
         announcement.tag,
         style: GoogleFonts.poppins(
-          color: isDarkTag ? Colors.white : Colors.black87,
+          color: Colors.white, // Selalu putih
           fontSize: 13,
           fontWeight: FontWeight.w500,
         ),

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import '../layouts/layout.dart';
 import '../models/announcement.dart';
-import '../models/datadummy.dart';
+
 
 class SaveScreen extends StatefulWidget {
-  
   const SaveScreen({Key? key}) : super(key: key);
 
   @override
@@ -19,40 +18,6 @@ class _SaveScreenState extends State<SaveScreen> {
       date: '26 April 2025',
       location: 'Perpustakaan',
       category: EventCategory(name: 'Academy', color: const Color(0xFF3D5AFE)),
-    ),
-    EventModel(
-      title: 'Upacara Bendera\nHari Senin',
-      time: '10:00 AM - 12:00 PM',
-      date: '28 April 2025',
-      location: 'Lapangan Sekolah',
-      category: EventCategory(
-        name: 'Announcements',
-        color: const Color(0xFFFF5252),
-      ),
-    ),
-    EventModel(
-      title: 'Lomba Cerdas Cermat\nAntar Kelas',
-      time: '10:00 AM - 12:00 PM',
-      date: '30 April 2025',
-      location: 'Aula Tertutup',
-      category: EventCategory(name: 'News', color: const Color(0xFF00BFA5)),
-    ),
-    EventModel(
-      title: 'Pembagian Rapor\nSemester Ganjil',
-      time: '08:00 AM - 01:00 PM',
-      date: '5 Mei 2025',
-      location: 'Ruang Kelas',
-      category: EventCategory(
-        name: 'Announcements',
-        color: const Color(0xFFFF9800),
-      ),
-    ),
-    EventModel(
-      title: 'Kompetisi Olahraga\nAntar Sekolah',
-      time: '09:00 AM - 03:00 PM',
-      date: '12 Mei 2025',
-      location: 'Stadion Utama',
-      category: EventCategory(name: 'Sports', color: const Color(0xFF4CAF50)),
     ),
   ];
 

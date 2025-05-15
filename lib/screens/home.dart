@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'popup.dart';
 import '../layouts/layout.dart';
 import '../models/announcement.dart';
-import '../models/datadummy.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -27,22 +26,6 @@ class _HomePageState extends State<HomePage> {
       imageUrl: 'assets/akl.jpg',
       tag: 'Academic',
       tagColor: const Color(0xFF486087),
-    ),
-    EventBanner(
-      id: '2',
-      title: 'EKSIB',
-      subtitle: '17 Mei • Gedung Auditorium',
-      imageUrl: 'assets/rpl.jpg',
-      tag: 'Event',
-      tagColor: const Color(0xFFdfed90),
-    ),
-    EventBanner(
-      id: '3',
-      title: 'Workshop UI/UX Design',
-      subtitle: '18 Mei • Ruang Multimedia',
-      imageUrl: 'assets/akl.jpg',
-      tag: 'Events',
-      tagColor: const Color(0xFFdfed90),
     ),
     EventBanner(
       id: '4',

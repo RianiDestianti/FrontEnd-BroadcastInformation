@@ -82,7 +82,6 @@ class EventBanner {
 class EventCategory {
   final String name;
   final Color color;
-
   const EventCategory({required this.name, required this.color});
 }
 

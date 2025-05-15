@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'popup.dart';
 import '../layouts/layout.dart';
 import '../models/announcement.dart';
-import 'popup.dart';
+import '../models/datadummy.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -18,7 +19,6 @@ class _HomePageState extends State<HomePage> {
   List<Announcement> _filteredAnnouncements = [];
   int _currentBannerIndex = 0;
   final PageController _bannerController = PageController();
-
   final List<EventBanner> _eventBanners = [
     EventBanner(
       id: '1',
@@ -26,7 +26,7 @@ class _HomePageState extends State<HomePage> {
       subtitle: '20 April • Aula Fakultas',
       imageUrl: 'assets/akl.jpg',
       tag: 'Academic',
-      tagColor: const Color(0xFF9db7e0),
+      tagColor: const Color(0xFF486087),
     ),
     EventBanner(
       id: '2',
@@ -58,7 +58,7 @@ class _HomePageState extends State<HomePage> {
     Announcement(
       id: '1',
       tag: 'Academic',
-      tagColor: const Color(0xFF9db7e0),
+      tagColor: const Color(0xFF486087),
       timeAgo: '2h Ago',
       title: 'Jam Perpustakaan Diperpanjang Selama Ujian Akhir',
       description:
@@ -90,28 +90,32 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
   final List<CategoryData> _categories = [
     CategoryData(
       name: 'Announcements',
-      color: const Color(0xFFf08e79),
+      color: const Color(0xFFB35C40),
       icon: Icons.campaign,
     ),
     CategoryData(
       name: 'Academic',
-      color: const Color(0xFF9db7e0),
+      color: const Color(0xFF486087),
       icon: Icons.school,
     ),
     CategoryData(
       name: 'Events',
-      color: const Color(0xFFdfed90),
+      color: const Color(0xFF95822F),
       icon: Icons.event,
     ),
     CategoryData(
       name: 'News',
-      color: const Color(0xFF1665a5),
+      color: const Color(0xFF2C4E57),
       icon: Icons.newspaper,
     ),
-    CategoryData(name: 'Articles', color: Colors.purple, icon: Icons.article),
+    CategoryData(
+      name: 'Articles',
+      color: const Color(0xFF8A4C6D),
+      icon: Icons.article,
+    ),
     CategoryData(
       name: 'Calendar',
-      color: Colors.teal,
+      color: const Color(0xFF4A7B5B),
       icon: Icons.calendar_today,
     ),
   ];
@@ -526,12 +530,12 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
           _filterAnnouncements();
         });
       },
-      icon: Icon(Icons.close, size: 16, color: Colors.blue[800]),
+      icon: Icon(Icons.close, size: 16, color: Colors.grey[800]),
       label: Text(
         'Clear filter',
         style: GoogleFonts.poppins(
           fontSize: 13,
-          color: Colors.blue[800],
+          color: Colors.grey[800],
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -580,8 +584,7 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
             child: Text(
               _selectedCategory!,
               style: GoogleFonts.poppins(
-                color:
-                    _selectedCategory == 'News' ? Colors.white : Colors.black87,
+                color: Colors.white, // Semua kategori jadi putih
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),

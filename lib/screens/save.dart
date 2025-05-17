@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import '../layouts/layout.dart';
-import '../models/announcement.dart';
-import '../models/datadummy.dart';
 
 class SaveScreen extends StatefulWidget {
-  
   const SaveScreen({Key? key}) : super(key: key);
 
   @override
@@ -12,13 +9,33 @@ class SaveScreen extends StatefulWidget {
 }
 
 class _SaveScreenState extends State<SaveScreen> {
+  static const _padding = EdgeInsets.symmetric(horizontal: 20);
+  static const _cardBottomMargin = EdgeInsets.only(
+    bottom: 12,
+  ); // Diperkecil dari 16
+  static const _textPrimaryColor = Color(0xFF2D3142);
+  static const _textSecondaryColor = Color(0xFF9E9E9E);
+  static const _textTertiaryColor = Color(0xFF666666);
+  static const _backgroundColor = Colors.white;
+  static const _backgroundSecondaryColor = Color(0xFFF5F5F5);
+  static const _cardBackgroundColor = Color(
+    0xFFF8F8F8,
+  ); // Warna abu-abu muda untuk card
+  static const _shadowColor = Color(0x0D000000);
+  static const _bookmarkColor = Color(
+    0xFF9E9E9E,
+  ); // Warna abu-abu normal untuk icon bookmark
+
   final List<EventModel> _events = [
     EventModel(
       title: 'Jam Perpustakaan\nDiperpanjang Selama ...',
       time: '10:00 AM - 12:00 PM',
       date: '26 April 2025',
       location: 'Perpustakaan',
-      category: EventCategory(name: 'Academy', color: const Color(0xFF3D5AFE)),
+      category: EventCategory(
+        name: 'Academy',
+        color: const Color(0xFF486087),
+      ),
     ),
     EventModel(
       title: 'Upacara Bendera\nHari Senin',
@@ -27,7 +44,7 @@ class _SaveScreenState extends State<SaveScreen> {
       location: 'Lapangan Sekolah',
       category: EventCategory(
         name: 'Announcements',
-        color: const Color(0xFFFF5252),
+        color: const Color(0xFFB35C40),
       ),
     ),
     EventModel(
@@ -35,7 +52,7 @@ class _SaveScreenState extends State<SaveScreen> {
       time: '10:00 AM - 12:00 PM',
       date: '30 April 2025',
       location: 'Aula Tertutup',
-      category: EventCategory(name: 'News', color: const Color(0xFF00BFA5)),
+      category: EventCategory(name: 'News', color: const Color(0xFF2C4E57)),
     ),
     EventModel(
       title: 'Pembagian Rapor\nSemester Ganjil',
@@ -44,7 +61,7 @@ class _SaveScreenState extends State<SaveScreen> {
       location: 'Ruang Kelas',
       category: EventCategory(
         name: 'Announcements',
-        color: const Color(0xFFFF9800),
+        color: const Color(0xFFB35C40),
       ),
     ),
     EventModel(
@@ -52,13 +69,14 @@ class _SaveScreenState extends State<SaveScreen> {
       time: '09:00 AM - 03:00 PM',
       date: '12 Mei 2025',
       location: 'Stadion Utama',
-      category: EventCategory(name: 'Sports', color: const Color(0xFF4CAF50)),
+      category: EventCategory(name: 'Sports', color: const Color.fromARGB(255, 39, 95, 41)),
     ),
   ];
 
   void _toggleBookmark(int index) {
     setState(() {
       _events[index].isBookmarked = !_events[index].isBookmarked;
+
       if (!_events[index].isBookmarked) {
         final removedEvent = _events[index].title.split('\n')[0];
         _showBookmarkRemovedSnackBar(removedEvent);
@@ -104,21 +122,18 @@ class _SaveScreenState extends State<SaveScreen> {
     return MainLayout(
       selectedIndex: 1,
       child: Scaffold(
-        backgroundColor: AppColors.backgroundColor,
+        backgroundColor: _backgroundColor,
         body: SafeArea(
           child: Column(
             children: [
-              SavedItemsHeader(itemCount: _events.length),
-              SavedItemsSubtitle(),
+              _buildHeader(),
+              _buildSubtitle(),
               const SizedBox(height: 16),
               Expanded(
                 child:
                     _events.isEmpty
                         ? const EmptyStateWidget()
-                        : SavedEventsList(
-                          events: _events,
-                          onBookmarkToggle: _toggleBookmark,
-                        ),
+                        : _buildEventsList(),
               ),
             ],
           ),
@@ -126,14 +141,8 @@ class _SaveScreenState extends State<SaveScreen> {
       ),
     );
   }
-}
 
-class SavedItemsHeader extends StatelessWidget {
-  final int itemCount;
-  const SavedItemsHeader({Key? key, required this.itemCount}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
       child: Row(
@@ -145,22 +154,22 @@ class SavedItemsHeader extends StatelessWidget {
               fontSize: 24,
               fontWeight: FontWeight.bold,
               fontFamily: 'Poppins',
-              color: AppColors.textPrimaryColor,
+              color: _textPrimaryColor,
             ),
           ),
           Container(
             decoration: BoxDecoration(
-              color: AppColors.backgroundSecondaryColor,
+              color: _backgroundSecondaryColor,
               borderRadius: BorderRadius.circular(12),
             ),
             padding: const EdgeInsets.all(8),
             child: Text(
-              '$itemCount items',
+              '${_events.length} items',
               style: const TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: AppColors.textTertiaryColor,
+                color: _textTertiaryColor,
               ),
             ),
           ),
@@ -168,13 +177,8 @@ class SavedItemsHeader extends StatelessWidget {
       ),
     );
   }
-}
 
-class SavedItemsSubtitle extends StatelessWidget {
-  const SavedItemsSubtitle({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildSubtitle() {
     return const Padding(
       padding: EdgeInsets.symmetric(horizontal: 24),
       child: Align(
@@ -183,37 +187,27 @@ class SavedItemsSubtitle extends StatelessWidget {
           'Information you\'ve saved for later',
           style: TextStyle(
             fontSize: 14,
-            color: AppColors.textSecondaryColor,
+            color: _textSecondaryColor,
             fontFamily: 'Poppins',
           ),
         ),
       ),
     );
   }
-}
 
-class SavedEventsList extends StatelessWidget {
-  final List<EventModel> events;
-  final Function(int) onBookmarkToggle;
-
-  const SavedEventsList({
-    Key? key,
-    required this.events,
-    required this.onBookmarkToggle,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildEventsList() {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: events.length,
+      padding: _padding,
+      physics: const BouncingScrollPhysics(),
+      itemCount: _events.length,
       itemBuilder: (context, index) {
-        final event = events[index];
+        final event = _events[index];
         return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
+          padding: _cardBottomMargin,
           child: EventCard(
             event: event,
-            onBookmarkToggle: () => onBookmarkToggle(index),
+            onBookmarkToggle: () => _toggleBookmark(index),
+            bookmarkColor: _bookmarkColor, // Pass the bookmark color
           ),
         );
       },
@@ -224,6 +218,10 @@ class SavedEventsList extends StatelessWidget {
 class EmptyStateWidget extends StatelessWidget {
   const EmptyStateWidget({Key? key}) : super(key: key);
 
+  static const _textPrimaryColor = Color(0xFF2D3142);
+  static const _textSecondaryColor = Color(0xFF9E9E9E);
+  static const _backgroundSecondaryColor = Color(0xFFF5F5F5);
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -233,13 +231,13 @@ class EmptyStateWidget extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: const BoxDecoration(
-              color: AppColors.backgroundSecondaryColor,
+              color: _backgroundSecondaryColor,
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.bookmark_border,
               size: 64,
-              color: AppColors.textSecondaryColor,
+              color: _textSecondaryColor,
             ),
           ),
           const SizedBox(height: 24),
@@ -249,7 +247,7 @@ class EmptyStateWidget extends StatelessWidget {
               fontFamily: 'Poppins',
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: AppColors.textPrimaryColor,
+              color: _textPrimaryColor,
             ),
           ),
           const SizedBox(height: 8),
@@ -261,7 +259,7 @@ class EmptyStateWidget extends StatelessWidget {
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 14,
-                color: AppColors.textSecondaryColor,
+                color: _textSecondaryColor,
               ),
             ),
           ),
@@ -274,57 +272,57 @@ class EmptyStateWidget extends StatelessWidget {
 class EventCard extends StatelessWidget {
   final EventModel event;
   final VoidCallback onBookmarkToggle;
+  final Color bookmarkColor;
 
   const EventCard({
     Key? key,
     required this.event,
     required this.onBookmarkToggle,
+    required this.bookmarkColor,
   }) : super(key: key);
+
+  static const _textPrimaryColor = Color(0xFF2D3142);
+  static const _textTertiaryColor = Color(0xFF666666);
+  static const _iconColor = Color(0xFF9E9E9E);
+  static const _cardBackgroundColor = Color(
+    0xFFF8F8F8,
+  ); // Warna abu-abu muda untuk card
+  static const _shadowColor = Color(0x12000000);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: _cardBackgroundColor, // Menggunakan warna abu-abu untuk card
+        borderRadius: BorderRadius.circular(25), // Diperkecil dari 16
         boxShadow: const [
           BoxShadow(
-            color: AppColors.shadowColor,
+            color: _shadowColor,
             spreadRadius: 0,
-            blurRadius: 10,
-            offset: Offset(0, 4),
+            blurRadius: 6, // Diperkecil dari 8
+            offset: Offset(0, 2), // Diperkecil dari (0, 3)
           ),
         ],
       ),
       child: IntrinsicHeight(
         child: Row(
           children: [
-            CategoryColorIndicator(color: event.category.color),
+            _buildColorIndicator(),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(12), // Diperkecil dari 16
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CategoryBadge(category: event.category),
-                    const SizedBox(height: 12),
-                    EventTitleBookmark(
-                      title: event.title,
-                      color: event.category.color,
-                      isBookmarked: event.isBookmarked,
-                      onBookmarkToggle: onBookmarkToggle,
-                    ),
-                    const SizedBox(height: 14),
-                    EventInfoRow(
-                      icon: Icons.calendar_today_outlined,
-                      text: event.date,
-                    ),
-                    const SizedBox(height: 6),
-                    EventInfoRow(icon: Icons.access_time, text: event.time),
-                    const SizedBox(height: 6),
-                    EventInfoRow(
-                      icon: Icons.location_on_outlined,
-                      text: event.location,
+                    _buildCategoryAndHeader(),
+                    const SizedBox(height: 8), // Diperkecil dari 12
+                    _buildInfoRow(Icons.calendar_today_outlined, event.date),
+                    const SizedBox(height: 4), // Diperkecil dari 6
+                    _buildInfoRow(Icons.access_time, event.time),
+                    const SizedBox(height: 4), // Diperkecil dari 6
+                    _buildInfoRowWithBookmark(
+                      Icons.location_on_outlined,
+                      event.location,
                     ),
                   ],
                 ),
@@ -335,148 +333,80 @@ class EventCard extends StatelessWidget {
       ),
     );
   }
-}
 
-class CategoryColorIndicator extends StatelessWidget {
-  final Color color;
-  const CategoryColorIndicator({Key? key, required this.color})
-    : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildColorIndicator() {
     return Container(
-      width: 6,
+      width: 4, // Diperkecil dari 6
       decoration: BoxDecoration(
-        color: color,
+        color: event.category.color,
         borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          bottomLeft: Radius.circular(16),
+          topLeft: Radius.circular(12), // Diperkecil dari 16
+          bottomLeft: Radius.circular(12), // Diperkecil dari 16
         ),
       ),
     );
   }
-}
 
-class CategoryBadge extends StatelessWidget {
-  final EventCategory category;
-  const CategoryBadge({Key? key, required this.category}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: category.color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Text(
-        category.name,
-        style: TextStyle(
-          color: category.color,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          fontFamily: 'Poppins',
-        ),
-      ),
-    );
-  }
-}
-
-class EventTitleBookmark extends StatelessWidget {
-  final String title;
-  final Color color;
-  final bool isBookmarked;
-  final VoidCallback onBookmarkToggle;
-
-  const EventTitleBookmark({
-    Key? key,
-    required this.title,
-    required this.color,
-    required this.isBookmarked,
-    required this.onBookmarkToggle,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildCategoryAndHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Judul sekarang berada di row yang sama dengan category
         Expanded(
           child: Text(
-            title,
+            event.title,
             style: const TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: 14, // Diperkecil dari 16
               fontFamily: 'Poppins',
-              color: AppColors.textPrimaryColor,
+              color: _textPrimaryColor,
               height: 1.3,
             ),
           ),
         ),
-        BookmarkButton(
-          isBookmarked: isBookmarked,
-          color: color,
-          onToggle: onBookmarkToggle,
-        ),
+        const SizedBox(width: 8),
+        _buildCategoryBadge(),
       ],
     );
   }
-}
 
-class BookmarkButton extends StatelessWidget {
-  final bool isBookmarked;
-  final Color color;
-  final VoidCallback onToggle;
-
-  const BookmarkButton({
-    Key? key,
-    required this.isBookmarked,
-    required this.color,
-    required this.onToggle,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onToggle,
-      borderRadius: BorderRadius.circular(50),
-      child: Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          transitionBuilder: (Widget child, Animation<double> animation) {
-            return ScaleTransition(scale: animation, child: child);
-          },
-          child: Icon(
-            isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-            key: ValueKey<bool>(isBookmarked),
-            color: color,
-            size: 22,
-          ),
+  Widget _buildCategoryBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 8, // Diperkecil dari 10
+        vertical: 3, // Diperkecil dari 4
+      ),
+      decoration: BoxDecoration(
+        color: event.category.color,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: event.category.color, width: 1),
+      ),
+      child: Text(
+        event.category.name,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
         ),
       ),
     );
   }
-}
 
-class EventInfoRow extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  const EventInfoRow({Key? key, required this.icon, required this.text})
-    : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildInfoRow(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: AppColors.iconColor),
-        const SizedBox(width: 6),
+        Icon(
+          icon,
+          size: 12, // Diperkecil dari 14
+          color: _iconColor,
+        ),
+        const SizedBox(width: 4), // Diperkecil dari 6
         Text(
           text,
           style: const TextStyle(
-            color: AppColors.textTertiaryColor,
-            fontSize: 13,
+            color: _textTertiaryColor,
+            fontSize: 11, // Diperkecil dari 13
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w500,
           ),
@@ -484,14 +414,75 @@ class EventInfoRow extends StatelessWidget {
       ],
     );
   }
+
+  Widget _buildInfoRowWithBookmark(IconData icon, String text) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Icon(
+              icon,
+              size: 12, // Diperkecil dari 14
+              color: _iconColor,
+            ),
+            const SizedBox(width: 4), // Diperkecil dari 6
+            Text(
+              text,
+              style: const TextStyle(
+                color: _textTertiaryColor,
+                fontSize: 11, // Diperkecil dari 13
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        InkWell(
+          onTap: onBookmarkToggle,
+          borderRadius: BorderRadius.circular(50),
+          child: Padding(
+            padding: const EdgeInsets.all(2.0), // Diperkecil dari 4.0
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return ScaleTransition(scale: animation, child: child);
+              },
+              child: Icon(
+                event.isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                key: ValueKey<bool>(event.isBookmarked),
+                color: bookmarkColor, // Using the standard gray color
+                size: 18, // Diperkecil dari 22
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
-class AppColors {
-  static const textPrimaryColor = Color(0xFF2D3142);
-  static const textSecondaryColor = Color(0xFF9E9E9E);
-  static const textTertiaryColor = Color(0xFF666666);
-  static const backgroundColor = Colors.white;
-  static const backgroundSecondaryColor = Color(0xFFF5F5F5);
-  static const shadowColor = Color(0x0D000000);
-  static const iconColor = Color(0xFF9E9E9E);
+class EventCategory {
+  final String name;
+  final Color color;
+
+  const EventCategory({required this.name, required this.color});
+}
+
+class EventModel {
+  final String title;
+  final String time;
+  final String date;
+  final String location;
+  final EventCategory category;
+  bool isBookmarked;
+
+  EventModel({
+    required this.title,
+    required this.time,
+    required this.date,
+    required this.location,
+    required this.category,
+    this.isBookmarked = true,
+  });
 }

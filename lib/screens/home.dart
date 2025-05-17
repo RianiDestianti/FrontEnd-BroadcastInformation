@@ -213,10 +213,13 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final horizontalPadding = screenWidth * 0.08;
-    return MainLayout(
-      selectedIndex: 0,
+  final screenWidth = MediaQuery.of(context).size.width;
+  final horizontalPadding = screenWidth * 0.08;
+
+  return MainLayout(
+    selectedIndex: 0,
+    child: Container(
+      color: Colors.white, // Warna putih tulang
       child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(vertical: 20.0),
@@ -242,8 +245,9 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildHeader(double horizontalPadding) {
     final DateTime now = DateTime.now();
@@ -407,7 +411,7 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
               child: Text(
                 banner.tag,
                 style: GoogleFonts.poppins(
-                  color: isDarkTag ? Colors.white : Colors.black87,
+                  color: Colors.white,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -759,7 +763,7 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
               child: Text(
                 announcement.tag,
                 style: GoogleFonts.poppins(
-                  color: isDarkTag ? Colors.white : Colors.black87,
+                  color:  Colors.white,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),

@@ -51,9 +51,16 @@ class _CalendarPageState extends State<CalendarPage> {
   };
 
   @override
-  Widget build(BuildContext context) {
-    return MainLayout(selectedIndex: 2, child: _buildCalendarContent());
-  }
+Widget build(BuildContext context) {
+  return MainLayout(
+    selectedIndex: 2,
+    child: Container(
+      color: Colors.white, // Ubah background jadi putih
+      child: _buildCalendarContent(),
+    ),
+  );
+}
+
 
   Widget _buildCalendarContent() {
     return SafeArea(
@@ -140,26 +147,28 @@ class _CalendarPageState extends State<CalendarPage> {
 
 class CalendarContainer extends StatelessWidget {
   final Widget child;
-  const CalendarContainer({Key? key, required this.child}) : super(key: key);
+  final Color color;
+
+ const CalendarContainer({
+    Key? key,
+    required this.child,
+    this.color = const Color(0xFFF5F5F5), // default value
+  }) : super(key: key); // tambahkan super(key)
+
+
   @override
   Widget build(BuildContext context) {
     return Container(
+      padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(12.0),
+        color: color,
       ),
-      padding: const EdgeInsets.all(20.0),
       child: child,
     );
   }
 }
+
 
 class MonthNavigation extends StatelessWidget {
   final DateTime selectedDate;

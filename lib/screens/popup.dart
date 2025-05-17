@@ -8,21 +8,29 @@ class AnnouncementDetailPopup extends StatelessWidget {
     : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return PopupContainer(
-      child: Stack(
-        children: [
-          AnnouncementContent(announcement: announcement),
-          CloseButtonWidget(),
-        ],
-      ),
-    );
-  }
+ Widget build(BuildContext context) {
+  return PopupContainer(
+    color: Colors.white, 
+    child: Stack(
+      children: [
+        AnnouncementContent(announcement: announcement),
+        CloseButtonWidget(),
+      ],
+    ),
+  );
+}
+
 }
 
 class PopupContainer extends StatelessWidget {
   final Widget child;
-  const PopupContainer({Key? key, required this.child}) : super(key: key);
+  final Color color;
+
+  const PopupContainer({
+    Key? key,
+    required this.child,
+    this.color = Colors.white, 
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

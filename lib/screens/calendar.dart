@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../layouts/layout.dart';
 import '../models/announcement.dart';
 
@@ -12,55 +14,73 @@ class CalendarPage extends StatefulWidget {
 
 class _CalendarPageState extends State<CalendarPage> {
   DateTime _selectedDate = DateTime.now();
-  final List<Event> _dummyEvents = [
-    Event(
-      id: '1',
-      title: 'Jam Perpustakaan Diperpanjang',
-      description: 'Selama Ujian Akhir',
-      category: 'Academic',
-      color: const Color(0xFF9db7e0),
-    ),
-    Event(
-      id: '2',
-      title: 'Guest Speaker: Kak Adit Santoso',
-      description: 'Workshop UI/UX Design',
-      category: 'Events',
-      color: const Color(0xFFdfed90),
-    ),
-    Event(
-      id: '3',
-      title: 'Update Fasilitas Kampus',
-      description: 'Renovasi Lab Komputer',
-      category: 'News',
-      color: const Color(0xFF1665a5),
-    ),
-    Event(
-      id: '4',
-      title: 'Jam Perpustakaan Diperpanjang',
-      description: 'Selama Periode Ujian Tengah Semester',
-      category: 'Academic',
-      color: const Color(0xFF9db7e0),
-    ),
-  ];
+  List<InformasiEvent> _events = [];
+  bool _isLoading = true;
 
   final Map<String, Color> _categoryColors = {
     'Academic': const Color(0xFF9db7e0),
     'Events': const Color(0xFFdfed90),
     'News': const Color(0xFF1665a5),
     'Announcements': const Color(0xFFf08e79),
+    'General': const Color(0xFF9db7e0), // Default color
   };
 
   @override
-Widget build(BuildContext context) {
-  return MainLayout(
-    selectedIndex: 2,
-    child: Container(
-      color: Colors.white, // Ubah background jadi putih
-      child: _buildCalendarContent(),
-    ),
-  );
-}
+  void initState() {
+    super.initState();
+    _fetchInformasi();
+  }
 
+  Future<void> _fetchInformasi() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:8000/api/informasi'),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          _events = data.map((item) => InformasiEvent.fromJson(item)).toList();
+          _isLoading = false;
+        });
+      } else {
+        print('Failed to load data: ${response.statusCode}');
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching data: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MainLayout(
+      selectedIndex: 2,
+      child: Container(
+        color: Colors.white,
+        child: _isLoading ? _buildLoadingWidget() : _buildCalendarContent(),
+      ),
+    );
+  }
+
+  Widget _buildLoadingWidget() {
+    return const Center(
+      child: CircularProgressIndicator(color: Color(0xFF57B4BA)),
+    );
+  }
 
   Widget _buildCalendarContent() {
     return SafeArea(
@@ -85,6 +105,7 @@ Widget build(BuildContext context) {
                     Expanded(
                       child: CalendarGrid(
                         selectedDate: _selectedDate,
+                        events: _events,
                         categoryColors: _categoryColors,
                         onDayTap: _showEventPopup,
                       ),
@@ -114,21 +135,10 @@ Widget build(BuildContext context) {
   }
 
   void _showEventPopup(BuildContext context, DateTime date) {
-    List<Event> eventsForDay = [];
-
-    int day = date.day;
-    if (day == 5) {
-      eventsForDay.add(_dummyEvents[0]);
-    } else if (day == 10) {
-      eventsForDay.add(_dummyEvents[1]);
-    } else if (day == 13) {
-      eventsForDay.add(_dummyEvents[3]);
-    } else if (day == 21) {
-      eventsForDay.add(_dummyEvents[2]);
-    }
+    List<InformasiEvent> eventsForDay = _getEventsForDate(date);
 
     if (eventsForDay.isEmpty) {
-      eventsForDay.add(_dummyEvents[0]);
+      return;
     }
 
     showDialog(
@@ -143,18 +153,114 @@ Widget build(BuildContext context) {
       },
     );
   }
+
+  List<InformasiEvent> _getEventsForDate(DateTime date) {
+    return _events.where((event) {
+      return _isDateInRange(date, event.tanggalMulai, event.tanggalSelesai);
+    }).toList();
+  }
+
+  bool _isDateInRange(DateTime date, DateTime startDate, DateTime endDate) {
+    final dateOnly = DateTime(date.year, date.month, date.day);
+    final startOnly = DateTime(startDate.year, startDate.month, startDate.day);
+    final endOnly = DateTime(endDate.year, endDate.month, endDate.day);
+
+    return dateOnly.isAtSameMomentAs(startOnly) ||
+        dateOnly.isAtSameMomentAs(endOnly) ||
+        (dateOnly.isAfter(startOnly) && dateOnly.isBefore(endOnly));
+  }
+}
+
+// Data model for API response
+class InformasiEvent {
+  final int id;
+  final String judul;
+  final String deskripsi;
+  final DateTime tanggalMulai;
+  final DateTime tanggalSelesai;
+  final String thumbnail;
+  final String kategori;
+  final String operator;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  InformasiEvent({
+    required this.id,
+    required this.judul,
+    required this.deskripsi,
+    required this.tanggalMulai,
+    required this.tanggalSelesai,
+    required this.thumbnail,
+    required this.kategori,
+    required this.operator,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory InformasiEvent.fromJson(Map<String, dynamic> json) {
+    return InformasiEvent(
+      id: json['IDInformasi'] ?? 0,
+      judul: json['Judul'] ?? '',
+      deskripsi: json['Deskripsi'] ?? '',
+      tanggalMulai: DateTime.parse(
+        json['TanggalMulai'] ?? DateTime.now().toString(),
+      ),
+      tanggalSelesai: DateTime.parse(
+        json['TanggalSelesai'] ?? DateTime.now().toString(),
+      ),
+      thumbnail: json['Thumbnail'] ?? '',
+      kategori: _mapKategoriToCategory(json['IDKategoriInformasi']),
+      operator: json['IDOperator']?.toString() ?? '',
+      createdAt: DateTime.parse(
+        json['created_at'] ?? DateTime.now().toString(),
+      ),
+      updatedAt: DateTime.parse(
+        json['updated_at'] ?? DateTime.now().toString(),
+      ),
+    );
+  }
+
+  static String _mapKategoriToCategory(dynamic kategoriId) {
+    // Map kategori ID to readable categories
+    switch (kategoriId?.toString()) {
+      case '1':
+        return 'Academic';
+      case '2':
+        return 'Events';
+      case '3':
+        return 'News';
+      case '4':
+        return 'Announcements';
+      default:
+        return 'General';
+    }
+  }
+
+  Color get categoryColor {
+    switch (kategori) {
+      case 'Academic':
+        return const Color(0xFF9db7e0);
+      case 'Events':
+        return const Color(0xFFdfed90);
+      case 'News':
+        return const Color(0xFF1665a5);
+      case 'Announcements':
+        return const Color(0xFFf08e79);
+      default:
+        return const Color(0xFF9db7e0);
+    }
+  }
 }
 
 class CalendarContainer extends StatelessWidget {
   final Widget child;
   final Color color;
 
- const CalendarContainer({
+  const CalendarContainer({
     Key? key,
     required this.child,
-    this.color = const Color(0xFFF5F5F5), // default value
-  }) : super(key: key); // tambahkan super(key)
-
+    this.color = const Color(0xFFF5F5F5),
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -168,7 +274,6 @@ class CalendarContainer extends StatelessWidget {
     );
   }
 }
-
 
 class MonthNavigation extends StatelessWidget {
   final DateTime selectedDate;
@@ -257,7 +362,7 @@ class NavigationButton extends StatelessWidget {
 
 class WeekdayHeaders extends StatelessWidget {
   const WeekdayHeaders({Key? key}) : super(key: key);
-  
+
   @override
   Widget build(BuildContext context) {
     final weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -286,12 +391,14 @@ class WeekdayHeaders extends StatelessWidget {
 
 class CalendarGrid extends StatelessWidget {
   final DateTime selectedDate;
+  final List<InformasiEvent> events;
   final Map<String, Color> categoryColors;
   final Function(BuildContext, DateTime) onDayTap;
 
   const CalendarGrid({
     Key? key,
     required this.selectedDate,
+    required this.events,
     required this.categoryColors,
     required this.onDayTap,
   }) : super(key: key);
@@ -328,46 +435,47 @@ class CalendarGrid extends StatelessWidget {
           dayNumber,
         );
 
-        bool hasEvents =
-            dayNumber == 5 ||
-            dayNumber == 10 ||
-            dayNumber == 13 ||
-            dayNumber == 21;
+        final eventsForDay = _getEventsForDate(currentDate);
+        final hasEvents = eventsForDay.isNotEmpty;
 
         return CalendarDay(
           date: currentDate,
           hasEvents: hasEvents,
-          categoryColor: hasEvents ? _getCategoryColorForDay(dayNumber) : null,
+          events: eventsForDay,
           onTap: hasEvents ? () => onDayTap(context, currentDate) : null,
         );
       },
     );
   }
 
-  Color _getCategoryColorForDay(int day) {
-    if (day == 5 || day == 13) {
-      return categoryColors['Academic']!;
-    } else if (day == 10) {
-      return categoryColors['Events']!;
-    } else if (day == 21) {
-      return categoryColors['News']!;
-    } else {
-      return categoryColors['Announcements']!;
-    }
+  List<InformasiEvent> _getEventsForDate(DateTime date) {
+    return events.where((event) {
+      return _isDateInRange(date, event.tanggalMulai, event.tanggalSelesai);
+    }).toList();
+  }
+
+  bool _isDateInRange(DateTime date, DateTime startDate, DateTime endDate) {
+    final dateOnly = DateTime(date.year, date.month, date.day);
+    final startOnly = DateTime(startDate.year, startDate.month, startDate.day);
+    final endOnly = DateTime(endDate.year, endDate.month, endDate.day);
+
+    return dateOnly.isAtSameMomentAs(startOnly) ||
+        dateOnly.isAtSameMomentAs(endOnly) ||
+        (dateOnly.isAfter(startOnly) && dateOnly.isBefore(endOnly));
   }
 }
 
 class CalendarDay extends StatelessWidget {
   final DateTime date;
   final bool hasEvents;
-  final Color? categoryColor;
+  final List<InformasiEvent> events;
   final VoidCallback? onTap;
 
   const CalendarDay({
     Key? key,
     required this.date,
     this.hasEvents = false,
-    this.categoryColor,
+    required this.events,
     this.onTap,
   }) : super(key: key);
 
@@ -412,22 +520,23 @@ class CalendarDay extends StatelessWidget {
               ),
             ),
           ),
-          if (hasEvents && categoryColor != null)
+          if (hasEvents)
             Positioned(
               bottom: 0,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                    decoration: BoxDecoration(
-                      color: categoryColor,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ],
+                children:
+                    events.take(3).map((event) {
+                      return Container(
+                        width: 6,
+                        height: 6,
+                        margin: const EdgeInsets.symmetric(horizontal: 1),
+                        decoration: BoxDecoration(
+                          color: event.categoryColor,
+                          shape: BoxShape.circle,
+                        ),
+                      );
+                    }).toList(),
               ),
             ),
         ],
@@ -440,6 +549,7 @@ class CategoryLegend extends StatelessWidget {
   final Map<String, Color> categoryColors;
   const CategoryLegend({Key? key, required this.categoryColors})
     : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -476,14 +586,15 @@ class CategoryLegend extends StatelessWidget {
 
 class CalendarEventPopup extends StatelessWidget {
   final DateTime date;
-  final List<Event> events;
+  final List<InformasiEvent> events;
   const CalendarEventPopup({Key? key, required this.date, required this.events})
     : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.5,
+        maxHeight: MediaQuery.of(context).size.height * 0.6,
         maxWidth: MediaQuery.of(context).size.width * 0.85,
       ),
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
@@ -505,6 +616,7 @@ class CalendarEventPopup extends StatelessWidget {
 class DateHeader extends StatelessWidget {
   final DateTime date;
   const DateHeader({Key? key, required this.date}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -526,8 +638,9 @@ class DateHeader extends StatelessWidget {
 }
 
 class EventList extends StatelessWidget {
-  final List<Event> events;
+  final List<InformasiEvent> events;
   const EventList({Key? key, required this.events}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
@@ -544,33 +657,45 @@ class EventList extends StatelessWidget {
 }
 
 class EventCard extends StatelessWidget {
-  final Event event;
+  final InformasiEvent event;
   const EventCard({Key? key, required this.event}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CategoryTag(category: event.category, color: event.color),
+        CategoryTag(category: event.kategori, color: event.categoryColor),
         const SizedBox(height: 10),
         Text(
-          event.title,
+          event.judul,
           style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 5),
         Text(
-          event.description,
+          event.deskripsi,
           style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[800]),
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Period: ${DateFormat('d MMM').format(event.tanggalMulai)} - ${DateFormat('d MMM yyyy').format(event.tanggalSelesai)}',
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            color: Colors.grey[600],
+            fontStyle: FontStyle.italic,
+          ),
         ),
         const SizedBox(height: 6),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
             onPressed: () {
-              print('View details for event ${event.id}');
+              _showDetailDialog(context, event);
             },
             child: Text(
-              'Lihat deskripsi →',
+              'Lihat detail →',
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 color: const Color(0xFF57B4BA),
@@ -582,6 +707,67 @@ class EventCard extends StatelessWidget {
       ],
     );
   }
+
+  void _showDetailDialog(BuildContext context, InformasiEvent event) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: Text(
+            event.judul,
+            style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CategoryTag(
+                  category: event.kategori,
+                  color: event.categoryColor,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Description:',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(event.deskripsi, style: GoogleFonts.poppins(fontSize: 14)),
+                const SizedBox(height: 12),
+                Text(
+                  'Period:',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${DateFormat('d MMMM yyyy').format(event.tanggalMulai)} - ${DateFormat('d MMMM yyyy').format(event.tanggalSelesai)}',
+                  style: GoogleFonts.poppins(fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Close',
+                style: GoogleFonts.poppins(color: const Color(0xFF57B4BA)),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
 
 class CategoryTag extends StatelessWidget {
@@ -589,6 +775,7 @@ class CategoryTag extends StatelessWidget {
   final Color color;
   const CategoryTag({Key? key, required this.category, required this.color})
     : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -611,6 +798,7 @@ class CategoryTag extends StatelessWidget {
 
 class CloseButton extends StatelessWidget {
   const CloseButton({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Center(

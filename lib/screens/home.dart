@@ -3,7 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'popup.dart';
 import '../layouts/layout.dart';
 import '../models/announcement.dart';
-import '../models/datadummy.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -26,7 +27,7 @@ class _HomePageState extends State<HomePage> {
       subtitle: '20 April • Aula Fakultas',
       imageUrl: 'assets/akl.jpg',
       tag: 'Academic',
-      tagColor: const Color(0xFF486087),
+      tagColor: const Color.fromARGB(255, 4, 9, 18),
     ),
     EventBanner(
       id: '2',
@@ -54,38 +55,8 @@ class _HomePageState extends State<HomePage> {
     ),
   ];
 
-  final List<Announcement> _allAnnouncements = [
-    Announcement(
-      id: '1',
-      tag: 'Academic',
-      tagColor: const Color(0xFF486087),
-      timeAgo: '2h Ago',
-      title: 'Jam Perpustakaan Diperpanjang Selama Ujian Akhir',
-      description:
-          'Perpustakaan utama akan memperpanjang jam operasionalnya dari pukul 8 pagi hingga pukul 2 pagi mulai tanggal 10 Mei hingga akhir...',
-      fullContent: '''
-📍 Lokasi: Perpustakaan Utama
-📅 Periode Berlaku: Mulai 10 Mei hingga akhir bulan Mei 2025
-🕗 Jam Operasional Baru: 08.00 pagi (setiap hari)
-
-⚡Keterangan Tambahan:
-• Perpanjangan jam ini bertujuan untuk memberikan waktu lebih luas bagi mahasiswa dan pengunjung dalam mengakses layanan perpustakaan, terutama menjelang masa ujian.
-• Seluruh fasilitas seperti ruang baca, komputer umum, dan layanan peminjaman tetap tersedia selama jam operasional baru.
-• Harap tetap menjaga ketertiban dan kebersihan selama menggunakan fasilitas perpustakaan.
-
-📌 Catatan Penting:
-• Layanan peminjaman dan pengembalian buku terakhir dibuka hingga pukul 22.00 WIB
-• Area perpustakaan akan ditutup tepat pukul 02.00 WIB
-• Pengunjung wajib menunjukkan kartu anggota perpustakaan atau identitas kampus saat masuk di jam malam
-
-Tetap semangat belajar, manfaatkan waktu dengan bijak!
-Untuk informasi lebih lanjut, hubungi petugas perpustakaan
-      ''',
-      department: 'Dari: Layanan Perpustakaan',
-    ),
-    // Rest of announcements from original code...
-    // (Keep all the existing announcements)
-  ];
+  List<Announcement> _allAnnouncements = [];
+  bool _isLoading = true;
 
   final List<CategoryData> _categories = [
     CategoryData(
@@ -126,6 +97,150 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
     _filteredAnnouncements = List.from(_allAnnouncements);
     _searchController.addListener(_filterAnnouncements);
     _setupBannerTimer();
+    _fetchInformasi();
+  }
+
+  Future<void> _fetchInformasi() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:8000/api/informasi'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+
+        setState(() {
+          _allAnnouncements =
+              data.map((item) => _mapApiToAnnouncement(item)).toList();
+          _filteredAnnouncements = List.from(_allAnnouncements);
+          _isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load informasi');
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      print('Error fetching informasi: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to load data: $e')));
+      }
+    }
+  }
+
+  Announcement _mapApiToAnnouncement(Map<String, dynamic> apiData) {
+    // Map kategori to appropriate tag and color
+    String tag = 'Announcements';
+    Color tagColor = const Color(0xFFB35C40);
+
+    // You can customize this mapping based on your kategori data
+    if (apiData['IDKategoriInformasi'] != null) {
+      switch (apiData['IDKategoriInformasi'].toString()) {
+        case '1':
+          tag = 'Academic';
+          tagColor = const Color(0xFF486087);
+          break;
+        case '2':
+          tag = 'Events';
+          tagColor = const Color(0xFF95822F);
+          break;
+        case '3':
+          tag = 'News';
+          tagColor = const Color(0xFF2C4E57);
+          break;
+        default:
+          tag = 'Announcements';
+          tagColor = const Color(0xFFB35C40);
+      }
+    }
+
+    String timeAgo = _calculateTimeAgo(apiData['created_at']);
+
+    return Announcement(
+      id: apiData['IDInformasi'].toString(),
+      tag: tag,
+      tagColor: tagColor,
+      timeAgo: timeAgo,
+      title: apiData['Judul'] ?? 'No Title',
+      description: apiData['Deskripsi'] ?? 'No Description',
+      fullContent: apiData['Deskripsi'] ?? 'No Content',
+      department: 'Dari: ${apiData['IDOperator'] ?? 'Unknown Department'}',
+    );
+  }
+
+  String _calculateTimeAgo(String? dateString) {
+    if (dateString == null) return 'Unknown';
+
+    try {
+      DateTime date = DateTime.parse(dateString);
+      Duration difference = DateTime.now().difference(date);
+
+      if (difference.inDays > 0) {
+        return '${difference.inDays}d ago';
+      } else if (difference.inHours > 0) {
+        return '${difference.inHours}h ago';
+      } else if (difference.inMinutes > 0) {
+        return '${difference.inMinutes}m ago';
+      } else {
+        return 'Just now';
+      }
+    } catch (e) {
+      return 'Unknown';
+    }
+  }
+
+  Widget _buildAnnouncementsList(double horizontalPadding) {
+    if (_isLoading) {
+      return Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding,
+          vertical: 30,
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_filteredAnnouncements.isEmpty) {
+      return _buildEmptyState(horizontalPadding);
+    }
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _filteredAnnouncements.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 16),
+      itemBuilder: (context, index) {
+        final announcement = _filteredAnnouncements[index];
+        return _buildAnnouncementCard(
+          context: context,
+          announcement: announcement,
+          horizontalPadding: horizontalPadding,
+          onTap: () => _showAnnouncementDetail(context, announcement),
+        );
+      },
+    );
+  }
+
+  Widget _buildAnnouncementsSection(double horizontalPadding) {
+    return RefreshIndicator(
+      onRefresh: _fetchInformasi,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildAnnouncementsHeader(horizontalPadding),
+          const SizedBox(height: 16),
+          _buildAnnouncementsList(horizontalPadding),
+        ],
+      ),
+    );
   }
 
   void _setupBannerTimer() {
@@ -213,41 +328,41 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
 
   @override
   Widget build(BuildContext context) {
-  final screenWidth = MediaQuery.of(context).size.width;
-  final horizontalPadding = screenWidth * 0.08;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final horizontalPadding = screenWidth * 0.08;
 
-  return MainLayout(
-    selectedIndex: 0,
-    child: Container(
-      color: Colors.white, // Warna putih tulang
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 20.0),
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(horizontalPadding),
-              const SizedBox(height: 16),
-              _buildSearchBar(horizontalPadding),
-              const SizedBox(height: 24),
-              _buildBannerSection(horizontalPadding),
-              const SizedBox(height: 30),
-              _buildCategorySectionHeader(horizontalPadding),
-              const SizedBox(height: 16),
-              _buildCategoriesScrollView(horizontalPadding),
-              const SizedBox(height: 30),
-              _buildAnnouncementsHeader(horizontalPadding),
-              const SizedBox(height: 16),
-              _buildAnnouncementsList(horizontalPadding),
-              const SizedBox(height: 24),
-            ],
+    return MainLayout(
+      selectedIndex: 0,
+      child: Container(
+        color: Colors.white,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(vertical: 20.0),
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(horizontalPadding),
+                const SizedBox(height: 16),
+                _buildSearchBar(horizontalPadding),
+                const SizedBox(height: 24),
+                _buildBannerSection(horizontalPadding),
+                const SizedBox(height: 30),
+                _buildCategorySectionHeader(horizontalPadding),
+                const SizedBox(height: 16),
+                _buildCategoriesScrollView(horizontalPadding),
+                const SizedBox(height: 30),
+                _buildAnnouncementsHeader(horizontalPadding),
+                const SizedBox(height: 16),
+                _buildAnnouncementsList(horizontalPadding),
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildHeader(double horizontalPadding) {
     final DateTime now = DateTime.now();
@@ -284,8 +399,6 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
             onPressed: () {
               setState(() {
                 _isDarkMode = !_isDarkMode;
-                // Here you would apply the theme change
-                // This would connect to a ThemeProvider in a real implementation
               });
             },
           ),
@@ -370,7 +483,6 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
   }
 
   Widget _buildBannerItem(EventBanner banner, double horizontalPadding) {
-    final bool isDarkTag = banner.tag == 'News';
     return Container(
       margin: EdgeInsets.symmetric(horizontal: horizontalPadding),
       decoration: BoxDecoration(
@@ -468,7 +580,7 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
               color: Colors.grey.withOpacity(0.15),
               spreadRadius: 2,
               blurRadius: 6,
-              offset: Offset(0, 3),
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -500,7 +612,7 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
             ),
             filled: true,
             fillColor: Colors.white,
-            contentPadding: EdgeInsets.symmetric(vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(vertical: 16),
           ),
         ),
       ),
@@ -588,7 +700,7 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
             child: Text(
               _selectedCategory!,
               style: GoogleFonts.poppins(
-                color: Colors.white, // Semua kategori jadi putih
+                color: Colors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
@@ -623,28 +735,6 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
       label: category.name,
       isSelected: isSelected,
       onTap: () => _selectCategory(category.name),
-    );
-  }
-
-  Widget _buildAnnouncementsList(double horizontalPadding) {
-    if (_filteredAnnouncements.isEmpty) {
-      return _buildEmptyState(horizontalPadding);
-    }
-
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: _filteredAnnouncements.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 16),
-      itemBuilder: (context, index) {
-        final announcement = _filteredAnnouncements[index];
-        return _buildAnnouncementCard(
-          context: context,
-          announcement: announcement,
-          horizontalPadding: horizontalPadding,
-          onTap: () => _showAnnouncementDetail(context, announcement),
-        );
-      },
     );
   }
 
@@ -690,8 +780,6 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
     required double horizontalPadding,
     required VoidCallback onTap,
   }) {
-    final bool isDarkTag = announcement.tag == 'News';
-
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       child: InkWell(
@@ -709,7 +797,7 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildAnnouncementCardHeader(announcement, isDarkTag),
+                _buildAnnouncementCardHeader(announcement),
                 const SizedBox(height: 12),
                 Text(
                   announcement.title,
@@ -745,10 +833,7 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
     );
   }
 
-  Widget _buildAnnouncementCardHeader(
-    Announcement announcement,
-    bool isDarkTag,
-  ) {
+  Widget _buildAnnouncementCardHeader(Announcement announcement) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -763,13 +848,12 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
               child: Text(
                 announcement.tag,
                 style: GoogleFonts.poppins(
-                  color:  Colors.white,
+                  color: Colors.white,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-
             const SizedBox(width: 10),
             Text(
               announcement.timeAgo,
@@ -781,6 +865,25 @@ Untuk informasi lebih lanjut, hubungi petugas perpustakaan
       ],
     );
   }
+}
+
+// EventBanner class definition
+class EventBanner {
+  final String id;
+  final String title;
+  final String subtitle;
+  final String imageUrl;
+  final String tag;
+  final Color tagColor;
+
+  EventBanner({
+    required this.id,
+    required this.title,
+    required this.subtitle,
+    required this.imageUrl,
+    required this.tag,
+    required this.tagColor,
+  });
 }
 
 class CategoryData {

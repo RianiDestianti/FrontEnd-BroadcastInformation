@@ -107,7 +107,7 @@ class TagLabel extends StatelessWidget {
 
 class HeaderImage extends StatelessWidget {
   const HeaderImage({Key? key}) : super(key: key);
-
+  
   @override
   Widget build(BuildContext context) {
     return ClipRRect(

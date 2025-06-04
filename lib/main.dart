@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'screens/home.dart';
+import 'screens/beranda.dart';
 import 'screens/login.dart';
 import 'screens/profile.dart';
-import 'screens/changepassword.dart';
-import 'screens/save.dart';
-import 'screens/calendar.dart';
+import 'screens/gantisandi.dart';
+import 'screens/simpan.dart';
+import 'screens/kalender.dart';
 import 'screens/splashscreen.dart';
 
 void main() {
@@ -56,7 +56,7 @@ class MyApp extends StatelessWidget {
       '/home': (context) => const HomePage(),
       '/login': (context) => const SignInPage(),
       '/profile': (context) => const ProfilePage(),
-      // '/save': (context) => const SaveScreen(),
+      '/save': (context) => const SaveScreen(),
       '/change-password': (context) => const ChangePasswordScreen(),
       '/calendar': (context) => CalendarPage(),
     };

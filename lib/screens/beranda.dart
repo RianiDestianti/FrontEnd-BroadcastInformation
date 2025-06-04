@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'popup.dart';
 import '../layouts/layout.dart';
-import '../models/announcement.dart';
+import '../models/model.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 

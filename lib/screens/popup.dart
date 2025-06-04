@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../models/announcement.dart';
+import '../models/model.dart';
 
 class AnnouncementDetailPopup extends StatelessWidget {
   final Announcement announcement;

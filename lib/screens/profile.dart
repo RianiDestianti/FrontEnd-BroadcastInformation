@@ -6,14 +6,6 @@ import 'changepass.dart';
 import '../models/model.dart';
 import '../constants/constant.dart';
 
-
-class AppTheme {
-  static const Color primaryColor = Color(0xFF57B4BA);
-  static const double horizontalPadding = 24.0;
-  static const double borderRadius = 16.0;
-  static const double defaultSpacing = 16.0;
-}
-
 class ProfilePage extends StatelessWidget {
   const ProfilePage({Key? key}) : super(key: key);
   static const UserProfile _userProfile = UserProfile(
@@ -62,7 +54,7 @@ class ProfileHeader extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppTheme.primaryColor.withOpacity(0.4), Colors.white],
+          colors: [AppThemeProfile.primaryColor.withOpacity(0.4), Colors.white],
         ),
       ),
       child: Column(
@@ -120,7 +112,11 @@ class ProfileAvatar extends StatelessWidget {
         child: CircleAvatar(
           radius: 50,
           backgroundColor: Color(0x3357B4BA),
-          child: Icon(Icons.person, size: 50, color: AppTheme.primaryColor),
+          child: Icon(
+            Icons.person,
+            size: 50,
+            color: AppThemeProfile.primaryColor,
+          ),
         ),
       ),
     );
@@ -148,19 +144,23 @@ class DepartmentBadge extends StatelessWidget {
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withOpacity(0.1),
+        color: AppThemeProfile.primaryColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.school, size: 16, color: AppTheme.primaryColor),
+          const Icon(
+            Icons.school,
+            size: 16,
+            color: AppThemeProfile.primaryColor,
+          ),
           const SizedBox(width: 6),
           Text(
             department,
             style: GoogleFonts.poppins(
               fontSize: 14,
-              color: AppTheme.primaryColor,
+              color: AppThemeProfile.primaryColor,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -172,11 +172,14 @@ class DepartmentBadge extends StatelessWidget {
 
 class PersonalInformationCard extends StatelessWidget {
   final UserProfile userProfile;
-  const PersonalInformationCard({Key? key, required this.userProfile}) : super(key: key);
+  const PersonalInformationCard({Key? key, required this.userProfile})
+    : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.horizontalPadding),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppThemeProfile.horizontalPadding,
+      ),
       child: CardContainer(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -221,16 +224,13 @@ class PersonalInformationCard extends StatelessWidget {
 class SectionTitle extends StatelessWidget {
   final String title;
   final IconData icon;
-  const SectionTitle({
-    Key? key,
-    required this.title,
-    required this.icon,
-  }) : super(key: key);
+  const SectionTitle({Key? key, required this.title, required this.icon})
+    : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: AppTheme.primaryColor),
+        Icon(icon, color: AppThemeProfile.primaryColor),
         const SizedBox(width: 10),
         Text(
           title,
@@ -262,10 +262,10 @@ class InfoRow extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withOpacity(0.1),
+              color: AppThemeProfile.primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, size: 20, color: AppTheme.primaryColor),
+            child: Icon(icon, size: 20, color: AppThemeProfile.primaryColor),
           ),
           const SizedBox(width: AppTheme.defaultSpacing),
           Expanded(
@@ -295,17 +295,21 @@ class ActionButtonsSection extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.horizontalPadding),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppThemeProfile.horizontalPadding,
+          ),
           child: ActionButton(
             onTap: () => _navigateToChangePassword(context),
             icon: Icons.lock_outline,
             label: 'Change Password',
-            color: Colors.green,
+            color: Color(0xFF50C2C9), 
           ),
         ),
         const SizedBox(height: AppTheme.defaultSpacing),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppTheme.horizontalPadding),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppThemeProfile.horizontalPadding,
+          ),
           child: ActionButton(
             onTap: () => _showLogoutDialog(context),
             icon: Icons.logout,
@@ -337,7 +341,9 @@ class AppFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppTheme.horizontalPadding),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppThemeProfile.horizontalPadding,
+      ),
       child: CardContainer(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20.0),
@@ -384,11 +390,8 @@ class AppFooter extends StatelessWidget {
 class LogoWithText extends StatelessWidget {
   final String assetPath;
   final String text;
-  const LogoWithText({
-    Key? key,
-    required this.assetPath,
-    required this.text,
-  }) : super(key: key);
+  const LogoWithText({Key? key, required this.assetPath, required this.text})
+    : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -407,9 +410,7 @@ class LogoWithText extends StatelessWidget {
               ),
             ],
           ),
-          child: ClipOval(
-            child: Image.asset(assetPath, fit: BoxFit.contain),
-          ),
+          child: ClipOval(child: Image.asset(assetPath, fit: BoxFit.contain)),
         ),
         const SizedBox(height: 8),
         Text(
@@ -430,7 +431,7 @@ class CardContainer extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+        borderRadius: BorderRadius.circular(AppThemeProfile.borderRadius),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -465,9 +466,11 @@ class ActionButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+          borderRadius: BorderRadius.circular(AppThemeProfile.borderRadius),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppTheme.defaultSpacing),
+            padding: const EdgeInsets.symmetric(
+              vertical: AppTheme.defaultSpacing,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -494,9 +497,7 @@ class LogoutDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20.0),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -578,9 +579,7 @@ class DialogLogoutButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.red,
         padding: const EdgeInsets.symmetric(vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       ),
       child: Text(
         'Logout',

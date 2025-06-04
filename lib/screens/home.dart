@@ -137,11 +137,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Announcement _mapApiToAnnouncement(Map<String, dynamic> apiData) {
-    // Map kategori to appropriate tag and color
     String tag = 'Announcements';
     Color tagColor = const Color(0xFFB35C40);
-
-    // You can customize this mapping based on your kategori data
     if (apiData['IDKategoriInformasi'] != null) {
       switch (apiData['IDKategoriInformasi'].toString()) {
         case '1':
@@ -867,7 +864,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// EventBanner class definition
 class EventBanner {
   final String id;
   final String title;

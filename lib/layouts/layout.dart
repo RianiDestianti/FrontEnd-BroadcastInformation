@@ -1,28 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/model.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Simple Navigation',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: const HomePage(),
-      routes: NavigationConfig.routes,
-    );
-  }
-}
-
-// ------------------- Screen Pages -------------------
-
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
   @override

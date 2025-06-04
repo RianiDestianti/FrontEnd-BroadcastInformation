@@ -1,37 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'home.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: _buildTheme(),
-      home: const SignInPage(),
-    );
-  }
-
-  ThemeData _buildTheme() {
-    return ThemeData(
-      primarySwatch: AppConstants.createMaterialColor(AppConstants.primaryColor),
-      textTheme: GoogleFonts.poppinsTextTheme(),
-      inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
-          borderSide: BorderSide.none,
-        ),
-        filled: true,
-        fillColor: Colors.grey[200],
-      ),
-    );
-  }
-}
+import '../constants/constant.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({Key? key}) : super(key: key);
@@ -342,38 +312,5 @@ class _SignInPageState extends State<SignInPage> {
         behavior: SnackBarBehavior.floating,
       ),
     );
-  }
-}
-
-class AppConstants {
-  static const Color primaryColor = Color(0xFF57B4BA);
-  static const double horizontalPadding = 24.0;
-  static const double spacingXL = 40.0;
-  static const double spacingL = 32.0;
-  static const double spacingM = 16.0;
-  static const double spacingS = 8.0;
-  static const double defaultBorderRadius = 8.0;
-  static const double inputBorderRadius = 20.0;
-  static const double buttonBorderRadius = 30.0;
-  static MaterialColor createMaterialColor(Color color) {
-    final strengths = <double>[.05];
-    final swatch = <int, Color>{};
-    final r = color.red, g = color.green, b = color.blue;
-
-    for (int i = 1; i < 10; i++) {
-      strengths.add(0.1 * i);
-    }
-
-    for (final strength in strengths) {
-      final double ds = 0.5 - strength;
-      swatch[(strength * 1000).round()] = Color.fromRGBO(
-        r + ((ds < 0 ? r : (255 - r)) * ds).round(),
-        g + ((ds < 0 ? g : (255 - g)) * ds).round(),
-        b + ((ds < 0 ? b : (255 - b)) * ds).round(),
-        1,
-      );
-    }
-
-    return MaterialColor(color.value, swatch);
   }
 }

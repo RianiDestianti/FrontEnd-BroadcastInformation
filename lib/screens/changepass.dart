@@ -1,39 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-void main() {
-  runApp(const MaterialApp(home: ChangePasswordScreen()));
-}
-
-class AppTheme {
-  static const Color primaryColor = Color(0xFF57B4BA);
-  static const Color backgroundColor = Colors.white;
-  static const Color textColor = Colors.black;
-  static const Color hintColor = Colors.black54;
-  static const Color borderColor = Colors.grey;
-  
-  static TextStyle get headingStyle => GoogleFonts.poppins(
-    fontSize: 28,
-    fontWeight: FontWeight.bold,
-    color: textColor,
-  );
-  
-  static TextStyle get subheadingStyle => GoogleFonts.poppins(
-    fontSize: 16,
-    color: hintColor,
-  );
-  
-  static TextStyle get labelStyle => GoogleFonts.poppins(
-    fontSize: 16,
-    fontWeight: FontWeight.w500,
-    color: Colors.black87,
-  );
-  
-  static TextStyle get buttonStyle => GoogleFonts.poppins(
-    fontSize: 16,
-    fontWeight: FontWeight.bold,
-  );
-}
+import '../constants/constant.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({Key? key}) : super(key: key);
@@ -91,7 +58,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppThemeChange.backgroundColor,
       appBar: CustomAppBar(onBack: () => Navigator.pop(context)),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -155,10 +122,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppThemeChange.backgroundColor,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: AppTheme.textColor),
+        icon: const Icon(Icons.arrow_back, color: AppThemeChange.textColor),
         onPressed: onBack,
       ),
     );
@@ -175,11 +142,11 @@ class ScreenHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Create New Password', style: AppTheme.headingStyle),
+        Text('Create New Password', style: AppThemeChange.headingStyle),
         const SizedBox(height: 8),
         Text(
           'Your new password must be different from previous used password',
-          style: AppTheme.subheadingStyle,
+          style: AppThemeChange.subheadingStyle,
         ),
       ],
     );
@@ -211,7 +178,7 @@ class CustomTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTheme.labelStyle),
+        Text(label, style: AppThemeChange.labelStyle),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
@@ -220,15 +187,15 @@ class CustomTextField extends StatelessWidget {
           validator: validator,
           decoration: InputDecoration(
             hintText: hintText,
-            hintStyle: GoogleFonts.poppins(color: AppTheme.hintColor),
-            border: _buildBorder(AppTheme.borderColor),
+            hintStyle: GoogleFonts.poppins(color: AppThemeChange.hintColor),
+            border: _buildBorder(AppThemeChange.borderColor),
             enabledBorder: _buildBorder(Colors.grey.shade300),
-            focusedBorder: _buildBorder(AppTheme.primaryColor),
+            focusedBorder: _buildBorder(AppThemeChange.primaryColor),
             errorBorder: _buildBorder(Colors.red),
             focusedErrorBorder: _buildBorder(Colors.red),
             contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             filled: true,
-            fillColor: AppTheme.backgroundColor,
+            fillColor: AppThemeChange.backgroundColor,
             suffixIcon: isPassword ? _buildSuffixIcon() : null,
           ),
         ),
@@ -247,7 +214,7 @@ class CustomTextField extends StatelessWidget {
     return IconButton(
       icon: Icon(
         isVisible ? Icons.visibility : Icons.visibility_off,
-        color: AppTheme.borderColor,
+        color: AppThemeChange.borderColor,
       ),
       onPressed: onToggleVisibility,
     );
@@ -274,14 +241,14 @@ class CustomButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.primaryColor,
-          foregroundColor: AppTheme.backgroundColor,
+          backgroundColor: AppThemeChange.primaryColor,
+          foregroundColor: AppThemeChange.backgroundColor,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
           padding: const EdgeInsets.symmetric(vertical: 12),
         ),
         child: isLoading
-            ? const CircularProgressIndicator(color: AppTheme.backgroundColor)
-            : Text(text, style: AppTheme.buttonStyle),
+            ? const CircularProgressIndicator(color: AppThemeChange.backgroundColor)
+            : Text(text, style: AppThemeChange.buttonStyle),
       ),
     );
   }
@@ -299,7 +266,7 @@ class SuccessDialog extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: AppTheme.backgroundColor,
+          color: AppThemeChange.backgroundColor,
           borderRadius: BorderRadius.circular(24),
           boxShadow: const [
             BoxShadow(
@@ -327,12 +294,12 @@ class SuccessDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withOpacity(0.1),
+        color: AppThemeChange.primaryColor.withOpacity(0.1),
         shape: BoxShape.circle,
       ),
       child: const Icon(
         Icons.check_circle_rounded,
-        color: AppTheme.primaryColor,
+        color: AppThemeChange.primaryColor,
         size: 75,
       ),
     );
@@ -346,14 +313,14 @@ class SuccessDialog extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: AppTheme.textColor,
+            color: AppThemeChange.textColor,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           'Your password has been changed successfully',
           textAlign: TextAlign.center,
-          style: AppTheme.subheadingStyle,
+          style: AppThemeChange.subheadingStyle,
         ),
       ],
     );

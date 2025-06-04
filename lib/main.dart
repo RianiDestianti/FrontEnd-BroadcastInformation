@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'screens/home.dart';
 import 'screens/login.dart';
 import 'screens/profile.dart';
-import 'screens/changepass.dart';
+import 'screens/gantisandi.dart';
 import 'screens/save.dart';
 import 'screens/calendar.dart';
 import 'screens/splash.dart';

@@ -75,3 +75,4 @@ class UserProfile {
     required this.department,
   });
 }
+

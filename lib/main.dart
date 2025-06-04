@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'screens/beranda.dart';
+import 'screens/home.dart';
 import 'screens/login.dart';
 import 'screens/profile.dart';
-import 'screens/gantisandi.dart';
-import 'screens/simpan.dart';
-import 'screens/kalender.dart';
-import 'screens/splashscreen.dart';
+import 'screens/changepass.dart';
+import 'screens/save.dart';
+import 'screens/calendar.dart';
+import 'screens/splash.dart';
 
 void main() {
   runApp(const MyApp());

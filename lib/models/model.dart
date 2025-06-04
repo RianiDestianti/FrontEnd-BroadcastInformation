@@ -1,5 +1,17 @@
 import 'package:flutter/material.dart';
 
+class NavigationItem {
+  final String label;
+  final IconData activeIcon;
+  final IconData inactiveIcon;
+
+  const NavigationItem({
+    required this.label,
+    required this.activeIcon,
+    required this.inactiveIcon,
+  });
+}
+
 class Announcement {
   final String id;
   final String tag;
@@ -24,61 +36,6 @@ class Announcement {
   });
 }
 
-class Event {
-  final String id;
-  final String title;
-  final String description;
-  final String category;
-  final Color color;
-
-  final String? location;
-  final DateTime? startTime;
-  final DateTime? endTime;
-
-  Event({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.category,
-    required this.color,
-    this.location,
-    this.startTime,
-    this.endTime,
-  });
-}
-
-class EventBanner {
-  final String id;
-  final String title;
-  final String subtitle;
-  final String imageUrl;
-  final String tag;
-  final Color tagColor;
-
-  EventBanner({
-    required this.id,
-    required this.title,
-    required this.subtitle,
-    required this.imageUrl,
-    required this.tag,
-    required this.tagColor,
-  });
-}
-
-// class Announcement {
-//   final String title;
-//   final String tag;
-//   final Color tagColor;
-//   final String fullContent;
-//
-//   Announcement({
-//     required this.title,
-//     required this.tag,
-//     required this.tagColor,
-//     required this.fullContent,
-//   });
-// }
-
 class EventCategory {
   final String name;
   final Color color;
@@ -100,5 +57,21 @@ class EventModel {
     required this.location,
     required this.category,
     this.isBookmarked = true,
+  });
+}
+
+class UserProfile {
+  final String name;
+  final String studentId;
+  final String role;
+  final String email;
+  final String department;
+
+  const UserProfile({
+    required this.name,
+    required this.studentId,
+    required this.role,
+    required this.email,
+    required this.department,
   });
 }

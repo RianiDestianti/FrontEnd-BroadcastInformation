@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'beranda.dart';
+import 'home.dart';
 
 void main() {
   runApp(const MyApp());
@@ -8,23 +8,22 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: _buildAppTheme(context),
+      theme: _buildTheme(),
       home: const SignInPage(),
     );
   }
 
-  ThemeData _buildAppTheme(BuildContext context) {
+  ThemeData _buildTheme() {
     return ThemeData(
-      primarySwatch: AppTheme.createMaterialColor(AppTheme.themeColor),
-      textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme),
+      primarySwatch: AppConstants.createMaterialColor(AppConstants.primaryColor),
+      textTheme: GoogleFonts.poppinsTextTheme(),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppTheme.defaultBorderRadius),
+          borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
           borderSide: BorderSide.none,
         ),
         filled: true,
@@ -34,8 +33,22 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class SignInPage extends StatelessWidget {
+class SignInPage extends StatefulWidget {
   const SignInPage({Key? key}) : super(key: key);
+  @override
+  State<SignInPage> createState() => _SignInPageState();
+}
+
+class _SignInPageState extends State<SignInPage> {
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isPasswordVisible = false;
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,28 +57,28 @@ class SignInPage extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: SignInLayout.horizontalPadding,
+            horizontal: AppConstants.horizontalPadding,
           ),
           child: Center(
             child: SingleChildScrollView(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: const [
-                  SizedBox(height: SignInLayout.verticalSpacingLarge),
-                  SignInHeader(),
-                  SizedBox(height: SignInLayout.verticalSpacingLarge),
-                  UsernameField(),
-                  SizedBox(height: SignInLayout.verticalSpacingMedium),
-                  PasswordField(),
-                  ForgotPasswordButton(),
-                  SizedBox(height: SignInLayout.verticalSpacingSmall),
-                  SignInButton(),
-                  SizedBox(height: SignInLayout.verticalSpacingMedium),
-                  GoogleSignInButton(),
-                  SizedBox(height: SignInLayout.verticalSpacingMedium),
-                  SignUpPrompt(),
-                  SizedBox(height: 20),
+                children: [
+                  const SizedBox(height: AppConstants.spacingXL),
+                  _buildHeader(),
+                  const SizedBox(height: AppConstants.spacingXL),
+                  _buildUsernameField(),
+                  const SizedBox(height: AppConstants.spacingM),
+                  _buildPasswordField(),
+                  _buildForgotPasswordButton(),
+                  const SizedBox(height: AppConstants.spacingS),
+                  _buildSignInButton(),
+                  const SizedBox(height: AppConstants.spacingM),
+                  _buildGoogleSignInButton(),
+                  const SizedBox(height: AppConstants.spacingM),
+                  _buildSignUpPrompt(),
+                  const SizedBox(height: AppConstants.spacingM),
                 ],
               ),
             ),
@@ -74,109 +87,115 @@ class SignInPage extends StatelessWidget {
       ),
     );
   }
-}
 
-class SignInHeader extends StatelessWidget {
-  const SignInHeader({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildHeader() {
     return Column(
       children: [
         Text(
           'Sign In',
           textAlign: TextAlign.center,
-          style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold),
+          style: _getTextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        const SizedBox(height: SignInLayout.verticalSpacingSmall),
+        const SizedBox(height: AppConstants.spacingS),
         Text(
           'Hi! Welcome back, you\'ve been missed',
           textAlign: TextAlign.center,
-          style: GoogleFonts.poppins(fontSize: 16, color: Colors.black54),
+          style: _getTextStyle(
+            fontSize: 16,
+            color: Colors.black54,
+          ),
         ),
       ],
     );
   }
-}
 
-class UsernameField extends StatelessWidget {
-  const UsernameField({Key? key}) : super(key: key);
+  Widget _buildUsernameField() {
+    return _buildInputField(
+      label: 'Username',
+      controller: _usernameController,
+      hintText: 'Enter your username',
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildPasswordField() {
+    return _buildInputField(
+      label: 'Password',
+      controller: _passwordController,
+      hintText: 'Enter your password',
+      isPassword: true,
+      obscureText: !_isPasswordVisible,
+      suffixIcon: IconButton(
+        icon: Icon(
+          _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+          color: Colors.grey,
+        ),
+        onPressed: () {
+          setState(() {
+            _isPasswordVisible = !_isPasswordVisible;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildInputField({
+    required String label,
+    required TextEditingController controller,
+    required String hintText,
+    bool isPassword = false,
+    bool obscureText = false,
+    Widget? suffixIcon,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Username',
-          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500),
+          label,
+          style: _getTextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
         ),
-        const SizedBox(height: SignInLayout.verticalSpacingSmall),
+        const SizedBox(height: AppConstants.spacingS),
         TextField(
-          decoration: InputDecorationStyles.standard('Enter your username'),
+          controller: controller,
+          obscureText: obscureText,
+          decoration: _getInputDecoration(hintText, suffixIcon),
         ),
       ],
     );
   }
-}
 
-class PasswordField extends StatelessWidget {
-  const PasswordField({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Password',
-          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: SignInLayout.verticalSpacingSmall),
-        TextField(
-          obscureText: true,
-          decoration: InputDecorationStyles.standard('Enter your password'),
-        ),
-      ],
-    );
-  }
-}
-
-class ForgotPasswordButton extends StatelessWidget {
-  const ForgotPasswordButton({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildForgotPasswordButton() {
     return Align(
       alignment: Alignment.centerRight,
       child: TextButton(
-        onPressed: () {},
+        onPressed: _handleForgotPassword,
         child: Text(
-          'forgot password?',
-          style: GoogleFonts.poppins(color: Colors.black),
+          'Forgot password?',
+          style: _getTextStyle(color: Colors.black),
         ),
       ),
     );
   }
-}
 
-class SignInButton extends StatelessWidget {
-  const SignInButton({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildSignInButton() {
     return ElevatedButton(
-      onPressed: () => _navigateToHome(context),
+      onPressed: _handleSignIn,
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppTheme.themeColor,
+        backgroundColor: AppConstants.primaryColor,
         padding: const EdgeInsets.symmetric(vertical: 12),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(SignInLayout.buttonBorderRadius),
+          borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius),
         ),
+        elevation: 0,
       ),
       child: Text(
         'Sign In',
-        style: GoogleFonts.poppins(
+        style: _getTextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
           color: Colors.white,
@@ -185,101 +204,176 @@ class SignInButton extends StatelessWidget {
     );
   }
 
-  void _navigateToHome(BuildContext context) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => HomePage()),
-    );
-  }
-}
-
-class GoogleSignInButton extends StatelessWidget {
-  const GoogleSignInButton({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildGoogleSignInButton() {
     return OutlinedButton.icon(
-      onPressed: () {},
-      icon: Image.asset('assets/google.png', height: 24, width: 24),
+      onPressed: _handleGoogleSignIn,
+      icon: Image.asset(
+        'assets/google.png',
+        height: 24,
+        width: 24,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(Icons.g_mobiledata, size: 24, color: Colors.red);
+        },
+      ),
       label: Text(
         'Sign in with Google',
-        style: GoogleFonts.poppins(color: Colors.black),
+        style: _getTextStyle(color: Colors.black),
       ),
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 12),
         side: const BorderSide(color: Colors.grey),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(SignInLayout.buttonBorderRadius),
+          borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius),
         ),
       ),
     );
   }
-}
 
-class SignUpPrompt extends StatelessWidget {
-  const SignUpPrompt({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildSignUpPrompt() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'Don\'t have account?',
-          style: GoogleFonts.poppins(color: Colors.black),
+          'Don\'t have an account? ',
+          style: _getTextStyle(color: Colors.black),
         ),
-        TextButton(
-          onPressed: () {},
+        GestureDetector(
+          onTap: _handleSignUp,
           child: Text(
             'Sign Up',
-            style: GoogleFonts.poppins(color: AppTheme.themeColor),
+            style: _getTextStyle(
+              color: AppConstants.primaryColor,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],
     );
   }
-}
 
-class AppTheme {
-  static const Color themeColor = Color(0xFF57B4BA);
-  static const double defaultBorderRadius = 8.0;
-  static MaterialColor createMaterialColor(Color color) {
-    return MaterialColor(color.value, <int, Color>{
-      50: color.withOpacity(0.1),
-      100: color.withOpacity(0.2),
-      200: color.withOpacity(0.3),
-      300: color.withOpacity(0.4),
-      400: color.withOpacity(0.5),
-      500: color.withOpacity(0.6),
-      600: color.withOpacity(0.7),
-      700: color.withOpacity(0.8),
-      800: color.withOpacity(0.9),
-      900: color.withOpacity(1.0),
-    });
+  TextStyle _getTextStyle({
+    double? fontSize,
+    FontWeight? fontWeight,
+    Color? color,
+  }) {
+    return GoogleFonts.poppins(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color,
+    );
   }
-}
 
-class SignInLayout {
-  static const double horizontalPadding = 24.0;
-  static const double verticalSpacingLarge = 40.0;
-  static const double verticalSpacingMedium = 16.0;
-  static const double verticalSpacingSmall = 8.0;
-  static const double inputBorderRadius = 20.0;
-  static const double buttonBorderRadius = 30.0;
-}
-
-class InputDecorationStyles {
-  static InputDecoration standard(String hintText) {
+  InputDecoration _getInputDecoration(String hintText, [Widget? suffixIcon]) {
     return InputDecoration(
       hintText: hintText,
-      hintStyle: GoogleFonts.poppins(),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      hintStyle: GoogleFonts.poppins(color: Colors.grey[600]),
+      suffixIcon: suffixIcon,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 16,
+      ),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(SignInLayout.inputBorderRadius),
-        borderSide: const BorderSide(color: Colors.grey),
+        borderRadius: BorderRadius.circular(AppConstants.inputBorderRadius),
+        borderSide: const BorderSide(color: Colors.grey, width: 1),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppConstants.inputBorderRadius),
+        borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppConstants.inputBorderRadius),
+        borderSide: const BorderSide(
+          color: AppConstants.primaryColor,
+          width: 2,
+        ),
       ),
       filled: true,
       fillColor: Colors.white,
     );
+  }
+
+  void _handleSignIn() {
+    if (_validateInputs()) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
+    }
+  }
+
+  void _handleGoogleSignIn() {
+    // TODO: Implement Google Sign In
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Google Sign In - Coming Soon!')),
+    );
+  }
+
+  void _handleForgotPassword() {
+    // TODO: Implement forgot password
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Forgot Password - Coming Soon!')),
+    );
+  }
+
+  void _handleSignUp() {
+    // TODO: Navigate to Sign Up page
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Sign Up - Coming Soon!')),
+    );
+  }
+
+  bool _validateInputs() {
+    if (_usernameController.text.trim().isEmpty) {
+      _showErrorSnackBar('Please enter your username');
+      return false;
+    }
+    if (_passwordController.text.trim().isEmpty) {
+      _showErrorSnackBar('Please enter your password');
+      return false;
+    }
+    return true;
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+}
+
+class AppConstants {
+  static const Color primaryColor = Color(0xFF57B4BA);
+  static const double horizontalPadding = 24.0;
+  static const double spacingXL = 40.0;
+  static const double spacingL = 32.0;
+  static const double spacingM = 16.0;
+  static const double spacingS = 8.0;
+  static const double defaultBorderRadius = 8.0;
+  static const double inputBorderRadius = 20.0;
+  static const double buttonBorderRadius = 30.0;
+  static MaterialColor createMaterialColor(Color color) {
+    final strengths = <double>[.05];
+    final swatch = <int, Color>{};
+    final r = color.red, g = color.green, b = color.blue;
+
+    for (int i = 1; i < 10; i++) {
+      strengths.add(0.1 * i);
+    }
+
+    for (final strength in strengths) {
+      final double ds = 0.5 - strength;
+      swatch[(strength * 1000).round()] = Color.fromRGBO(
+        r + ((ds < 0 ? r : (255 - r)) * ds).round(),
+        g + ((ds < 0 ? g : (255 - g)) * ds).round(),
+        b + ((ds < 0 ? b : (255 - b)) * ds).round(),
+        1,
+      );
+    }
+
+    return MaterialColor(color.value, swatch);
   }
 }

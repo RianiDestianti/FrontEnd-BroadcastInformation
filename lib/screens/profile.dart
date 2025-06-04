@@ -2,14 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../layouts/layout.dart';
 import 'login.dart';
-import 'gantisandi.dart';
+import 'changepass.dart';
+import '../models/model.dart';
+import '../constants/constant.dart';
+
+
+class AppTheme {
+  static const Color primaryColor = Color(0xFF57B4BA);
+  static const double horizontalPadding = 24.0;
+  static const double borderRadius = 16.0;
+  static const double defaultSpacing = 16.0;
+}
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({Key? key}) : super(key: key);
-
-  static const Color _themeColor = Color(0xFF57B4BA);
-  static const double _horizontalPadding = 24.0;
-  static const double _borderRadius = 16.0;
+  static const UserProfile _userProfile = UserProfile(
+    name: 'Elara Zafira',
+    studentId: '093264',
+    role: 'Siswa',
+    email: 'laraza@gmail.com',
+    department: 'Rekayasa Perangkat Lunak',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -21,15 +34,13 @@ class ProfilePage extends StatelessWidget {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                _buildProfileHeader(),
+                ProfileHeader(userProfile: _userProfile),
                 const SizedBox(height: 24),
-                _buildPersonalInformation(),
+                PersonalInformationCard(userProfile: _userProfile),
                 const SizedBox(height: 24),
-                _buildChangePasswordButton(context),
-                const SizedBox(height: 16),
-                _buildLogoutButton(context),
+                ActionButtonsSection(),
                 const SizedBox(height: 40),
-                _buildFooter(),
+                const AppFooter(),
                 const SizedBox(height: 30),
               ],
             ),
@@ -38,50 +49,60 @@ class ProfilePage extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildProfileHeader() {
+class ProfileHeader extends StatelessWidget {
+  final UserProfile userProfile;
+  const ProfileHeader({Key? key, required this.userProfile}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(top: 20, bottom: 30),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [_themeColor.withOpacity(0.4), Colors.white],
+          colors: [AppTheme.primaryColor.withOpacity(0.4), Colors.white],
         ),
       ),
       child: Column(
         children: [
-          _buildHeaderNavigation(),
+          const HeaderNavigation(),
           const SizedBox(height: 20),
-          _buildProfileAvatar(),
-          const SizedBox(height: 16),
-          _buildProfileName(),
-          _buildDepartmentBadge(),
+          const ProfileAvatar(),
+          const SizedBox(height: AppTheme.defaultSpacing),
+          ProfileName(name: userProfile.name),
+          DepartmentBadge(department: userProfile.department),
         ],
       ),
     );
   }
+}
 
-  Widget _buildHeaderNavigation() {
+class HeaderNavigation extends StatelessWidget {
+  const HeaderNavigation({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.defaultSpacing),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Builder(
-            builder:
-                (context) => IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black),
-                  onPressed: () => Navigator.pop(context),
-                ),
+          IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () => Navigator.pop(context),
           ),
           const SizedBox(width: 48),
         ],
       ),
     );
   }
+}
 
-  Widget _buildProfileAvatar() {
+class ProfileAvatar extends StatelessWidget {
+  const ProfileAvatar({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -98,38 +119,48 @@ class ProfilePage extends StatelessWidget {
         backgroundColor: Colors.white,
         child: CircleAvatar(
           radius: 50,
-          backgroundColor: Color(0x33_57B4BA),
-          child: Icon(Icons.person, size: 50, color: _themeColor),
+          backgroundColor: Color(0x3357B4BA),
+          child: Icon(Icons.person, size: 50, color: AppTheme.primaryColor),
         ),
       ),
     );
   }
+}
 
-  Widget _buildProfileName() {
+class ProfileName extends StatelessWidget {
+  final String name;
+  const ProfileName({Key? key, required this.name}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
     return Text(
-      'Elara Zafira',
+      name,
       style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold),
     );
   }
+}
 
-  Widget _buildDepartmentBadge() {
+class DepartmentBadge extends StatelessWidget {
+  final String department;
+  const DepartmentBadge({Key? key, required this.department}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: _themeColor.withOpacity(0.1),
+        color: AppTheme.primaryColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.school, size: 16, color: _themeColor),
+          const Icon(Icons.school, size: 16, color: AppTheme.primaryColor),
           const SizedBox(width: 6),
           Text(
-            'Rekayasa Perangkat Lunak',
+            department,
             style: GoogleFonts.poppins(
               fontSize: 14,
-              color: _themeColor,
+              color: AppTheme.primaryColor,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -137,35 +168,69 @@ class ProfilePage extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildPersonalInformation() {
+class PersonalInformationCard extends StatelessWidget {
+  final UserProfile userProfile;
+  const PersonalInformationCard({Key? key, required this.userProfile}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
-      child: _CardContainer(
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.horizontalPadding),
+      child: CardContainer(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionTitle('Personal Information', Icons.person_outline),
+              const SectionTitle(
+                title: 'Personal Information',
+                icon: Icons.person_outline,
+              ),
               const SizedBox(height: 8),
               const Divider(thickness: 1),
               const SizedBox(height: 8),
-              _buildInfoRow('Full Name', 'Elara Zafira', Icons.badge_outlined),
-              _buildInfoRow('Student ID', '093264', Icons.credit_card),
-              _buildInfoRow('Role', 'Siswa', Icons.school_outlined),
-              _buildInfoRow('Email', 'laraza@gmail.com', Icons.email_outlined),
+              InfoRow(
+                label: 'Full Name',
+                value: userProfile.name,
+                icon: Icons.badge_outlined,
+              ),
+              InfoRow(
+                label: 'Student ID',
+                value: userProfile.studentId,
+                icon: Icons.credit_card,
+              ),
+              InfoRow(
+                label: 'Role',
+                value: userProfile.role,
+                icon: Icons.school_outlined,
+              ),
+              InfoRow(
+                label: 'Email',
+                value: userProfile.email,
+                icon: Icons.email_outlined,
+              ),
             ],
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildSectionTitle(String title, IconData icon) {
+class SectionTitle extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  const SectionTitle({
+    Key? key,
+    required this.title,
+    required this.icon,
+  }) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: _themeColor),
+        Icon(icon, color: AppTheme.primaryColor),
         const SizedBox(width: 10),
         Text(
           title,
@@ -174,8 +239,22 @@ class ProfilePage extends StatelessWidget {
       ],
     );
   }
+}
 
-  Widget _buildInfoRow(String label, String value, IconData icon) {
+class InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const InfoRow({
+    Key? key,
+    required this.label,
+    required this.value,
+    required this.icon,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0),
       child: Row(
@@ -183,12 +262,12 @@ class ProfilePage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: _themeColor.withOpacity(0.1),
+              color: AppTheme.primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, size: 20, color: _themeColor),
+            child: Icon(icon, size: 20, color: AppTheme.primaryColor),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: AppTheme.defaultSpacing),
           Expanded(
             child: Text(
               label,
@@ -207,16 +286,34 @@ class ProfilePage extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildChangePasswordButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
-      child: _ActionButton(
-        onTap: () => _navigateToChangePassword(context),
-        icon: Icons.lock_outline,
-        label: 'Change Password',
-        color: Colors.green,
-      ),
+class ActionButtonsSection extends StatelessWidget {
+  const ActionButtonsSection({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.horizontalPadding),
+          child: ActionButton(
+            onTap: () => _navigateToChangePassword(context),
+            icon: Icons.lock_outline,
+            label: 'Change Password',
+            color: Colors.green,
+          ),
+        ),
+        const SizedBox(height: AppTheme.defaultSpacing),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.horizontalPadding),
+          child: ActionButton(
+            onTap: () => _showLogoutDialog(context),
+            icon: Icons.logout,
+            label: 'Logout',
+            color: Colors.red,
+          ),
+        ),
+      ],
     );
   }
 
@@ -227,22 +324,21 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildLogoutButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
-      child: _ActionButton(
-        onTap: () => _showLogoutDialog(context),
-        icon: Icons.logout,
-        label: 'Logout',
-        color: Colors.red,
-      ),
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => const LogoutDialog(),
     );
   }
+}
 
-  Widget _buildFooter() {
+class AppFooter extends StatelessWidget {
+  const AppFooter({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
-      child: _CardContainer(
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.horizontalPadding),
+      child: CardContainer(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20.0),
           child: Column(
@@ -254,16 +350,22 @@ class ProfilePage extends StatelessWidget {
                   color: Colors.grey[600],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.defaultSpacing),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildLogoWithText('assets/smkn.png', 'SMKN 11 Bandung'),
+                  const LogoWithText(
+                    assetPath: 'assets/smkn.png',
+                    text: 'SMKN 11 Bandung',
+                  ),
                   Container(height: 40, width: 1, color: Colors.grey[300]),
-                  _buildLogoWithText('assets/logo.png', 'EduInform'),
+                  const LogoWithText(
+                    assetPath: 'assets/logo.png',
+                    text: 'EduInform',
+                  ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.defaultSpacing),
               Text(
                 '© 2025 SMKN 11 Bandung',
                 style: GoogleFonts.poppins(
@@ -277,8 +379,18 @@ class ProfilePage extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildLogoWithText(String assetPath, String text) {
+class LogoWithText extends StatelessWidget {
+  final String assetPath;
+  final String text;
+  const LogoWithText({
+    Key? key,
+    required this.assetPath,
+    required this.text,
+  }) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: [
         Container(
@@ -295,7 +407,9 @@ class ProfilePage extends StatelessWidget {
               ),
             ],
           ),
-          child: ClipOval(child: Image.asset(assetPath, fit: BoxFit.contain)),
+          child: ClipOval(
+            child: Image.asset(assetPath, fit: BoxFit.contain),
+          ),
         ),
         const SizedBox(height: 8),
         Text(
@@ -305,27 +419,18 @@ class ProfilePage extends StatelessWidget {
       ],
     );
   }
-
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) => const _LogoutDialog(),
-    );
-  }
 }
 
-class _CardContainer extends StatelessWidget {
+class CardContainer extends StatelessWidget {
   final Widget child;
-
-  const _CardContainer({required this.child});
-
+  const CardContainer({Key? key, required this.child}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(ProfilePage._borderRadius),
+        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -339,29 +444,30 @@ class _CardContainer extends StatelessWidget {
   }
 }
 
-class _ActionButton extends StatelessWidget {
+class ActionButton extends StatelessWidget {
   final VoidCallback onTap;
   final IconData icon;
   final String label;
   final Color color;
 
-  const _ActionButton({
+  const ActionButton({
+    Key? key,
     required this.onTap,
     required this.icon,
     required this.label,
     required this.color,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return _CardContainer(
+    return CardContainer(
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(ProfilePage._borderRadius),
+          borderRadius: BorderRadius.circular(AppTheme.borderRadius),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            padding: const EdgeInsets.symmetric(vertical: AppTheme.defaultSpacing),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -383,20 +489,21 @@ class _ActionButton extends StatelessWidget {
   }
 }
 
-class _LogoutDialog extends StatelessWidget {
-  const _LogoutDialog();
-
+class LogoutDialog extends StatelessWidget {
+  const LogoutDialog({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.0),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppTheme.defaultSpacing),
               decoration: BoxDecoration(
                 color: Colors.red.withOpacity(0.1),
                 shape: BoxShape.circle,
@@ -411,7 +518,7 @@ class _LogoutDialog extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppTheme.defaultSpacing),
             Text(
               'Are you sure you want to logout?',
               textAlign: TextAlign.center,
@@ -419,11 +526,10 @@ class _LogoutDialog extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(child: _buildCancelButton(context)),
-                const SizedBox(width: 16),
-                Expanded(child: _buildLogoutButton(context)),
+                Expanded(child: DialogCancelButton()),
+                const SizedBox(width: AppTheme.defaultSpacing),
+                Expanded(child: DialogLogoutButton()),
               ],
             ),
           ],
@@ -431,8 +537,12 @@ class _LogoutDialog extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildCancelButton(BuildContext context) {
+class DialogCancelButton extends StatelessWidget {
+  const DialogCancelButton({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
     return TextButton(
       onPressed: () => Navigator.pop(context),
       style: TextButton.styleFrom(
@@ -451,8 +561,12 @@ class _LogoutDialog extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildLogoutButton(BuildContext context) {
+class DialogLogoutButton extends StatelessWidget {
+  const DialogLogoutButton({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
         Navigator.pop(context);
@@ -464,7 +578,9 @@ class _LogoutDialog extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.red,
         padding: const EdgeInsets.symmetric(vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
       ),
       child: Text(
         'Logout',

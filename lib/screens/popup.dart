@@ -8,33 +8,9 @@ class AnnouncementDetailPopup extends StatelessWidget {
     : super(key: key);
 
   @override
- Widget build(BuildContext context) {
-  return PopupContainer(
-    color: Colors.white, 
-    child: Stack(
-      children: [
-        AnnouncementContent(announcement: announcement),
-        CloseButtonWidget(),
-      ],
-    ),
-  );
-}
-
-}
-
-class PopupContainer extends StatelessWidget {
-  final Widget child;
-  final Color color;
-
-  const PopupContainer({
-    Key? key,
-    required this.child,
-    this.color = Colors.white, 
-  }) : super(key: key);
-
-  @override
   Widget build(BuildContext context) {
-    final Size screenSize = MediaQuery.of(context).size;
+    final screenSize = MediaQuery.of(context).size;
+
     return Container(
       constraints: BoxConstraints(
         maxHeight: screenSize.height * 0.8,
@@ -44,18 +20,11 @@ class PopupContainer extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: child,
+      child: Stack(children: [_buildContent(), _buildCloseButton(context)]),
     );
   }
-}
 
-class AnnouncementContent extends StatelessWidget {
-  final Announcement announcement;
-  const AnnouncementContent({Key? key, required this.announcement})
-    : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildContent() {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Padding(
@@ -63,30 +32,23 @@ class AnnouncementContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TagLabel(announcement: announcement),
+            _buildTag(),
             const SizedBox(height: 12),
-            HeaderImage(),
+            _buildHeaderImage(),
             const SizedBox(height: 16),
-            TitleWidget(title: announcement.title),
+            _buildTitle(),
             const SizedBox(height: 6),
             const Divider(),
             const SizedBox(height: 10),
-            FormattedContent(content: announcement.fullContent),
+            _buildFormattedContent(),
             const SizedBox(height: 24),
           ],
         ),
       ),
     );
   }
-}
 
-class TagLabel extends StatelessWidget {
-  final Announcement announcement;
-  const TagLabel({Key? key, required this.announcement}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final bool isDarkTag = announcement.tag == 'News';
+  Widget _buildTag() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
       decoration: BoxDecoration(
@@ -96,20 +58,15 @@ class TagLabel extends StatelessWidget {
       child: Text(
         announcement.tag,
         style: GoogleFonts.poppins(
-          color: Colors.white, // Selalu putih
+          color: Colors.white,
           fontSize: 13,
           fontWeight: FontWeight.w500,
         ),
       ),
     );
   }
-}
 
-class HeaderImage extends StatelessWidget {
-  const HeaderImage({Key? key}) : super(key: key);
-  
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildHeaderImage() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16.0),
       child: SizedBox(
@@ -119,46 +76,57 @@ class HeaderImage extends StatelessWidget {
       ),
     );
   }
-}
 
-class TitleWidget extends StatelessWidget {
-  final String title;
-  const TitleWidget({Key? key, required this.title}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildTitle() {
     return Text(
-      title,
+      announcement.title,
       style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
     );
   }
-}
 
-class FormattedContent extends StatelessWidget {
-  final String content;
-  const FormattedContent({Key? key, required this.content}) : super(key: key);
+  Widget _buildFormattedContent() {
+    return ContentParser(content: announcement.fullContent);
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return ContentParser(content: content);
+  Widget _buildCloseButton(BuildContext context) {
+    return Positioned(
+      top: 10,
+      right: 10,
+      child: GestureDetector(
+        onTap: () => Navigator.of(context).pop(),
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: const Icon(Icons.close, size: 18, color: Colors.black54),
+        ),
+      ),
+    );
   }
 }
 
 class ContentParser extends StatelessWidget {
   final String content;
   const ContentParser({Key? key, required this.content}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     final lines = content.split('\n');
-    List<Widget> contentWidgets = [];
+    final contentWidgets = <Widget>[];
 
-    for (String line in lines) {
+    for (final line in lines) {
       if (line.trim().isEmpty) {
         contentWidgets.add(const SizedBox(height: 8));
         continue;
       }
-
       contentWidgets.add(_parseContentLine(line));
     }
 
@@ -169,55 +137,42 @@ class ContentParser extends StatelessWidget {
   }
 
   Widget _parseContentLine(String line) {
-    if (line.startsWith('📍 Lokasi:')) {
-      return InfoRow(
-        icon: Icons.location_on,
-        text: line.replaceFirst('📍 Lokasi:', '').trim(),
-      );
-    }
+    final patterns = <String, Widget Function(String)>{
+      '📍 Lokasi:':
+          (text) => _buildInfoRow(
+            Icons.location_on,
+            text.replaceFirst('📍 Lokasi:', '').trim(),
+          ),
+      '📅 Periode Berlaku:':
+          (text) => _buildInfoRow(
+            Icons.calendar_today,
+            text.replaceFirst('📅 Periode Berlaku:', '').trim(),
+          ),
+      '🕗 Jam Operasional Baru:':
+          (text) => _buildInfoRow(
+            Icons.access_time,
+            text.replaceFirst('🕗 Jam Operasional Baru:', '').trim(),
+          ),
+      '⚡Keterangan Tambahan:':
+          (_) => _buildSectionTitle('Keterangan Tambahan:'),
+      '📌 Catatan Penting:': (_) => _buildSectionTitle('Catatan Penting:'),
+      '• ': (text) => _buildBulletPoint(text.replaceFirst('• ', '').trim()),
+    };
 
-    if (line.startsWith('📅 Periode Berlaku:')) {
-      return InfoRow(
-        icon: Icons.calendar_today,
-        text: line.replaceFirst('📅 Periode Berlaku:', '').trim(),
-      );
-    }
-
-    if (line.startsWith('🕗 Jam Operasional Baru:')) {
-      return InfoRow(
-        icon: Icons.access_time,
-        text: line.replaceFirst('🕗 Jam Operasional Baru:', '').trim(),
-      );
-    }
-
-    if (line.startsWith('⚡Keterangan Tambahan:')) {
-      return SectionTitle(title: 'Keterangan Tambahan:');
-    }
-
-    if (line.startsWith('• ')) {
-      return BulletPoint(text: line.replaceFirst('• ', '').trim());
-    }
-
-    if (line.startsWith('📌 Catatan Penting:')) {
-      return SectionTitle(title: 'Catatan Penting:');
+    for (final pattern in patterns.keys) {
+      if (line.startsWith(pattern)) {
+        return patterns[pattern]!(line);
+      }
     }
 
     if (line.contains('Tetap semangat belajar')) {
-      return ConclusionText(text: line);
+      return _buildConclusionText(line);
     }
 
-    return DefaultText(text: line);
+    return _buildDefaultText(line);
   }
-}
 
-class InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  const InfoRow({Key? key, required this.icon, required this.text})
-    : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildInfoRow(IconData icon, String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Row(
@@ -225,24 +180,13 @@ class InfoRow extends StatelessWidget {
         children: [
           Icon(icon, size: 18, color: Colors.grey[700]),
           const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: GoogleFonts.poppins(fontSize: 14, height: 1.5),
-            ),
-          ),
+          Expanded(child: Text(text, style: _getTextStyle())),
         ],
       ),
     );
   }
-}
 
-class BulletPoint extends StatelessWidget {
-  final String text;
-  const BulletPoint({Key? key, required this.text}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildBulletPoint(String text) {
     return Padding(
       padding: const EdgeInsets.only(left: 8.0, bottom: 8.0),
       child: Row(
@@ -258,24 +202,13 @@ class BulletPoint extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: GoogleFonts.poppins(fontSize: 14, height: 1.5),
-            ),
-          ),
+          Expanded(child: Text(text, style: _getTextStyle())),
         ],
       ),
     );
   }
-}
 
-class SectionTitle extends StatelessWidget {
-  final String title;
-  const SectionTitle({Key? key, required this.title}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
       child: Text(
@@ -284,14 +217,8 @@ class SectionTitle extends StatelessWidget {
       ),
     );
   }
-}
 
-class ConclusionText extends StatelessWidget {
-  final String text;
-  const ConclusionText({Key? key, required this.text}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildConclusionText(String text) {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: Text(
@@ -301,39 +228,15 @@ class ConclusionText extends StatelessWidget {
       ),
     );
   }
-}
 
-class DefaultText extends StatelessWidget {
-  final String text;
-  const DefaultText({Key? key, required this.text}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildDefaultText(String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Text(text, style: GoogleFonts.poppins(fontSize: 14, height: 1.5)),
+      child: Text(text, style: _getTextStyle()),
     );
   }
-}
 
-class CloseButtonWidget extends StatelessWidget {
-  const CloseButtonWidget({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      top: 10,
-      right: 10,
-      child: GestureDetector(
-        onTap: () => Navigator.of(context).pop(),
-        child: Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.close, size: 20),
-        ),
-      ),
-    );
+  TextStyle _getTextStyle() {
+    return GoogleFonts.poppins(fontSize: 14, height: 1.5);
   }
 }

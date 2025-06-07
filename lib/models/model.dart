@@ -76,3 +76,32 @@ class UserProfile {
   });
 }
 
+class EventBanner {
+  final String id;
+  final String title;
+  final String subtitle;
+  final String imageUrl;
+  final String tag;
+  final Color tagColor;
+
+  const EventBanner({
+    required this.id,
+    required this.title,
+    required this.subtitle,
+    required this.imageUrl,
+    required this.tag,
+    required this.tagColor,
+  });
+}
+
+class CategoryData {
+  final String name;
+  final Color color;
+  final IconData icon;
+
+  const CategoryData({
+    required this.name,
+    required this.color,
+    required this.icon,
+  });
+}

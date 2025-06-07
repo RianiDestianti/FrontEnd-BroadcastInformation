@@ -8,32 +8,27 @@ import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  // Controllers and State Variables
   final TextEditingController _searchController = TextEditingController();
   final PageController _bannerController = PageController();
-
   bool _isDarkMode = false;
   bool _isLoading = true;
   String? _selectedCategory;
   int _currentBannerIndex = 0;
-
   List<Announcement> _allAnnouncements = [];
   List<Announcement> _filteredAnnouncements = [];
 
-  // Static Data
   static const List<EventBanner> _eventBanners = [
     EventBanner(
       id: '1',
       title: 'SPECTA (Spirit of Creativity and Talent)',
       subtitle: '20 April • Aula Fakultas',
       imageUrl: 'assets/akl.jpg',
-      tag: 'Academic',
+      tag: 'Akademik',
       tagColor: Color.fromARGB(255, 4, 9, 18),
     ),
     EventBanner(
@@ -41,7 +36,7 @@ class _HomePageState extends State<HomePage> {
       title: 'EKSIB',
       subtitle: '17 Mei • Gedung Auditorium',
       imageUrl: 'assets/rpl.jpg',
-      tag: 'Event',
+      tag: 'Acara',
       tagColor: Color(0xFFdfed90),
     ),
     EventBanner(
@@ -49,7 +44,7 @@ class _HomePageState extends State<HomePage> {
       title: 'Workshop UI/UX Design',
       subtitle: '18 Mei • Ruang Multimedia',
       imageUrl: 'assets/akl.jpg',
-      tag: 'Events',
+      tag: 'Acara',
       tagColor: Color(0xFFdfed90),
     ),
     EventBanner(
@@ -57,31 +52,35 @@ class _HomePageState extends State<HomePage> {
       title: 'Seminar Nasional IT',
       subtitle: '25 Mei • Auditorium Utama',
       imageUrl: 'assets/akl.jpg',
-      tag: 'Academic',
+      tag: 'Akademik',
       tagColor: Color(0xFF9db7e0),
     ),
   ];
 
   static const List<CategoryData> _categories = [
     CategoryData(
-      name: 'Announcements',
+      name: 'Pengumuman',
       color: Color(0xFFB35C40),
       icon: Icons.campaign,
     ),
     CategoryData(
-      name: 'Academic',
+      name: 'Akademik',
       color: Color(0xFF486087),
       icon: Icons.school,
     ),
-    CategoryData(name: 'Events', color: Color(0xFF95822F), icon: Icons.event),
-    CategoryData(name: 'News', color: Color(0xFF2C4E57), icon: Icons.newspaper),
+    CategoryData(name: 'Acara', color: Color(0xFF95822F), icon: Icons.event),
     CategoryData(
-      name: 'Articles',
+      name: 'Berita',
+      color: Color(0xFF2C4E57),
+      icon: Icons.newspaper,
+    ),
+    CategoryData(
+      name: 'Artikel',
       color: Color(0xFF8A4C6D),
       icon: Icons.article,
     ),
     CategoryData(
-      name: 'Calendar',
+      name: 'Kalendar',
       color: Color(0xFF4A7B5B),
       icon: Icons.calendar_today,
     ),
@@ -100,7 +99,6 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  // Initialization Methods
   void _initializeData() {
     _filteredAnnouncements = List.from(_allAnnouncements);
     _searchController.addListener(_filterAnnouncements);
@@ -122,7 +120,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // API Methods
   Future<void> _fetchInformasi() async {
     try {
       setState(() => _isLoading = true);
@@ -151,45 +148,44 @@ class _HomePageState extends State<HomePage> {
 
   Announcement _mapApiToAnnouncement(Map<String, dynamic> apiData) {
     final categoryMapping = {
-      '1': {'tag': 'Academic', 'color': const Color(0xFF486087)},
-      '2': {'tag': 'Events', 'color': const Color(0xFF95822F)},
-      '3': {'tag': 'News', 'color': const Color(0xFF2C4E57)},
+      '1': {'tag': 'Akademik', 'color': const Color(0xFF486087)},
+      '2': {'tag': 'Acara', 'color': const Color(0xFF95822F)},
+      '3': {'tag': 'Berita', 'color': const Color(0xFF2C4E57)},
     };
 
     final categoryId = apiData['IDKategoriInformasi']?.toString();
     final category =
         categoryMapping[categoryId] ??
-        {'tag': 'Announcements', 'color': const Color(0xFFB35C40)};
+        {'tag': 'Pengumuman', 'color': const Color(0xFFB35C40)};
 
     return Announcement(
       id: apiData['IDInformasi'].toString(),
       tag: category['tag'] as String,
       tagColor: category['color'] as Color,
       timeAgo: _calculateTimeAgo(apiData['created_at']),
-      title: apiData['Judul'] ?? 'No Title',
-      description: apiData['Deskripsi'] ?? 'No Description',
-      fullContent: apiData['Deskripsi'] ?? 'No Content',
-      department: 'Dari: ${apiData['IDOperator'] ?? 'Unknown Department'}',
+      title: apiData['Judul'] ?? 'Tidak Ada Judul',
+      description: apiData['Deskripsi'] ?? 'Tidak Ada Deskripsi',
+      fullContent: apiData['Deskripsi'] ?? 'Tidak Ada Konten',
+      department:'Dari: ${apiData['IDOperator'] ?? 'Departemen Tidak Dikenal'}',
     );
   }
 
   String _calculateTimeAgo(String? dateString) {
-    if (dateString == null) return 'Unknown';
+  if (dateString == null) return 'Tidak diketahui';
 
-    try {
-      final date = DateTime.parse(dateString);
-      final difference = DateTime.now().difference(date);
+  try {
+    final date = DateTime.parse(dateString);
+    final difference = DateTime.now().difference(date);
 
-      if (difference.inDays > 0) return '${difference.inDays}d ago';
-      if (difference.inHours > 0) return '${difference.inHours}h ago';
-      if (difference.inMinutes > 0) return '${difference.inMinutes}m ago';
-      return 'Just now';
-    } catch (e) {
-      return 'Unknown';
-    }
+    if (difference.inDays > 0) return '${difference.inDays} hari lalu';
+    if (difference.inHours > 0) return '${difference.inHours} jam lalu';
+    if (difference.inMinutes > 0) return '${difference.inMinutes} menit lalu';
+    return 'Baru saja';
+  } catch (e) {
+    return 'Tidak diketahui';
   }
+}
 
-  // Filter and Selection Methods
   void _filterAnnouncements() {
     final query = _searchController.text.toLowerCase();
     setState(() {
@@ -227,14 +223,13 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Utility Methods
   Color _getCategoryColor(String categoryName) {
     return _categories
         .firstWhere(
           (cat) => cat.name == categoryName,
           orElse:
               () => const CategoryData(
-                name: 'Default',
+                name: 'Bawaan',
                 color: Colors.grey,
                 icon: Icons.circle,
               ),
@@ -333,38 +328,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// Data Models
-class EventBanner {
-  final String id;
-  final String title;
-  final String subtitle;
-  final String imageUrl;
-  final String tag;
-  final Color tagColor;
-
-  const EventBanner({
-    required this.id,
-    required this.title,
-    required this.subtitle,
-    required this.imageUrl,
-    required this.tag,
-    required this.tagColor,
-  });
-}
-
-class CategoryData {
-  final String name;
-  final Color color;
-  final IconData icon;
-
-  const CategoryData({
-    required this.name,
-    required this.color,
-    required this.icon,
-  });
-}
-
-// Header Widget
 class HeaderWidget extends StatelessWidget {
   final double horizontalPadding;
   final bool isDarkMode;
@@ -388,7 +351,7 @@ class HeaderWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Welcome back, Ririn!',
+                'Selamat datang kembali, Ririn!',
                 style: GoogleFonts.poppins(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -417,28 +380,28 @@ class HeaderWidget extends StatelessWidget {
 
   String _getFormattedDate(DateTime dateTime) {
     const months = [
-      'January',
-      'February',
-      'March',
+      'Januari',
+      'Februari',
+      'Maret',
       'April',
-      'May',
-      'June',
-      'July',
-      'August',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
       'September',
-      'October',
+      'Oktober',
       'November',
-      'December',
+      'Desember',
     ];
 
     const days = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
+      'Senin',
+      'Selasa',
+      'Rabu',
+      'Kamis',
+      'Jumat',
+      'Sabtu',
+      'Minggu',
     ];
 
     final dayName = days[dateTime.weekday - 1];
@@ -447,7 +410,6 @@ class HeaderWidget extends StatelessWidget {
   }
 }
 
-// Search Bar Widget
 class SearchBarWidget extends StatelessWidget {
   final TextEditingController controller;
   final double horizontalPadding;
@@ -479,7 +441,7 @@ class SearchBarWidget extends StatelessWidget {
         child: TextField(
           controller: controller,
           decoration: InputDecoration(
-            hintText: 'Search',
+            hintText: 'Cari',
             hintStyle: GoogleFonts.poppins(
               fontSize: 14,
               color: Colors.grey[500],
@@ -510,7 +472,6 @@ class SearchBarWidget extends StatelessWidget {
   }
 }
 
-// Banner Section Widget
 class BannerSectionWidget extends StatelessWidget {
   final List<EventBanner> banners;
   final PageController controller;
@@ -535,7 +496,7 @@ class BannerSectionWidget extends StatelessWidget {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           child: Text(
-            'Upcoming Events',
+            'Acara yang Akan Datang',
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -653,9 +614,7 @@ class _BannerItem extends StatelessWidget {
 
 class _PageIndicator extends StatelessWidget {
   final bool isActive;
-
   const _PageIndicator({required this.isActive});
-
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
@@ -671,7 +630,6 @@ class _PageIndicator extends StatelessWidget {
   }
 }
 
-// Category Section Widget
 class CategorySectionWidget extends StatelessWidget {
   final List<CategoryData> categories;
   final String? selectedCategory;
@@ -698,7 +656,7 @@ class CategorySectionWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Categories',
+                'Kategori',
                 style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -735,16 +693,14 @@ class CategorySectionWidget extends StatelessWidget {
 
 class _ClearFilterButton extends StatelessWidget {
   final VoidCallback onPressed;
-
   const _ClearFilterButton({required this.onPressed});
-
   @override
   Widget build(BuildContext context) {
     return TextButton.icon(
       onPressed: onPressed,
       icon: Icon(Icons.close, size: 16, color: Colors.grey[800]),
       label: Text(
-        'Clear filter',
+        'Hapus filter',
         style: GoogleFonts.poppins(
           fontSize: 13,
           color: Colors.grey[800],
@@ -760,7 +716,6 @@ class _ClearFilterButton extends StatelessWidget {
   }
 }
 
-// Category Item Widget
 class CategoryItemWidget extends StatelessWidget {
   final CategoryData category;
   final bool isSelected;
@@ -839,7 +794,6 @@ class CategoryItemWidget extends StatelessWidget {
   }
 }
 
-// Announcements Section Widget
 class AnnouncementsSectionWidget extends StatelessWidget {
   final List<Announcement> announcements;
   final bool isLoading;
@@ -902,7 +856,7 @@ class _AnnouncementsHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Recent Announcements',
+            'Pengumuman Terbaru',
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -914,7 +868,7 @@ class _AnnouncementsHeader extends StatelessWidget {
               child: Row(
                 children: [
                   Text(
-                    'Filtered by: ',
+                    'Difilter berdasarkan:  ',
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       color: Colors.grey[600],
@@ -998,7 +952,6 @@ class _AnnouncementsList extends StatelessWidget {
   }
 }
 
-// Empty State Widget
 class _EmptyState extends StatelessWidget {
   final double horizontalPadding;
   final String? selectedCategory;
@@ -1021,8 +974,8 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             selectedCategory != null
-                ? 'No announcements found for "$selectedCategory"'
-                : 'No announcements available',
+                ? 'Tidak ditemukan pengumuman untuk"$selectedCategory"'
+                : 'Tidak ada pengumuman tersedia',
             style: GoogleFonts.poppins(
               fontSize: 16,
               color: Colors.grey[600],
@@ -1033,8 +986,8 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             selectedCategory != null
-                ? 'Try selecting a different category or clear the filter.'
-                : 'Check back later for new announcements.',
+                ? 'Coba pilih kategori lain atau hapus filter.'
+                : 'Cek kembali nanti untuk pengumuman baru.',
             style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500]),
             textAlign: TextAlign.center,
           ),
@@ -1044,7 +997,6 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-// Announcement Card Widget
 class AnnouncementCardWidget extends StatelessWidget {
   final Announcement announcement;
   final double horizontalPadding;
@@ -1139,7 +1091,7 @@ class AnnouncementCardWidget extends StatelessWidget {
                   Icon(Icons.priority_high, size: 16, color: Colors.red[600]),
                   const SizedBox(width: 4),
                   Text(
-                    'Urgent',
+                    'Penting',
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: Colors.red[600],
@@ -1156,14 +1108,13 @@ class AnnouncementCardWidget extends StatelessWidget {
   }
 
   Color _getCategoryColor(String category) {
-    // Define category colors here or pass them from parent
     final categoryColors = {
-      'Academic': Colors.blue,
-      'Event': Colors.green,
-      'General': Colors.orange,
-      'Emergency': Colors.red,
-      'Sports': Colors.purple,
-      'Library': Colors.teal,
+      'Akademik': Colors.blue,
+      'Acara': Colors.green,
+      'Umum': Colors.orange,
+      'Darurat': Colors.red,
+      'Olahraga': Colors.purple,
+      'Perpustakaan': Colors.teal,
     };
     return categoryColors[category] ?? Colors.grey;
   }
@@ -1175,13 +1126,13 @@ class AnnouncementCardWidget extends StatelessWidget {
     if (difference.inDays > 7) {
       return '${date.day}/${date.month}/${date.year}';
     } else if (difference.inDays > 0) {
-      return '${difference.inDays}d ago';
+      return '${difference.inDays} hari lalu';
     } else if (difference.inHours > 0) {
-      return '${difference.inHours}h ago';
+      return '${difference.inHours} jam lalu';
     } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m ago';
+      return '${difference.inMinutes} menit lalu';
     } else {
-      return 'Just now';
+      return 'Baru saja';
     }
   }
 }

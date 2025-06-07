@@ -72,38 +72,38 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 const ScreenHeader(),
                 const SizedBox(height: 40),
                 CustomTextField(
-                  label: 'Username',
+                  label: 'NIS/NIP',
                   controller: _usernameController,
-                  hintText: 'Elara Zafira',
-                  validator: (value) => value?.isEmpty == true ? 'Username is required' : null,
+                  hintText: 'Elara Zafira (12345)',
+                  validator: (value) => value?.isEmpty == true ? 'NIS/NIP wajib diisi' : null,
                 ),
                 const SizedBox(height: 24),
                 CustomTextField(
-                  label: 'Current Password',
+                  label: 'Kata Sandi Saat Ini',
                   controller: _currentPasswordController,
-                  hintText: 'Enter your current password',
+                  hintText: 'Masukkan kata sandi saat ini',
                   isPassword: true,
                   isVisible: _isCurrentPasswordVisible,
                   onToggleVisibility: () => _togglePasswordVisibility(true),
-                  validator: (value) => value?.isEmpty == true ? 'Current password is required' : null,
+                  validator: (value) => value?.isEmpty == true ? 'Kata sandi saat ini wajib diisi' : null,
                 ),
                 const SizedBox(height: 24),
                 CustomTextField(
-                  label: 'New Password',
+                  label: 'Kata Sandi Baru',
                   controller: _newPasswordController,
-                  hintText: 'Enter your new password',
+                  hintText: 'Masukkan kata sandi baru Anda',
                   isPassword: true,
                   isVisible: _isNewPasswordVisible,
                   onToggleVisibility: () => _togglePasswordVisibility(false),
                   validator: (value) {
-                    if (value?.isEmpty == true) return 'New password is required';
-                    if (value!.length < 6) return 'Password must be at least 6 characters';
+                    if (value?.isEmpty == true) return 'Kata sandi baru wajib diisi';
+                    if (value!.length < 6) return 'Password minimal terdiri dari 6 karakter';
                     return null;
                   },
                 ),
                 const SizedBox(height: 40),
                 CustomButton(
-                  text: 'Change Password',
+                  text: 'Ubah Password',
                   isLoading: _isLoading,
                   onPressed: _handleChangePassword,
                 ),
@@ -142,10 +142,10 @@ class ScreenHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Create New Password', style: AppThemeChange.headingStyle),
+        Text('Buat Kata Sandi Baru', style: AppThemeChange.headingStyle),
         const SizedBox(height: 8),
         Text(
-          'Your new password must be different from previous used password',
+          'Kata sandi baru Anda harus berbeda dari kata sandi yang sebelumnya digunakan.',
           style: AppThemeChange.subheadingStyle,
         ),
       ],
@@ -283,7 +283,7 @@ class SuccessDialog extends StatelessWidget {
             const SizedBox(height: 24),
             _buildMessage(),
             const SizedBox(height: 24),
-            CustomButton(text: 'Done', onPressed: onDone),
+            CustomButton(text: 'Selesai', onPressed: onDone),
           ],
         ),
       ),
@@ -309,7 +309,7 @@ class SuccessDialog extends StatelessWidget {
     return Column(
       children: [
         Text(
-          'Success!',
+          'Berhasil!',
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -318,7 +318,7 @@ class SuccessDialog extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Your password has been changed successfully',
+          'Kata sandi Anda berhasil diubah.',
           textAlign: TextAlign.center,
           style: AppThemeChange.subheadingStyle,
         ),

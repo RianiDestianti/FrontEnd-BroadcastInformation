@@ -62,7 +62,7 @@ class _SignInPageState extends State<SignInPage> {
     return Column(
       children: [
         Text(
-          'Sign In',
+          'Login',
           textAlign: TextAlign.center,
           style: _getTextStyle(
             fontSize: 28,
@@ -71,7 +71,7 @@ class _SignInPageState extends State<SignInPage> {
         ),
         const SizedBox(height: AppConstants.spacingS),
         Text(
-          'Hi! Welcome back, you\'ve been missed',
+          'Halo! Update Informasi penting menanti Anda.',
           textAlign: TextAlign.center,
           style: _getTextStyle(
             fontSize: 16,
@@ -84,9 +84,9 @@ class _SignInPageState extends State<SignInPage> {
 
   Widget _buildUsernameField() {
     return _buildInputField(
-      label: 'Username',
+      label: 'NIS/NIP',
       controller: _usernameController,
-      hintText: 'Enter your username',
+      hintText: 'Masukkan NIS/NIP anda',
     );
   }
 
@@ -94,7 +94,7 @@ class _SignInPageState extends State<SignInPage> {
     return _buildInputField(
       label: 'Password',
       controller: _passwordController,
-      hintText: 'Enter your password',
+      hintText: 'Masukkan password anda',
       isPassword: true,
       obscureText: !_isPasswordVisible,
       suffixIcon: IconButton(
@@ -145,7 +145,7 @@ class _SignInPageState extends State<SignInPage> {
       child: TextButton(
         onPressed: _handleForgotPassword,
         child: Text(
-          'Forgot password?',
+          'Lupa kata sandi?',
           style: _getTextStyle(color: Colors.black),
         ),
       ),
@@ -164,7 +164,7 @@ class _SignInPageState extends State<SignInPage> {
         elevation: 0,
       ),
       child: Text(
-        'Sign In',
+        'Login',
         style: _getTextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
@@ -186,7 +186,7 @@ class _SignInPageState extends State<SignInPage> {
         },
       ),
       label: Text(
-        'Sign in with Google',
+        'Login dengan Google',
         style: _getTextStyle(color: Colors.black),
       ),
       style: OutlinedButton.styleFrom(

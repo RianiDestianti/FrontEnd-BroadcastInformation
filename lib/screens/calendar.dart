@@ -17,6 +17,7 @@ class _CalendarPageState extends State<CalendarPage> {
   DateTime _selectedDate = DateTime.now();
   List<InformasiEvent> _events = [];
   bool _isLoading = true;
+  
   @override
   void initState() {
     super.initState();
@@ -27,7 +28,7 @@ class _CalendarPageState extends State<CalendarPage> {
     try {
       setState(() => _isLoading = true);
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8000/api/informasi'),
+        Uri.parse('http://localhost:8000/api/informasi'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -163,6 +164,7 @@ class InformasiEvent {
   final String operator;
   final DateTime createdAt;
   final DateTime updatedAt;
+  
   const InformasiEvent({
     required this.id,
     required this.judul,
@@ -204,35 +206,68 @@ class InformasiEvent {
 
 class CategoryMapper {
   static const Map<String, Color> _categoryColors = {
-    'Academic': Color(0xFF9db7e0),
-    'Events': Color(0xFFdfed90),
-    'News': Color(0xFF1665a5),
-    'Announcements': Color(0xFFf08e79),
-    'General': Color(0xFF9db7e0),
+    'Akademik': Color(0xFF9db7e0),
+    'Acara': Color(0xFFdfed90),
+    'Berita': Color(0xFF1665a5),
+    'Pengumuman': Color(0xFFf08e79),
+    'Umum': Color(0xFF9db7e0),
   };
 
   static String mapIdToCategory(dynamic kategoriId) {
     switch (kategoriId?.toString()) {
       case '1':
-        return 'Academic';
+        return 'Akademik';
       case '2':
-        return 'Events';
+        return 'Acara';
       case '3':
-        return 'News';
+        return 'Berita';
       case '4':
-        return 'Announcements';
+        return 'Pengumuman';
       default:
-        return 'General';
+        return 'Umum';
     }
   }
 
   static Color getColor(String category) =>
-      _categoryColors[category] ?? _categoryColors['General']!;
+      _categoryColors[category] ?? _categoryColors['Umum']!;
 
   static Map<String, Color> get categoryColors => _categoryColors;
 }
 
+// Custom DateUtils dengan bahasa Indonesia
 class DateUtils {
+  // Map bulan dalam bahasa Indonesia
+  static const Map<int, String> _indonesianMonths = {
+    1: 'Januari',
+    2: 'Februari',
+    3: 'Maret',
+    4: 'April',
+    5: 'Mei',
+    6: 'Juni',
+    7: 'Juli',
+    8: 'Agustus',
+    9: 'September',
+    10: 'Oktober',
+    11: 'November',
+    12: 'Desember',
+  };
+
+  // Map bulan singkat dalam bahasa Indonesia
+  static const Map<int, String> _indonesianMonthsShort = {
+    1: 'Jan',
+    2: 'Feb',
+    3: 'Mar',
+    4: 'Apr',
+    5: 'Mei',
+    6: 'Jun',
+    7: 'Jul',
+    8: 'Agu',
+    9: 'Sep',
+    10: 'Okt',
+    11: 'Nov',
+    12: 'Des',
+  };
+
   static bool isToday(DateTime date) {
     final now = DateTime.now();
     return date.year == now.year &&
@@ -241,21 +276,36 @@ class DateUtils {
   }
 
   static String formatDateRange(DateTime start, DateTime end) {
-    return '${DateFormat('d MMM').format(start)} - ${DateFormat('d MMM yyyy').format(end)}';
+    final startMonth = _indonesianMonthsShort[start.month] ?? '';
+    final endMonth = _indonesianMonthsShort[end.month] ?? '';
+    return '${start.day} $startMonth - ${end.day} $endMonth ${end.year}';
   }
 
   static String formatFullDate(DateTime date) {
-    return DateFormat('d MMMM yyyy').format(date);
+    final month = _indonesianMonths[date.month] ?? '';
+    return '${date.day} $month ${date.year}';
   }
 
   static String formatMonthYear(DateTime date) {
-    return DateFormat('MMMM yyyy').format(date);
+    final month = _indonesianMonths[date.month] ?? '';
+    return '$month ${date.year}';
+  }
+
+  // Helper method untuk mendapatkan nama bulan Indonesia
+  static String getIndonesianMonth(int month) {
+    return _indonesianMonths[month] ?? '';
+  }
+
+  // Helper method untuk mendapatkan nama bulan Indonesia singkat
+  static String getIndonesianMonthShort(int month) {
+    return _indonesianMonthsShort[month] ?? '';
   }
 }
 
 class CalendarContainer extends StatelessWidget {
   final Widget child;
   const CalendarContainer({Key? key, required this.child}) : super(key: key);
+  
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -272,11 +322,13 @@ class CalendarContainer extends StatelessWidget {
 class MonthNavigation extends StatelessWidget {
   final DateTime selectedDate;
   final Function(int) onNavigate;
+  
   const MonthNavigation({
     Key? key,
     required this.selectedDate,
     required this.onNavigate,
   }) : super(key: key);
+  
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -304,6 +356,7 @@ class MonthNavigation extends StatelessWidget {
 class MonthDisplay extends StatelessWidget {
   final String monthYear;
   const MonthDisplay({Key? key, required this.monthYear}) : super(key: key);
+  
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -327,11 +380,13 @@ class MonthDisplay extends StatelessWidget {
 class NavigationButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;
+  
   const NavigationButton({
     Key? key,
     required this.icon,
     required this.onPressed,
   }) : super(key: key);
+  
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -352,16 +407,17 @@ class NavigationButton extends StatelessWidget {
 
 class WeekdayHeaders extends StatelessWidget {
   const WeekdayHeaders({Key? key}) : super(key: key);
+  
   static const List<String> _weekdays = [
-    'Sun',
-    'Mon',
-    'Tue',
-    'Wed',
-    'Thu',
-    'Fri',
-    'Sat',
+    'Min',
+    'Sen',
+    'Sel',
+    'Rab',
+    'Kam',
+    'Jum',
+    'Sab',
   ];
-
+  
   @override
   Widget build(BuildContext context) {
     return Row(

@@ -187,19 +187,19 @@ class PersonalInformationCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SectionTitle(
-                title: 'Personal Information',
+                title: 'Informasi Pribadi',
                 icon: Icons.person_outline,
               ),
               const SizedBox(height: 8),
               const Divider(thickness: 1),
               const SizedBox(height: 8),
               InfoRow(
-                label: 'Full Name',
+                label: 'Nama Lengkap',
                 value: userProfile.name,
                 icon: Icons.badge_outlined,
               ),
               InfoRow(
-                label: 'Student ID',
+                label: 'ID Siswa',
                 value: userProfile.studentId,
                 icon: Icons.credit_card,
               ),
@@ -301,7 +301,7 @@ class ActionButtonsSection extends StatelessWidget {
           child: ActionButton(
             onTap: () => _navigateToChangePassword(context),
             icon: Icons.lock_outline,
-            label: 'Change Password',
+            label: 'Ubah Password',
             color: Color(0xFF50C2C9), 
           ),
         ),
@@ -350,7 +350,7 @@ class AppFooter extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                'Powered by',
+                'Dijalankan oleh',
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   color: Colors.grey[600],
@@ -521,7 +521,7 @@ class LogoutDialog extends StatelessWidget {
             ),
             const SizedBox(height: AppTheme.defaultSpacing),
             Text(
-              'Are you sure you want to logout?',
+              'Apakah Anda yakin ingin logout?',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(fontSize: 16, color: Colors.black54),
             ),

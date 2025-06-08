@@ -22,69 +22,69 @@ class _HomePageState extends State<HomePage> {
   List<Announcement> _allAnnouncements = [];
   List<Announcement> _filteredAnnouncements = [];
 
-  static const List<EventBanner> _eventBanners = [
-    EventBanner(
-      id: '1',
-      title: 'SPECTA (Spirit of Creativity and Talent)',
-      subtitle: '20 April • Aula Fakultas',
-      imageUrl: 'assets/akl.jpg',
-      tag: 'Akademik',
-      tagColor: Color.fromARGB(255, 4, 9, 18),
-    ),
-    EventBanner(
-      id: '2',
-      title: 'EKSIB',
-      subtitle: '17 Mei • Gedung Auditorium',
-      imageUrl: 'assets/rpl.jpg',
-      tag: 'Acara',
-      tagColor: Color(0xFFdfed90),
-    ),
-    EventBanner(
-      id: '3',
-      title: 'Workshop UI/UX Design',
-      subtitle: '18 Mei • Ruang Multimedia',
-      imageUrl: 'assets/akl.jpg',
-      tag: 'Acara',
-      tagColor: Color(0xFFdfed90),
-    ),
-    EventBanner(
-      id: '4',
-      title: 'Seminar Nasional IT',
-      subtitle: '25 Mei • Auditorium Utama',
-      imageUrl: 'assets/akl.jpg',
-      tag: 'Akademik',
-      tagColor: Color(0xFF9db7e0),
-    ),
-  ];
+static const List<EventBanner> _eventBanners = [
+  EventBanner(
+    id: '1',
+    title: 'SPECTA (Spirit of Creativity and Talent)',
+    subtitle: '20 April • Aula Fakultas',
+    imageUrl: 'assets/akl.jpg',
+    tag: 'Akademik',
+    tagColor: Color(0xFF6C5CE7), 
+  ),
+  EventBanner(
+    id: '2',
+    title: 'EKSIB',
+    subtitle: '17 Mei • Gedung Auditorium',
+    imageUrl: 'assets/rpl.jpg',
+    tag: 'Acara',
+    tagColor: Color(0xFF45B7D1), 
+  ),
+  EventBanner(
+    id: '3',
+    title: 'Workshop UI/UX Design',
+    subtitle: '18 Mei • Ruang Multimedia',
+    imageUrl: 'assets/akl.jpg',
+    tag: 'Acara',
+    tagColor: Color(0xFF45B7D1), 
+  ),
+  EventBanner(
+    id: '4',
+    title: 'Seminar Nasional IT',
+    subtitle: '25 Mei • Auditorium Utama',
+    imageUrl: 'assets/akl.jpg',
+    tag: 'Akademik',
+    tagColor: Color(0xFF6C5CE7), 
+  ),
+];
 
-  static const List<CategoryData> _categories = [
+
+static const List<CategoryData> _categories = [
     CategoryData(
-      name: 'Pengumuman',
-      color: Color(0xFFB35C40),
-      icon: Icons.campaign,
-    ),
-    CategoryData(
-      name: 'Akademik',
-      color: Color(0xFF486087),
-      icon: Icons.school,
-    ),
-    CategoryData(name: 'Acara', color: Color(0xFF95822F), icon: Icons.event),
-    CategoryData(
-      name: 'Berita',
-      color: Color(0xFF2C4E57),
-      icon: Icons.newspaper,
-    ),
-    CategoryData(
-      name: 'Artikel',
-      color: Color(0xFF8A4C6D),
-      icon: Icons.article,
-    ),
-    CategoryData(
-      name: 'Kalendar',
-      color: Color(0xFF4A7B5B),
-      icon: Icons.calendar_today,
-    ),
-  ];
+    name: 'Pengumuman',
+    color: Color(0xFFE17055), 
+    icon: Icons.campaign,
+  ),
+  CategoryData(
+    name: 'Akademik',
+    color: Color(0xFF6C5CE7),
+    icon: Icons.school,
+  ),
+  CategoryData(
+    name: 'Acara',
+    color: Color(0xFF45B7D1),
+    icon: Icons.event,
+  ),
+  CategoryData(
+    name: 'Berita',
+    color: Color(0xFF0984E3), 
+    icon: Icons.newspaper,
+  ),
+  CategoryData(
+    name: 'Artikel',
+    color: Color(0xFFFDCB6E), 
+    icon: Icons.article,
+  ),
+];
 
   @override
   void initState() {
@@ -148,15 +148,15 @@ class _HomePageState extends State<HomePage> {
 
   Announcement _mapApiToAnnouncement(Map<String, dynamic> apiData) {
     final categoryMapping = {
-      '1': {'tag': 'Akademik', 'color': const Color(0xFF486087)},
-      '2': {'tag': 'Acara', 'color': const Color(0xFF95822F)},
-      '3': {'tag': 'Berita', 'color': const Color(0xFF2C4E57)},
+      '1': {'tag': 'Akademik', 'color': const Color(0xFF6C5CE7)},
+      '2': {'tag': 'Acara', 'color': const Color(0xFF45B7D1)},
+      '3': {'tag': 'Berita', 'color': const Color(0xFF0984E3)},
     };
 
     final categoryId = apiData['IDKategoriInformasi']?.toString();
     final category =
         categoryMapping[categoryId] ??
-        {'tag': 'Pengumuman', 'color': const Color(0xFFB35C40)};
+        {'tag': 'Pengumuman', 'color': const Color(0xFFE17055)};
 
     return Announcement(
       id: apiData['IDInformasi'].toString(),
@@ -1109,8 +1109,8 @@ class AnnouncementCardWidget extends StatelessWidget {
 
   Color _getCategoryColor(String category) {
     final categoryColors = {
-      'Akademik': Colors.blue,
-      'Acara': Colors.green,
+      'Akademik': Color(0xFF6C5CE7),
+      'Acara':Color(0xFF45B7D1),
       'Umum': Colors.orange,
       'Darurat': Colors.red,
       'Olahraga': Colors.purple,

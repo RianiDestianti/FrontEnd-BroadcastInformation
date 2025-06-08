@@ -206,11 +206,11 @@ class InformasiEvent {
 
 class CategoryMapper {
   static const Map<String, Color> _categoryColors = {
-    'Akademik': Color(0xFF9db7e0),
-    'Acara': Color(0xFFdfed90),
-    'Berita': Color(0xFF1665a5),
-    'Pengumuman': Color(0xFFf08e79),
-    'Umum': Color(0xFF9db7e0),
+    'Akademik': Color(0xFF6C5CE7),
+    'Acara': Color(0xFF45B7D1),
+    'Berita': Color(0xFF0984E3),
+    'Pengumuman': Color(0xFFE17055),
+    'Umum': Colors.orange,
   };
 
   static String mapIdToCategory(dynamic kategoriId) {

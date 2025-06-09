@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../layouts/layout.dart';
 import 'login.dart';
-import 'changepass.dart';
 import '../models/model.dart';
 import '../constants/constant.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  const ProfilePage({super.key});
   static const UserProfile _userProfile = UserProfile(
     name: 'Elara Zafira',
     studentId: '093264',
@@ -19,21 +18,21 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      selectedIndex: 3,
+      selectedIndex: 2,
       child: Container(
         color: Colors.white,
         child: SafeArea(
           child: SingleChildScrollView(
             child: Column(
-              children: [
+              children: const [
                 ProfileHeader(userProfile: _userProfile),
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
                 PersonalInformationCard(userProfile: _userProfile),
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
                 ActionButtonsSection(),
-                const SizedBox(height: 40),
-                const AppFooter(),
-                const SizedBox(height: 30),
+                SizedBox(height: 40),
+                AppFooter(),
+                SizedBox(height: 30),
               ],
             ),
           ),
@@ -44,12 +43,12 @@ class ProfilePage extends StatelessWidget {
 }
 
 class ProfileHeader extends StatelessWidget {
+  const ProfileHeader({super.key, required this.userProfile});
   final UserProfile userProfile;
-  const ProfileHeader({Key? key, required this.userProfile}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.only(top: 20, bottom: 30),
+      padding: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -72,19 +71,12 @@ class ProfileHeader extends StatelessWidget {
 }
 
 class HeaderNavigation extends StatelessWidget {
-  const HeaderNavigation({Key? key}) : super(key: key);
+  const HeaderNavigation({super.key});
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.defaultSpacing),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () => Navigator.pop(context),
-          ),
-          const SizedBox(width: 48),
+      child: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
         ],
       ),
     );
@@ -92,7 +84,7 @@ class HeaderNavigation extends StatelessWidget {
 }
 
 class ProfileAvatar extends StatelessWidget {
-  const ProfileAvatar({Key? key}) : super(key: key);
+  const ProfileAvatar({super.key});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -106,13 +98,13 @@ class ProfileAvatar extends StatelessWidget {
           ),
         ],
       ),
-      child: const CircleAvatar(
-        radius: 55,
+      child: CircleAvatar(
+        radius: ProfileStyles.avatarRadius,
         backgroundColor: Colors.white,
         child: CircleAvatar(
-          radius: 50,
-          backgroundColor: Color(0x3357B4BA),
-          child: Icon(
+          radius: ProfileStyles.innerAvatarRadius,
+          backgroundColor: const Color(0x3357B4BA),
+          child: const Icon(
             Icons.person,
             size: 50,
             color: AppThemeProfile.primaryColor,
@@ -124,20 +116,17 @@ class ProfileAvatar extends StatelessWidget {
 }
 
 class ProfileName extends StatelessWidget {
+  const ProfileName({super.key, required this.name});
   final String name;
-  const ProfileName({Key? key, required this.name}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return Text(
-      name,
-      style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold),
-    );
+    return Text(name, style: ProfileStyles.nameStyle);
   }
 }
 
 class DepartmentBadge extends StatelessWidget {
+  const DepartmentBadge({super.key, required this.department});
   final String department;
-  const DepartmentBadge({Key? key, required this.department}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -171,9 +160,8 @@ class DepartmentBadge extends StatelessWidget {
 }
 
 class PersonalInformationCard extends StatelessWidget {
+  const PersonalInformationCard({super.key, required this.userProfile});
   final UserProfile userProfile;
-  const PersonalInformationCard({Key? key, required this.userProfile})
-    : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -182,7 +170,7 @@ class PersonalInformationCard extends StatelessWidget {
       ),
       child: CardContainer(
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(ProfileStyles.cardPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -222,36 +210,32 @@ class PersonalInformationCard extends StatelessWidget {
 }
 
 class SectionTitle extends StatelessWidget {
+  const SectionTitle({super.key, required this.title, required this.icon});
   final String title;
   final IconData icon;
-  const SectionTitle({Key? key, required this.title, required this.icon})
-    : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Icon(icon, color: AppThemeProfile.primaryColor),
         const SizedBox(width: 10),
-        Text(
-          title,
-          style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600),
-        ),
+        Text(title, style: ProfileStyles.titleStyle),
       ],
     );
   }
 }
 
 class InfoRow extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-
   const InfoRow({
-    Key? key,
+    super.key,
     required this.label,
     required this.value,
     required this.icon,
-  }) : super(key: key);
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -268,20 +252,8 @@ class InfoRow extends StatelessWidget {
             child: Icon(icon, size: 20, color: AppThemeProfile.primaryColor),
           ),
           const SizedBox(width: AppTheme.defaultSpacing),
-          Expanded(
-            child: Text(
-              label,
-              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
-            ),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.black87,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          Expanded(child: Text(label, style: ProfileStyles.labelStyle)),
+          Text(value, style: ProfileStyles.valueStyle),
         ],
       ),
     );
@@ -289,55 +261,29 @@ class InfoRow extends StatelessWidget {
 }
 
 class ActionButtonsSection extends StatelessWidget {
-  const ActionButtonsSection({Key? key}) : super(key: key);
+  const ActionButtonsSection({super.key});
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppThemeProfile.horizontalPadding,
-          ),
-          child: ActionButton(
-            onTap: () => _navigateToChangePassword(context),
-            icon: Icons.lock_outline,
-            label: 'Ubah Password',
-            color: Color(0xFF50C2C9), 
-          ),
-        ),
-        const SizedBox(height: AppTheme.defaultSpacing),
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppThemeProfile.horizontalPadding,
-          ),
-          child: ActionButton(
-            onTap: () => _showLogoutDialog(context),
-            icon: Icons.logout,
-            label: 'Logout',
-            color: Colors.red,
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _navigateToChangePassword(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppThemeProfile.horizontalPadding,
+      ),
+      child: ActionButton(
+        onTap: () => _showLogoutDialog(context),
+        icon: Icons.logout,
+        label: 'Logout',
+        color: Colors.red,
+      ),
     );
   }
 
   void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) => const LogoutDialog(),
-    );
+    showDialog(context: context, builder: (context) => const LogoutDialog());
   }
 }
 
 class AppFooter extends StatelessWidget {
-  const AppFooter({Key? key}) : super(key: key);
+  const AppFooter({super.key});
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -388,19 +334,18 @@ class AppFooter extends StatelessWidget {
 }
 
 class LogoWithText extends StatelessWidget {
+  const LogoWithText({super.key, required this.assetPath, required this.text});
   final String assetPath;
   final String text;
-  const LogoWithText({Key? key, required this.assetPath, required this.text})
-    : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         Container(
-          height: 60,
-          width: 60,
+          height: ProfileStyles.logoSize,
+          width: ProfileStyles.logoSize,
           decoration: BoxDecoration(
-            shape: BoxShape.circle,
+            borderRadius: BorderRadius.circular(12),
             color: Colors.white,
             boxShadow: [
               BoxShadow(
@@ -410,7 +355,10 @@ class LogoWithText extends StatelessWidget {
               ),
             ],
           ),
-          child: ClipOval(child: Image.asset(assetPath, fit: BoxFit.contain)),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.asset(assetPath, fit: BoxFit.contain),
+          ),
         ),
         const SizedBox(height: 8),
         Text(
@@ -423,8 +371,8 @@ class LogoWithText extends StatelessWidget {
 }
 
 class CardContainer extends StatelessWidget {
+  const CardContainer({super.key, required this.child});
   final Widget child;
-  const CardContainer({Key? key, required this.child}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -432,13 +380,7 @@ class CardContainer extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppThemeProfile.borderRadius),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: [ProfileStyles.cardShadow],
       ),
       child: child,
     );
@@ -446,18 +388,18 @@ class CardContainer extends StatelessWidget {
 }
 
 class ActionButton extends StatelessWidget {
-  final VoidCallback onTap;
-  final IconData icon;
-  final String label;
-  final Color color;
-
   const ActionButton({
-    Key? key,
+    super.key,
     required this.onTap,
     required this.icon,
     required this.label,
     required this.color,
-  }) : super(key: key);
+  });
+
+  final VoidCallback onTap;
+  final IconData icon;
+  final String label;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -493,13 +435,13 @@ class ActionButton extends StatelessWidget {
 }
 
 class LogoutDialog extends StatelessWidget {
-  const LogoutDialog({Key? key}) : super(key: key);
+  const LogoutDialog({super.key});
   @override
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(ProfileStyles.dialogPadding),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -527,9 +469,9 @@ class LogoutDialog extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Row(
-              children: [
+              children: const [
                 Expanded(child: DialogCancelButton()),
-                const SizedBox(width: AppTheme.defaultSpacing),
+                SizedBox(width: AppTheme.defaultSpacing),
                 Expanded(child: DialogLogoutButton()),
               ],
             ),
@@ -541,7 +483,7 @@ class LogoutDialog extends StatelessWidget {
 }
 
 class DialogCancelButton extends StatelessWidget {
-  const DialogCancelButton({Key? key}) : super(key: key);
+  const DialogCancelButton({super.key});
   @override
   Widget build(BuildContext context) {
     return TextButton(
@@ -565,7 +507,7 @@ class DialogCancelButton extends StatelessWidget {
 }
 
 class DialogLogoutButton extends StatelessWidget {
-  const DialogLogoutButton({Key? key}) : super(key: key);
+  const DialogLogoutButton({super.key});
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(

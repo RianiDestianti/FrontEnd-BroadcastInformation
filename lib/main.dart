@@ -3,8 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'screens/home.dart';
 import 'screens/login.dart';
 import 'screens/profile.dart';
-import 'screens/changepass.dart';
-import 'screens/save.dart';
 import 'screens/calendar.dart';
 import 'screens/splash.dart';
 
@@ -56,8 +54,6 @@ class MyApp extends StatelessWidget {
       '/home': (context) => const HomePage(),
       '/login': (context) => const SignInPage(),
       '/profile': (context) => const ProfilePage(),
-      '/save': (context) => const SaveScreen(),
-      '/change-password': (context) => const ChangePasswordScreen(),
       '/calendar': (context) => CalendarPage(),
     };
   }

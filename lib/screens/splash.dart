@@ -10,67 +10,43 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   late final List<AnimationController> _controllers;
   late final SplashAnimations _animations;
   @override
   void initState() {
     super.initState();
-    _initializeControllers();
+    _controllers = _createControllers();
     _animations = SplashAnimations(_controllers);
-    _startAnimationSequence();
-    _scheduleNavigation();
+    _startAnimations();
+    _navigateAfterDelay();
   }
 
-  void _initializeControllers() {
-    _controllers = [
-      AnimationController(
-        duration: SplashConstants.animationDuration,
-        vsync: this,
-      ),
-      AnimationController(
-        duration: SplashConstants.animationDuration,
-        vsync: this,
-      ),
-      AnimationController(
-        duration: SplashConstants.rotationDuration,
-        vsync: this,
-      )..repeat(),
-      AnimationController(duration: SplashConstants.pulseDuration, vsync: this)
-        ..repeat(reverse: true),
-      AnimationController(
-        duration: SplashConstants.textAnimationDuration,
-        vsync: this,
-      ),
-      AnimationController(
-        duration: SplashConstants.loadingDuration,
-        vsync: this,
-      )..repeat(),
-    ];
-  }
+  List<AnimationController> _createControllers() => [
+        AnimationController(duration: SplashConstants.animationDuration, vsync: this)..forward(),
+        AnimationController(duration: SplashConstants.animationDuration, vsync: this),
+        AnimationController(duration: SplashConstants.rotationDuration, vsync: this)..repeat(),
+        AnimationController(duration: SplashConstants.pulseDuration, vsync: this)..repeat(reverse: true),
+        AnimationController(duration: SplashConstants.textAnimationDuration, vsync: this),
+        AnimationController(duration: SplashConstants.loadingDuration, vsync: this)..repeat(),
+      ];
 
-  void _startAnimationSequence() {
-    _controllers[0].forward();
+  void _startAnimations() {
     Timer(SplashConstants.smknLogoDelay, () => _controllers[1].forward());
     Timer(SplashConstants.textAnimationDelay, () => _controllers[4].forward());
   }
 
-  void _scheduleNavigation() {
+  void _navigateAfterDelay() {
     Timer(SplashConstants.navigationDelay, () {
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
+      Navigator.pushReplacement(
+        context,
         PageRouteBuilder(
-          pageBuilder: (context, animation, _) => const SignInPage(),
-          transitionsBuilder: (context, animation, _, child) {
-            return FadeTransition(
-              opacity: CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOut,
-              ),
-              child: child,
-            );
-          },
+          pageBuilder: (_, __, ___) => const SignInPage(),
+          transitionsBuilder: (_, animation, __, child) => FadeTransition(
+            opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+            child: child,
+          ),
           transitionDuration: SplashConstants.navigationTransitionDuration,
         ),
       );
@@ -89,15 +65,15 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: _SplashBackground(
+      body: SplashBackground(
         child: SafeArea(
           child: Stack(
             fit: StackFit.expand,
             children: [
-              _RotatingBackgroundLogo(controller: _controllers[2]),
-              _SplashContent(animations: _animations),
-              _FooterText(fadeAnimation: _animations.fadeIn),
-              _VersionText(fadeAnimation: _animations.fadeIn),
+              RotatingBackgroundLogo(controller: _controllers[2]),
+              SplashContent(animations: _animations),
+              FooterText(fadeAnimation: _animations.fadeIn),
+              VersionText(fadeAnimation: _animations.fadeIn),
             ],
           ),
         ),
@@ -107,35 +83,29 @@ class _SplashScreenState extends State<SplashScreen>
 }
 
 class SplashAnimations {
+  SplashAnimations(this.controllers) {
+    pulse = Tween<double>(begin: 0.95, end: 1.05).animate(controllers[3]);
+    fadeIn = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: controllers[4], curve: Curves.easeIn),
+    );
+    slide = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+      CurvedAnimation(parent: controllers[4], curve: Curves.easeOut),
+    );
+    smknFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: controllers[1], curve: Curves.easeIn),
+    );
+  }
+
   final List<AnimationController> controllers;
   late final Animation<double> pulse;
   late final Animation<double> fadeIn;
   late final Animation<Offset> slide;
   late final Animation<double> smknFade;
-
-  SplashAnimations(this.controllers) {
-    pulse = Tween<double>(begin: 0.95, end: 1.05).animate(controllers[3]);
-
-    fadeIn = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: controllers[4], curve: Curves.easeIn));
-
-    slide = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: controllers[4], curve: Curves.easeOut));
-
-    smknFade = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: controllers[1], curve: Curves.easeIn));
-  }
 }
 
-class _SplashBackground extends StatelessWidget {
+class SplashBackground extends StatelessWidget {
+  const SplashBackground({super.key, required this.child});
   final Widget child;
-  const _SplashBackground({required this.child});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -143,7 +113,7 @@ class _SplashBackground extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Colors.white, SplashConstants.themeColor.withOpacity(0.15)],
+          colors: [Colors.white, SplashStyles.themeColor.withOpacity(0.15)],
         ),
       ),
       child: child,
@@ -151,38 +121,36 @@ class _SplashBackground extends StatelessWidget {
   }
 }
 
-class _RotatingBackgroundLogo extends StatelessWidget {
+class RotatingBackgroundLogo extends StatelessWidget {
+  const RotatingBackgroundLogo({super.key, required this.controller});
   final AnimationController controller;
-  const _RotatingBackgroundLogo({required this.controller});
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size.width * 1.5;
+    final size = MediaQuery.sizeOf(context).width * SplashStyles.backgroundLogoSizeFactor;
     return Center(
       child: AnimatedBuilder(
         animation: controller,
-        builder:
-            (context, _) => Transform.translate(
-              offset: const Offset(0, -80),
-              child: Transform.rotate(
-                angle: controller.value * 2 * math.pi,
-                child: Opacity(
-                  opacity: 0.08,
-                  child: SizedBox(
-                    width: size,
-                    height: size,
-                    child: Image.asset('assets/logo.png', fit: BoxFit.contain),
-                  ),
-                ),
+        builder: (_, __) => Transform.translate(
+          offset: const Offset(0, -80),
+          child: Transform.rotate(
+            angle: controller.value * 2 * math.pi,
+            child: Opacity(
+              opacity: SplashStyles.backgroundLogoOpacity,
+              child: SizedBox.square(
+                dimension: size,
+                child: Image.asset('assets/logo.png', fit: BoxFit.contain),
               ),
             ),
+          ),
+        ),
       ),
     );
   }
 }
 
-class _SplashContent extends StatelessWidget {
+class SplashContent extends StatelessWidget {
+  const SplashContent({super.key, required this.animations});
   final SplashAnimations animations;
-  const _SplashContent({required this.animations});
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -194,130 +162,123 @@ class _SplashContent extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                _RotatingGradientCircle(controller: animations.controllers[2]),
-                _RotatingDots(controller: animations.controllers[2]),
+                RotatingGradientCircle(controller: animations.controllers[2]),
+                RotatingDots(controller: animations.controllers[2]),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 20),
-                  child: _LogosRow(animations: animations),
+                  child: LogosRow(animations: animations),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 40),
-          _AnimatedText(
+          AnimatedText(
             text: 'EduInform',
-            style: const TextStyle(
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-              letterSpacing: 1.2,
-            ),
+            style: SplashStyles.titleStyle,
             fadeAnimation: animations.fadeIn,
             slideAnimation: animations.slide,
           ),
           const SizedBox(height: 8),
-          _AnimatedText(
+          AnimatedText(
             text: 'Ruang Informasi Sekolah',
-            style: const TextStyle(fontSize: 18, color: Colors.black54),
+            style: SplashStyles.subtitleStyle,
             fadeAnimation: animations.fadeIn,
             slideAnimation: animations.slide,
           ),
           const SizedBox(height: 50),
-          _LoadingIndicator(controller: animations.controllers[5]),
+          LoadingIndicator(controller: animations.controllers[5]),
         ],
       ),
     );
   }
 }
 
-class _RotatingGradientCircle extends StatelessWidget {
+class RotatingGradientCircle extends StatelessWidget {
+  const RotatingGradientCircle({super.key, required this.controller});
   final AnimationController controller;
-  const _RotatingGradientCircle({required this.controller});
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
-      builder:
-          (context, _) => Transform.rotate(
-            angle: -controller.value * 2 * math.pi,
-            child: Container(
-              width: 280,
-              height: 280,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: SweepGradient(
-                  colors: [
-                    SplashConstants.themeColor.withOpacity(0.1),
-                    SplashConstants.themeColor.withOpacity(0.3),
-                    SplashConstants.themeColor.withOpacity(0.1),
-                  ],
-                ),
-              ),
+      builder: (_, __) => Transform.rotate(
+        angle: -controller.value * 2 * math.pi,
+        child: Container(
+          width: SplashStyles.circleSize,
+          height: SplashStyles.circleSize,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: SweepGradient(
+              colors: [
+                SplashStyles.themeColor.withOpacity(0.1),
+                SplashStyles.themeColor.withOpacity(0.3),
+                SplashStyles.themeColor.withOpacity(0.1),
+              ],
             ),
           ),
-    );
-  }
-}
-
-class _RotatingDots extends StatelessWidget {
-  final AnimationController controller;
-  const _RotatingDots({required this.controller});
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: controller,
-      builder:
-          (context, _) => Transform.rotate(
-            angle: controller.value * 2 * math.pi * 1.5,
-            child: SizedBox(
-              width: 320,
-              height: 320,
-              child: Stack(
-                children: List.generate(8, (index) {
-                  final angle = (index / 8) * 2 * math.pi;
-                  return Positioned(
-                    left: 160 + 145 * math.cos(angle),
-                    top: 160 + 145 * math.sin(angle),
-                    child: _Dot(),
-                  );
-                }),
-              ),
-            ),
-          ),
-    );
-  }
-}
-
-class _Dot extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 10,
-      height: 10,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: SplashConstants.themeColor.withOpacity(0.7),
+        ),
       ),
     );
   }
 }
 
-class _LogosRow extends StatelessWidget {
+class RotatingDots extends StatelessWidget {
+  const RotatingDots({super.key, required this.controller});
+  final AnimationController controller;
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (_, __) => Transform.rotate(
+        angle: controller.value * 2 * math.pi * 1.5,
+        child: SizedBox(
+          width: 320,
+          height: 320,
+          child: Stack(
+            children: List.generate(8, (index) {
+              final angle = (index / 8) * 2 * math.pi;
+              return Positioned(
+                left: 160 + 145 * math.cos(angle),
+                top: 160 + 145 * math.sin(angle),
+                child: const Dot(),
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class Dot extends StatelessWidget {
+  const Dot({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: SplashStyles.dotSize,
+      height: SplashStyles.dotSize,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: SplashStyles.themeColor.withOpacity(0.7),
+      ),
+    );
+  }
+}
+
+class LogosRow extends StatelessWidget {
+  const LogosRow({super.key, required this.animations});
   final SplashAnimations animations;
-  const _LogosRow({required this.animations});
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        _AnimatedLogo(
+        AnimatedLogo(
           logoPath: 'assets/logo.png',
           scaleController: animations.controllers[0],
           pulseAnimation: animations.pulse,
         ),
-        const _LogoSeparator(),
-        _AnimatedLogo(
+        const LogoSeparator(),
+        AnimatedLogo(
           logoPath: 'assets/smkn.png',
           scaleController: animations.controllers[1],
           pulseAnimation: animations.pulse,
@@ -328,18 +289,19 @@ class _LogosRow extends StatelessWidget {
   }
 }
 
-class _AnimatedLogo extends StatelessWidget {
-  final String logoPath;
-  final AnimationController scaleController;
-  final Animation<double> pulseAnimation;
-  final Animation<double>? fadeAnimation;
-
-  const _AnimatedLogo({
+class AnimatedLogo extends StatelessWidget {
+  const AnimatedLogo({
+    super.key,
     required this.logoPath,
     required this.scaleController,
     required this.pulseAnimation,
     this.fadeAnimation,
   });
+
+  final String logoPath;
+  final AnimationController scaleController;
+  final Animation<double> pulseAnimation;
+  final Animation<double>? fadeAnimation;
 
   @override
   Widget build(BuildContext context) {
@@ -347,25 +309,20 @@ class _AnimatedLogo extends StatelessWidget {
       scale: scaleController,
       child: AnimatedBuilder(
         animation: pulseAnimation,
-        builder:
-            (context, _) => Transform.scale(
-              scale: pulseAnimation.value,
-              child: _LogoContainer(logoPath: logoPath),
-            ),
+        builder: (_, __) => Transform.scale(
+          scale: pulseAnimation.value,
+          child: LogoContainer(logoPath: logoPath),
+        ),
       ),
     );
 
-    if (fadeAnimation != null) {
-      logo = FadeTransition(opacity: fadeAnimation!, child: logo);
-    }
-
-    return logo;
+    return fadeAnimation != null ? FadeTransition(opacity: fadeAnimation!, child: logo) : logo;
   }
 }
 
-class _LogoContainer extends StatelessWidget {
+class LogoContainer extends StatelessWidget {
+  const LogoContainer({super.key, required this.logoPath});
   final String logoPath;
-  const _LogoContainer({required this.logoPath});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -375,55 +332,48 @@ class _LogoContainer extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: SplashConstants.themeColor.withOpacity(0.25),
+            color: SplashStyles.themeColor.withOpacity(SplashStyles.shadowOpacity),
             blurRadius: 15,
             spreadRadius: 2,
           ),
         ],
         border: Border.all(
-          color: SplashConstants.themeColor.withOpacity(0.15),
+          color: SplashStyles.themeColor.withOpacity(SplashStyles.borderOpacity),
           width: 2,
         ),
       ),
-      child: SizedBox(
-        height: 90,
-        width: 90,
+      child: SizedBox.square(
+        dimension: SplashStyles.logoSize,
         child: Image.asset(logoPath, fit: BoxFit.contain),
       ),
     );
   }
 }
 
-class _LogoSeparator extends StatelessWidget {
-  const _LogoSeparator();
+class LogoSeparator extends StatelessWidget {
+  const LogoSeparator({super.key});
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _SeparatorLine(
-          colors: [
-            SplashConstants.themeColor.withOpacity(0.3),
-            SplashConstants.themeColor.withOpacity(0.7),
-          ],
+        SeparatorLine(
+          colors: [SplashStyles.themeColor.withOpacity(0.3), SplashStyles.themeColor.withOpacity(0.7)],
         ),
         const SizedBox(height: 5),
-        _SeparatorDot(),
+        const SeparatorDot(),
         const SizedBox(height: 5),
-        _SeparatorLine(
-          colors: [
-            SplashConstants.themeColor.withOpacity(0.7),
-            SplashConstants.themeColor.withOpacity(0.3),
-          ],
+        SeparatorLine(
+          colors: [SplashStyles.themeColor.withOpacity(0.7), SplashStyles.themeColor.withOpacity(0.3)],
         ),
       ],
     );
   }
 }
 
-class _SeparatorLine extends StatelessWidget {
+class SeparatorLine extends StatelessWidget {
+  const SeparatorLine({super.key, required this.colors});
   final List<Color> colors;
-  const _SeparatorLine({required this.colors});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -442,7 +392,8 @@ class _SeparatorLine extends StatelessWidget {
   }
 }
 
-class _SeparatorDot extends StatelessWidget {
+class SeparatorDot extends StatelessWidget {
+  const SeparatorDot({super.key});
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -450,10 +401,10 @@ class _SeparatorDot extends StatelessWidget {
       height: 7,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: SplashConstants.themeColor.withOpacity(0.9),
+        color: SplashStyles.themeColor.withOpacity(0.9),
         boxShadow: [
           BoxShadow(
-            color: SplashConstants.themeColor.withOpacity(0.3),
+            color: SplashStyles.themeColor.withOpacity(0.3),
             blurRadius: 4,
             spreadRadius: 1,
           ),
@@ -463,18 +414,19 @@ class _SeparatorDot extends StatelessWidget {
   }
 }
 
-class _AnimatedText extends StatelessWidget {
-  final String text;
-  final TextStyle style;
-  final Animation<double> fadeAnimation;
-  final Animation<Offset> slideAnimation;
-
-  const _AnimatedText({
+class AnimatedText extends StatelessWidget {
+  const AnimatedText({
+    super.key,
     required this.text,
     required this.style,
     required this.fadeAnimation,
     required this.slideAnimation,
   });
+
+  final String text;
+  final TextStyle style;
+  final Animation<double> fadeAnimation;
+  final Animation<Offset> slideAnimation;
 
   @override
   Widget build(BuildContext context) {
@@ -488,50 +440,47 @@ class _AnimatedText extends StatelessWidget {
   }
 }
 
-class _LoadingIndicator extends StatelessWidget {
+class LoadingIndicator extends StatelessWidget {
+  const LoadingIndicator({super.key, required this.controller});
   final AnimationController controller;
-  const _LoadingIndicator({required this.controller});
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
-      builder:
-          (context, _) => SizedBox(
-            width: 60,
-            height: 10,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(3, (index) {
-                final delayedValue = (controller.value + index * 0.2) % 1.0;
-                return _LoadingDot(animationValue: delayedValue);
-              }),
-            ),
-          ),
+      builder: (_, __) => SizedBox(
+        width: 60,
+        height: SplashStyles.loadingDotSize,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(3, (index) {
+            final delayedValue = (controller.value + index * 0.2) % 1.0;
+            return LoadingDot(animationValue: delayedValue);
+          }),
+        ),
+      ),
     );
   }
 }
 
-class _LoadingDot extends StatelessWidget {
+class LoadingDot extends StatelessWidget {
+  const LoadingDot({super.key, required this.animationValue});
   final double animationValue;
-  const _LoadingDot({required this.animationValue});
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 3),
-      width: 10,
-      height: 10,
+      width: SplashStyles.loadingDotSize,
+      height: SplashStyles.loadingDotSize,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: SplashConstants.themeColor.withOpacity(
-          0.3 + animationValue * 0.7,
-        ),
+        color: SplashStyles.themeColor.withOpacity(0.3 + animationValue * 0.7),
       ),
       child: Transform.scale(
         scale: 0.7 + animationValue * 0.5,
         child: DecoratedBox(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: SplashConstants.themeColor,
+            color: SplashStyles.themeColor,
           ),
         ),
       ),
@@ -539,9 +488,9 @@ class _LoadingDot extends StatelessWidget {
   }
 }
 
-class _FooterText extends StatelessWidget {
+class FooterText extends StatelessWidget {
+  const FooterText({super.key, required this.fadeAnimation});
   final Animation<double> fadeAnimation;
-  const _FooterText({required this.fadeAnimation});
   @override
   Widget build(BuildContext context) {
     return Positioned(
@@ -551,23 +500,16 @@ class _FooterText extends StatelessWidget {
       child: FadeTransition(
         opacity: fadeAnimation,
         child: const Center(
-          child: Text(
-            'SMK Negeri 11 Bandung',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black54,
-            ),
-          ),
+          child: Text('SMK Negeri 11 Bandung', style: SplashStyles.footerStyle),
         ),
       ),
     );
   }
 }
 
-class _VersionText extends StatelessWidget {
+class VersionText extends StatelessWidget {
+  const VersionText({super.key, required this.fadeAnimation});
   final Animation<double> fadeAnimation;
-  const _VersionText({required this.fadeAnimation});
   @override
   Widget build(BuildContext context) {
     return Positioned(
@@ -577,10 +519,7 @@ class _VersionText extends StatelessWidget {
       child: FadeTransition(
         opacity: fadeAnimation,
         child: const Center(
-          child: Text(
-            'Version 1.0.0',
-            style: TextStyle(color: Colors.black38, fontSize: 12),
-          ),
+          child: Text('Version 1.0.0', style: SplashStyles.versionStyle),
         ),
       ),
     );

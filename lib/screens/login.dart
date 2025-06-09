@@ -4,7 +4,7 @@ import 'home.dart';
 import '../constants/constant.dart';
 
 class SignInPage extends StatefulWidget {
-  const SignInPage({Key? key}) : super(key: key);
+  const SignInPage({super.key});
   @override
   State<SignInPage> createState() => _SignInPageState();
 }
@@ -13,6 +13,7 @@ class _SignInPageState extends State<SignInPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+
   @override
   void dispose() {
     _usernameController.dispose();
@@ -26,29 +27,22 @@ class _SignInPageState extends State<SignInPage> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppConstants.horizontalPadding,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: AppConstants.horizontalPadding),
           child: Center(
             child: SingleChildScrollView(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: AppConstants.spacingXL),
-                  _buildHeader(),
-                  const SizedBox(height: AppConstants.spacingXL),
-                  _buildUsernameField(),
-                  const SizedBox(height: AppConstants.spacingM),
-                  _buildPasswordField(),
-                  _buildForgotPasswordButton(),
-                  const SizedBox(height: AppConstants.spacingS),
-                  _buildSignInButton(),
-                  const SizedBox(height: AppConstants.spacingM),
-                  _buildGoogleSignInButton(),
-                  const SizedBox(height: AppConstants.spacingM),
-                  _buildSignUpPrompt(),
-                  const SizedBox(height: AppConstants.spacingM),
+                children: const [
+                  SizedBox(height: AppConstants.spacingXL),
+                  HeaderWidget(),
+                  SizedBox(height: AppConstants.spacingXL),
+                  UsernameField(),
+                  SizedBox(height: AppConstants.spacingM),
+                  PasswordField(),
+                  SizedBox(height: AppConstants.spacingL),
+                  SignInButton(),
+                  SizedBox(height: AppConstants.spacingM),
                 ],
               ),
             ),
@@ -57,258 +51,163 @@ class _SignInPageState extends State<SignInPage> {
       ),
     );
   }
+}
 
-  Widget _buildHeader() {
+class HeaderWidget extends StatelessWidget {
+  const HeaderWidget({super.key});
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
-          'Login',
-          textAlign: TextAlign.center,
-          style: _getTextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        Text('Login', textAlign: TextAlign.center, style: SignInStyles.titleText),
         const SizedBox(height: AppConstants.spacingS),
         Text(
           'Halo! Update Informasi penting menanti Anda.',
           textAlign: TextAlign.center,
-          style: _getTextStyle(
-            fontSize: 16,
-            color: Colors.black54,
-          ),
+          style: SignInStyles.subtitleText,
         ),
       ],
     );
   }
+}
 
-  Widget _buildUsernameField() {
-    return _buildInputField(
+class UsernameField extends StatelessWidget {
+  const UsernameField({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final state = context.findAncestorStateOfType<_SignInPageState>()!;
+    return InputField(
       label: 'NIS/NIP',
-      controller: _usernameController,
+      controller: state._usernameController,
       hintText: 'Masukkan NIS/NIP anda',
     );
   }
+}
 
-  Widget _buildPasswordField() {
-    return _buildInputField(
+class PasswordField extends StatelessWidget {
+  const PasswordField({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final state = context.findAncestorStateOfType<_SignInPageState>()!;
+    return InputField(
       label: 'Password',
-      controller: _passwordController,
+      controller: state._passwordController,
       hintText: 'Masukkan password anda',
       isPassword: true,
-      obscureText: !_isPasswordVisible,
+      obscureText: !state._isPasswordVisible,
       suffixIcon: IconButton(
         icon: Icon(
-          _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-          color: Colors.grey,
+          state._isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+          color: SignInStyles.hintColor,
         ),
-        onPressed: () {
-          setState(() {
-            _isPasswordVisible = !_isPasswordVisible;
-          });
-        },
+        onPressed: () => state.setState(() => state._isPasswordVisible = !state._isPasswordVisible),
       ),
     );
   }
+}
 
-  Widget _buildInputField({
-    required String label,
-    required TextEditingController controller,
-    required String hintText,
-    bool isPassword = false,
-    bool obscureText = false,
-    Widget? suffixIcon,
-  }) {
+class InputField extends StatelessWidget {
+  const InputField({
+    super.key,
+    required this.label,
+    required this.controller,
+    required this.hintText,
+    this.isPassword = false,
+    this.obscureText = false,
+    this.suffixIcon,
+  });
+
+  final String label;
+  final TextEditingController controller;
+  final String hintText;
+  final bool isPassword;
+  final bool obscureText;
+  final Widget? suffixIcon;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: _getTextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        Text(label, style: SignInStyles.labelText),
         const SizedBox(height: AppConstants.spacingS),
         TextField(
           controller: controller,
           obscureText: obscureText,
-          decoration: _getInputDecoration(hintText, suffixIcon),
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: SignInStyles.hintText,
+            suffixIcon: suffixIcon,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: SignInStyles.inputPaddingHorizontal,
+              vertical: SignInStyles.inputPaddingVertical,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppConstants.inputBorderRadius),
+              borderSide: const BorderSide(color: Colors.grey, width: 1),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppConstants.inputBorderRadius),
+              borderSide: BorderSide(color: SignInStyles.disabledBorderColor, width: 1),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppConstants.inputBorderRadius),
+              borderSide: const BorderSide(color: SignInStyles.primaryColor, width: 2),
+            ),
+            filled: true,
+            fillColor: Colors.white,
+          ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildForgotPasswordButton() {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: TextButton(
-        onPressed: _handleForgotPassword,
-        child: Text(
-          'Lupa kata sandi?',
-          style: _getTextStyle(color: Colors.black),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSignInButton() {
+class SignInButton extends StatelessWidget {
+  const SignInButton({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final state = context.findAncestorStateOfType<_SignInPageState>()!;
     return ElevatedButton(
-      onPressed: _handleSignIn,
+      onPressed: () => _handleSignIn(context, state),
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppConstants.primaryColor,
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        backgroundColor: SignInStyles.primaryColor,
+        padding: const EdgeInsets.symmetric(vertical: SignInStyles.buttonPaddingVertical),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius),
         ),
         elevation: 0,
       ),
-      child: Text(
-        'Login',
-        style: _getTextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
+      child: Text('Login', style: SignInStyles.buttonText),
     );
   }
 
-  Widget _buildGoogleSignInButton() {
-    return OutlinedButton.icon(
-      onPressed: _handleGoogleSignIn,
-      icon: Image.asset(
-        'assets/google.png',
-        height: 24,
-        width: 24,
-        errorBuilder: (context, error, stackTrace) {
-          return const Icon(Icons.g_mobiledata, size: 24, color: Colors.red);
-        },
-      ),
-      label: Text(
-        'Login dengan Google',
-        style: _getTextStyle(color: Colors.black),
-      ),
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        side: const BorderSide(color: Colors.grey),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSignUpPrompt() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          'Don\'t have an account? ',
-          style: _getTextStyle(color: Colors.black),
-        ),
-        GestureDetector(
-          onTap: _handleSignUp,
-          child: Text(
-            'Sign Up',
-            style: _getTextStyle(
-              color: AppConstants.primaryColor,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  TextStyle _getTextStyle({
-    double? fontSize,
-    FontWeight? fontWeight,
-    Color? color,
-  }) {
-    return GoogleFonts.poppins(
-      fontSize: fontSize,
-      fontWeight: fontWeight,
-      color: color,
-    );
-  }
-
-  InputDecoration _getInputDecoration(String hintText, [Widget? suffixIcon]) {
-    return InputDecoration(
-      hintText: hintText,
-      hintStyle: GoogleFonts.poppins(color: Colors.grey[600]),
-      suffixIcon: suffixIcon,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 16,
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppConstants.inputBorderRadius),
-        borderSide: const BorderSide(color: Colors.grey, width: 1),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppConstants.inputBorderRadius),
-        borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppConstants.inputBorderRadius),
-        borderSide: const BorderSide(
-          color: AppConstants.primaryColor,
-          width: 2,
-        ),
-      ),
-      filled: true,
-      fillColor: Colors.white,
-    );
-  }
-
-  void _handleSignIn() {
-    if (_validateInputs()) {
+  void _handleSignIn(BuildContext context, _SignInPageState state) {
+    if (_validateInputs(context, state)) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+        MaterialPageRoute(builder: (_) => const HomePage()),
       );
     }
   }
 
-  void _handleGoogleSignIn() {
-    // TODO: Implement Google Sign In
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Google Sign In - Coming Soon!')),
-    );
-  }
-
-  void _handleForgotPassword() {
-    // TODO: Implement forgot password
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Forgot Password - Coming Soon!')),
-    );
-  }
-
-  void _handleSignUp() {
-    // TODO: Navigate to Sign Up page
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Sign Up - Coming Soon!')),
-    );
-  }
-
-  bool _validateInputs() {
-    if (_usernameController.text.trim().isEmpty) {
-      _showErrorSnackBar('Please enter your username');
+  bool _validateInputs(BuildContext context, _SignInPageState state) {
+    if (state._usernameController.text.trim().isEmpty) {
+      _showErrorSnackBar(context, 'Please enter your username');
       return false;
     }
-    if (_passwordController.text.trim().isEmpty) {
-      _showErrorSnackBar('Please enter your password');
+    if (state._passwordController.text.trim().isEmpty) {
+      _showErrorSnackBar(context, 'Please enter your password');
       return false;
     }
     return true;
   }
 
-  void _showErrorSnackBar(String message) {
+  void _showErrorSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: SignInStyles.errorColor,
         behavior: SnackBarBehavior.floating,
       ),
     );

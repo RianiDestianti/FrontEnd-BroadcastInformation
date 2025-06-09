@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// layout
 class NavigationItem {
   final String label;
   final IconData activeIcon;
@@ -12,6 +13,7 @@ class NavigationItem {
   });
 }
 
+// home & popup
 class Announcement {
   final String id;
   final String tag;
@@ -36,30 +38,14 @@ class Announcement {
   });
 }
 
+// model
 class EventCategory {
   final String name;
   final Color color;
   const EventCategory({required this.name, required this.color});
 }
 
-class EventModel {
-  final String title;
-  final String time;
-  final String date;
-  final String location;
-  final EventCategory category;
-  bool isBookmarked;
-
-  EventModel({
-    required this.title,
-    required this.time,
-    required this.date,
-    required this.location,
-    required this.category,
-    this.isBookmarked = true,
-  });
-}
-
+// profile
 class UserProfile {
   final String name;
   final String studentId;
@@ -76,6 +62,7 @@ class UserProfile {
   });
 }
 
+// home
 class EventBanner {
   final String id;
   final String title;
@@ -94,6 +81,7 @@ class EventBanner {
   });
 }
 
+// home
 class CategoryData {
   final String name;
   final Color color;

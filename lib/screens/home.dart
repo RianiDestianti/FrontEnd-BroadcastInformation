@@ -1,13 +1,181 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'popup.dart';
 import '../layouts/layout.dart';
 import '../models/model.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import '../constants/constant.dart';
+
+class ApiService {
+  static const String _baseUrl = 'http://localhost:8000/api/informasi';
+  static Future<List<Announcement>> fetchAnnouncements() async {
+    try {
+      final response = await http.get(
+        Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/json'},
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as List<dynamic>;
+        return data
+            .map((item) => DataService.mapApiToAnnouncement(item))
+            .toList();
+      } else {
+        throw Exception('Failed to load data: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching data: $e');
+    }
+  }
+}
+
+class DateService {
+  static const List<String> _days = [
+    'Senin',
+    'Selasa',
+    'Rabu',
+    'Kamis',
+    'Jumat',
+    'Sabtu',
+    'Minggu',
+  ];
+  static const List<String> _months = [
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember',
+  ];
+
+  static String formatDate(DateTime date) {
+    return '${_days[date.weekday - 1]}, ${_months[date.month - 1]} ${date.day}, ${date.year}';
+  }
+
+  static String calculateTimeAgo(String? dateString) {
+    if (dateString == null) return 'Tidak diketahui';
+    try {
+      final date = DateTime.parse(dateString);
+      final difference = DateTime.now().difference(date);
+      if (difference.inDays > 0) return '${difference.inDays} hari lalu';
+      if (difference.inHours > 0) return '${difference.inHours} jam lalu';
+      if (difference.inMinutes > 0) return '${difference.inMinutes} menit lalu';
+      return 'Baru saja';
+    } catch (e) {
+      return 'Tidak diketahui';
+    }
+  }
+}
+
+class DataService {
+  static const List<EventBanner> banners = [
+    EventBanner(
+      id: '1',
+      title: 'PAS (Penilaian Akhir Semester Genap)',
+      subtitle: '20 April • Ruang AKL01',
+      imageUrl: 'assets/akl.jpg',
+      tag: 'Akademik',
+      tagColor: Color(0xFF6C5CE7),
+    ),
+    EventBanner(
+      id: '2',
+      title: 'Semarak Class Meeting 2025',
+      subtitle: '17 Mei • Lapangan SMKN 11 Bandung',
+      imageUrl: 'assets/rpl.jpg',
+      tag: 'Acara',
+      tagColor: Color(0xFF45B7D1),
+    ),
+    EventBanner(
+      id: '3',
+      title: 'Workshop VR DKV',
+      subtitle: '18 Mei • Lab Multimedia',
+      imageUrl: 'assets/akl.jpg',
+      tag: 'Acara',
+      tagColor: Color(0xFF45B7D1),
+    ),
+    EventBanner(
+      id: '4',
+      title: 'Pemaparan Materi oleh PT Cakrawala',
+      subtitle: '25 Mei • TEFA Perkantoran',
+      imageUrl: 'assets/akl.jpg',
+      tag: 'Akademik',
+      tagColor: Color(0xFF6C5CE7),
+    ),
+  ];
+
+  static const List<CategoryData> categories = [
+    CategoryData(
+      name: 'Pengumuman',
+      color: Color(0xFFE17055),
+      icon: Icons.campaign,
+    ),
+    CategoryData(
+      name: 'Akademik',
+      color: Color(0xFF6C5CE7),
+      icon: Icons.school,
+    ),
+    CategoryData(name: 'Acara', color: Color(0xFF45B7D1), icon: Icons.event),
+    CategoryData(
+      name: 'Berita',
+      color: Color(0xFF0984E3),
+      icon: Icons.newspaper,
+    ),
+    CategoryData(
+      name: 'Artikel',
+      color: Color(0xFFFDCB6E),
+      icon: Icons.article,
+    ),
+  ];
+
+  static const Map<String, Map<String, dynamic>> _categoryMapping = {
+    '1': {'tag': 'Akademik', 'color': Color(0xFF6C5CE7)},
+    '2': {'tag': 'Acara', 'color': Color(0xFF45B7D1)},
+    '3': {'tag': 'Berita', 'color': Color(0xFF0984E3)},
+    '4': {'tag': 'Pengumuman', 'color': Color(0xFFE17055)},
+  };
+
+  static Announcement mapApiToAnnouncement(Map<String, dynamic> apiData) {
+    final categoryId = apiData['IDKategoriInformasi']?.toString();
+    final category =
+        _categoryMapping[categoryId] ??
+        {'tag': 'Pengumuman', 'color': const Color(0xFFE17055)};
+
+    return Announcement(
+      id: apiData['IDInformasi'].toString(),
+      tag: category['tag'] as String,
+      tagColor: category['color'] as Color,
+      timeAgo: DateService.calculateTimeAgo(apiData['created_at']),
+      title: apiData['Judul'] ?? 'Tidak Ada Judul',
+      description: apiData['Deskripsi'] ?? 'Tidak Ada Deskripsi',
+      fullContent: apiData['Deskripsi'] ?? 'Tidak Ada Konten',
+      department:
+          'Dari: ${apiData['IDOperator'] ?? 'Departemen Tidak Dikenal'}',
+    );
+  }
+
+  static Color getCategoryColor(String categoryName) {
+    return categories
+        .firstWhere(
+          (cat) => cat.name == categoryName,
+          orElse:
+              () => const CategoryData(
+                name: 'Bawaan',
+                color: Colors.grey,
+                icon: Icons.circle,
+              ),
+        )
+        .color;
+  }
+}
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -15,76 +183,11 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final TextEditingController _searchController = TextEditingController();
   final PageController _bannerController = PageController();
-  bool _isDarkMode = false;
   bool _isLoading = true;
   String? _selectedCategory;
   int _currentBannerIndex = 0;
   List<Announcement> _allAnnouncements = [];
   List<Announcement> _filteredAnnouncements = [];
-
-static const List<EventBanner> _eventBanners = [
-  EventBanner(
-    id: '1',
-    title: 'SPECTA (Spirit of Creativity and Talent)',
-    subtitle: '20 April • Aula Fakultas',
-    imageUrl: 'assets/akl.jpg',
-    tag: 'Akademik',
-    tagColor: Color(0xFF6C5CE7), 
-  ),
-  EventBanner(
-    id: '2',
-    title: 'EKSIB',
-    subtitle: '17 Mei • Gedung Auditorium',
-    imageUrl: 'assets/rpl.jpg',
-    tag: 'Acara',
-    tagColor: Color(0xFF45B7D1), 
-  ),
-  EventBanner(
-    id: '3',
-    title: 'Workshop UI/UX Design',
-    subtitle: '18 Mei • Ruang Multimedia',
-    imageUrl: 'assets/akl.jpg',
-    tag: 'Acara',
-    tagColor: Color(0xFF45B7D1), 
-  ),
-  EventBanner(
-    id: '4',
-    title: 'Seminar Nasional IT',
-    subtitle: '25 Mei • Auditorium Utama',
-    imageUrl: 'assets/akl.jpg',
-    tag: 'Akademik',
-    tagColor: Color(0xFF6C5CE7), 
-  ),
-];
-
-
-static const List<CategoryData> _categories = [
-    CategoryData(
-    name: 'Pengumuman',
-    color: Color(0xFFE17055), 
-    icon: Icons.campaign,
-  ),
-  CategoryData(
-    name: 'Akademik',
-    color: Color(0xFF6C5CE7),
-    icon: Icons.school,
-  ),
-  CategoryData(
-    name: 'Acara',
-    color: Color(0xFF45B7D1),
-    icon: Icons.event,
-  ),
-  CategoryData(
-    name: 'Berita',
-    color: Color(0xFF0984E3), 
-    icon: Icons.newspaper,
-  ),
-  CategoryData(
-    name: 'Artikel',
-    color: Color(0xFFFDCB6E), 
-    icon: Icons.article,
-  ),
-];
 
   @override
   void initState() {
@@ -103,88 +206,40 @@ static const List<CategoryData> _categories = [
     _filteredAnnouncements = List.from(_allAnnouncements);
     _searchController.addListener(_filterAnnouncements);
     _setupBannerTimer();
-    _fetchInformasi();
+    _fetchAnnouncements();
   }
 
   void _setupBannerTimer() {
     Future.delayed(const Duration(seconds: 5), () {
-      if (_bannerController.hasClients) {
-        final nextPage = (_currentBannerIndex + 1) % _eventBanners.length;
+      if (_bannerController.hasClients && mounted) {
+        final nextPage = (_currentBannerIndex + 1) % DataService.banners.length;
         _bannerController.animateToPage(
           nextPage,
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeInOut,
         );
+        setState(() => _currentBannerIndex = nextPage);
+        _setupBannerTimer();
       }
-      _setupBannerTimer();
     });
   }
 
-  Future<void> _fetchInformasi() async {
+  Future<void> _fetchAnnouncements() async {
+    setState(() => _isLoading = true);
     try {
-      setState(() => _isLoading = true);
-
-      final response = await http.get(
-        Uri.parse('http://localhost:8000/api/informasi'),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        setState(() {
-          _allAnnouncements =
-              data.map((item) => _mapApiToAnnouncement(item)).toList();
-          _filteredAnnouncements = List.from(_allAnnouncements);
-          _isLoading = false;
-        });
-      } else {
-        throw Exception('Failed to load informasi');
-      }
+      final announcements = await ApiService.fetchAnnouncements();
+      setState(() {
+        _allAnnouncements = announcements;
+        _filteredAnnouncements = List.from(_allAnnouncements);
+        _isLoading = false;
+      });
     } catch (e) {
       setState(() => _isLoading = false);
-      _showErrorSnackBar('Failed to load data: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal memuat data: $e')));
     }
   }
-
-  Announcement _mapApiToAnnouncement(Map<String, dynamic> apiData) {
-    final categoryMapping = {
-      '1': {'tag': 'Akademik', 'color': const Color(0xFF6C5CE7)},
-      '2': {'tag': 'Acara', 'color': const Color(0xFF45B7D1)},
-      '3': {'tag': 'Berita', 'color': const Color(0xFF0984E3)},
-    };
-
-    final categoryId = apiData['IDKategoriInformasi']?.toString();
-    final category =
-        categoryMapping[categoryId] ??
-        {'tag': 'Pengumuman', 'color': const Color(0xFFE17055)};
-
-    return Announcement(
-      id: apiData['IDInformasi'].toString(),
-      tag: category['tag'] as String,
-      tagColor: category['color'] as Color,
-      timeAgo: _calculateTimeAgo(apiData['created_at']),
-      title: apiData['Judul'] ?? 'Tidak Ada Judul',
-      description: apiData['Deskripsi'] ?? 'Tidak Ada Deskripsi',
-      fullContent: apiData['Deskripsi'] ?? 'Tidak Ada Konten',
-      department:'Dari: ${apiData['IDOperator'] ?? 'Departemen Tidak Dikenal'}',
-    );
-  }
-
-  String _calculateTimeAgo(String? dateString) {
-  if (dateString == null) return 'Tidak diketahui';
-
-  try {
-    final date = DateTime.parse(dateString);
-    final difference = DateTime.now().difference(date);
-
-    if (difference.inDays > 0) return '${difference.inDays} hari lalu';
-    if (difference.inHours > 0) return '${difference.inHours} jam lalu';
-    if (difference.inMinutes > 0) return '${difference.inMinutes} menit lalu';
-    return 'Baru saja';
-  } catch (e) {
-    return 'Tidak diketahui';
-  }
-}
 
   void _filterAnnouncements() {
     final query = _searchController.text.toLowerCase();
@@ -195,17 +250,14 @@ static const List<CategoryData> _categories = [
                 _selectedCategory == null ||
                 announcement.tag == _selectedCategory;
             final matchesQuery =
-                query.isEmpty || _matchesSearchQuery(announcement, query);
+                query.isEmpty ||
+                announcement.title.toLowerCase().contains(query) ||
+                announcement.description.toLowerCase().contains(query) ||
+                announcement.department.toLowerCase().contains(query) ||
+                announcement.tag.toLowerCase().contains(query);
             return matchesCategory && matchesQuery;
           }).toList();
     });
-  }
-
-  bool _matchesSearchQuery(Announcement announcement, String query) {
-    return announcement.title.toLowerCase().contains(query) ||
-        announcement.description.toLowerCase().contains(query) ||
-        announcement.department.toLowerCase().contains(query) ||
-        announcement.tag.toLowerCase().contains(query);
   }
 
   void _selectCategory(String categoryName) {
@@ -216,108 +268,71 @@ static const List<CategoryData> _categories = [
     });
   }
 
-  void _clearFilter() {
-    setState(() {
-      _selectedCategory = null;
-      _filterAnnouncements();
-    });
-  }
-
-  Color _getCategoryColor(String categoryName) {
-    return _categories
-        .firstWhere(
-          (cat) => cat.name == categoryName,
-          orElse:
-              () => const CategoryData(
-                name: 'Bawaan',
-                color: Colors.grey,
-                icon: Icons.circle,
-              ),
-        )
-        .color;
-  }
-
-  void _showErrorSnackBar(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
-    }
-  }
-
   void _showAnnouncementDetail(Announcement announcement) {
     showDialog(
       context: context,
       builder:
-          (context) => Dialog(
+          (_) => Dialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(
+                HomeStyles.borderRadiusXXLarge,
+              ),
             ),
             child: AnnouncementDetailPopup(announcement: announcement),
           ),
     );
   }
 
-  void _toggleDarkMode() {
-    setState(() => _isDarkMode = !_isDarkMode);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.sizeOf(context).width;
     final horizontalPadding = screenWidth * 0.08;
-
     return MainLayout(
       selectedIndex: 0,
       child: Container(
-        color: Colors.white,
+        color: HomeStyles.white,
         child: SafeArea(
           child: RefreshIndicator(
-            onRefresh: _fetchInformasi,
+            onRefresh: _fetchAnnouncements,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 20.0),
+              padding: const EdgeInsets.symmetric(
+                vertical: HomeStyles.paddingXXLarge,
+              ),
               physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  HeaderWidget(
-                    horizontalPadding: horizontalPadding,
-                    isDarkMode: _isDarkMode,
-                    onToggleDarkMode: _toggleDarkMode,
-                  ),
-                  const SizedBox(height: 16),
+                  HeaderWidget(horizontalPadding: horizontalPadding),
+                  const SizedBox(height: HomeStyles.spacingXXXLarge),
                   SearchBarWidget(
                     controller: _searchController,
                     horizontalPadding: horizontalPadding,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: HomeStyles.spacingXXXXXLarge),
                   BannerSectionWidget(
-                    banners: _eventBanners,
+                    banners: DataService.banners,
                     controller: _bannerController,
                     currentIndex: _currentBannerIndex,
                     horizontalPadding: horizontalPadding,
                     onPageChanged:
                         (index) => setState(() => _currentBannerIndex = index),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: HomeStyles.spacingXXXXXXLarge),
                   CategorySectionWidget(
-                    categories: _categories,
+                    categories: DataService.categories,
                     selectedCategory: _selectedCategory,
                     horizontalPadding: horizontalPadding,
                     onCategorySelected: _selectCategory,
-                    onClearFilter: _clearFilter,
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: HomeStyles.spacingXXXXXXLarge),
                   AnnouncementsSectionWidget(
                     announcements: _filteredAnnouncements,
                     isLoading: _isLoading,
                     selectedCategory: _selectedCategory,
                     horizontalPadding: horizontalPadding,
-                    getCategoryColor: _getCategoryColor,
                     onAnnouncementTap: _showAnnouncementDetail,
-                    onClearFilter: _clearFilter,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: HomeStyles.spacingXXXXXLarge),
                 ],
               ),
             ),
@@ -330,83 +345,19 @@ static const List<CategoryData> _categories = [
 
 class HeaderWidget extends StatelessWidget {
   final double horizontalPadding;
-  final bool isDarkMode;
-  final VoidCallback onToggleDarkMode;
-
-  const HeaderWidget({
-    Key? key,
-    required this.horizontalPadding,
-    required this.isDarkMode,
-    required this.onToggleDarkMode,
-  }) : super(key: key);
-
+  const HeaderWidget({super.key, required this.horizontalPadding});
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Selamat datang kembali, Ririn!',
-                style: GoogleFonts.poppins(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                _getFormattedDate(DateTime.now()),
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-          IconButton(
-            icon: Icon(
-              isDarkMode ? Icons.light_mode : Icons.dark_mode,
-              size: 24,
-            ),
-            onPressed: onToggleDarkMode,
-          ),
+          Text('Selamat datang, Rika!', style: HomeStyles.welcome),
+          Text(DateService.formatDate(DateTime.now()), style: HomeStyles.date),
         ],
       ),
     );
-  }
-
-  String _getFormattedDate(DateTime dateTime) {
-    const months = [
-      'Januari',
-      'Februari',
-      'Maret',
-      'April',
-      'Mei',
-      'Juni',
-      'Juli',
-      'Agustus',
-      'September',
-      'Oktober',
-      'November',
-      'Desember',
-    ];
-
-    const days = [
-      'Senin',
-      'Selasa',
-      'Rabu',
-      'Kamis',
-      'Jumat',
-      'Sabtu',
-      'Minggu',
-    ];
-
-    final dayName = days[dateTime.weekday - 1];
-    final monthName = months[dateTime.month - 1];
-    return '$dayName, $monthName ${dateTime.day}, ${dateTime.year}';
   }
 }
 
@@ -415,23 +366,23 @@ class SearchBarWidget extends StatelessWidget {
   final double horizontalPadding;
 
   const SearchBarWidget({
-    Key? key,
+    super.key,
     required this.controller,
     required this.horizontalPadding,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       child: Container(
-        height: 52,
+        height: HomeStyles.searchBarHeight,
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(26),
+          color: HomeStyles.white,
+          borderRadius: BorderRadius.circular(HomeStyles.borderRadiusXXXLarge),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.15),
+              color: HomeStyles.textGrey.withOpacity(0.15),
               spreadRadius: 2,
               blurRadius: 6,
               offset: const Offset(0, 3),
@@ -442,29 +393,38 @@ class SearchBarWidget extends StatelessWidget {
           controller: controller,
           decoration: InputDecoration(
             hintText: 'Cari',
-            hintStyle: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.grey[500],
+            hintStyle: HomeStyles.searchHint,
+            prefixIcon: const Icon(
+              Icons.search,
+              color: HomeStyles.textGrey,
+              size: HomeStyles.iconSizeLarge,
             ),
-            prefixIcon: Icon(Icons.search, color: Colors.grey[500], size: 22),
-            suffixIcon:
-                controller.text.isNotEmpty
-                    ? IconButton(
-                      icon: Icon(
-                        Icons.clear,
-                        size: 18,
-                        color: Colors.grey[500],
-                      ),
-                      onPressed: controller.clear,
-                    )
-                    : null,
+            suffixIcon: ValueListenableBuilder<TextEditingValue>(
+              valueListenable: controller,
+              builder:
+                  (_, value, __) =>
+                      value.text.isNotEmpty
+                          ? IconButton(
+                            icon: Icon(
+                              Icons.clear,
+                              size: HomeStyles.iconSizeMedium,
+                              color: HomeStyles.textGrey[500],
+                            ),
+                            onPressed: controller.clear,
+                          )
+                          : const SizedBox.shrink(),
+            ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(26),
+              borderRadius: BorderRadius.circular(
+                HomeStyles.borderRadiusXXXLarge,
+              ),
               borderSide: BorderSide.none,
             ),
             filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(vertical: 16),
+            fillColor: HomeStyles.white,
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: HomeStyles.paddingXLarge,
+            ),
           ),
         ),
       ),
@@ -480,13 +440,13 @@ class BannerSectionWidget extends StatelessWidget {
   final Function(int) onPageChanged;
 
   const BannerSectionWidget({
-    Key? key,
+    super.key,
     required this.banners,
     required this.controller,
     required this.currentIndex,
     required this.horizontalPadding,
     required this.onPageChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -495,35 +455,29 @@ class BannerSectionWidget extends StatelessWidget {
       children: [
         Padding(
           padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-          child: Text(
-            'Acara yang Akan Datang',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          child: Text('Acara yang Akan Datang', style: HomeStyles.sectionTitle),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: HomeStyles.spacingXXLarge),
         SizedBox(
-          height: 180,
+          height: HomeStyles.bannerHeight,
           child: PageView.builder(
             controller: controller,
             itemCount: banners.length,
             onPageChanged: onPageChanged,
             itemBuilder:
-                (context, index) => _BannerItem(
+                (context, index) => BannerItemWidget(
                   banner: banners[index],
                   horizontalPadding: horizontalPadding,
                 ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: HomeStyles.spacingXXLarge),
         Center(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
               banners.length,
-              (index) => _PageIndicator(isActive: index == currentIndex),
+              (index) => PageIndicatorWidget(isActive: index == currentIndex),
             ),
           ),
         ),
@@ -532,25 +486,29 @@ class BannerSectionWidget extends StatelessWidget {
   }
 }
 
-class _BannerItem extends StatelessWidget {
+class BannerItemWidget extends StatelessWidget {
   final EventBanner banner;
   final double horizontalPadding;
 
-  const _BannerItem({required this.banner, required this.horizontalPadding});
+  const BannerItemWidget({
+    super.key,
+    required this.banner,
+    required this.horizontalPadding,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: horizontalPadding),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(HomeStyles.borderRadiusXLarge),
         image: DecorationImage(
           image: AssetImage(banner.imageUrl),
           fit: BoxFit.cover,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: HomeStyles.shadow.withOpacity(0.2),
             spreadRadius: 1,
             blurRadius: 8,
             offset: const Offset(0, 4),
@@ -559,52 +517,40 @@ class _BannerItem extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(HomeStyles.borderRadiusXLarge),
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            colors: [Colors.black.withOpacity(0.8), Colors.transparent],
+            colors: [HomeStyles.shadow.withOpacity(0.8), Colors.transparent],
           ),
         ),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(HomeStyles.paddingXLarge),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(
+                horizontal: HomeStyles.paddingMedium,
+                vertical: HomeStyles.paddingSmall,
+              ),
               decoration: BoxDecoration(
                 color: banner.tagColor,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                banner.tag,
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
+                borderRadius: BorderRadius.circular(
+                  HomeStyles.borderRadiusMedium,
                 ),
               ),
+              child: Text(banner.tag, style: HomeStyles.bannerTag),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: HomeStyles.spacingXLarge),
             Text(
               banner.title,
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              style: HomeStyles.bannerTitle,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
-            Text(
-              banner.subtitle,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: Colors.white.withOpacity(0.9),
-              ),
-            ),
+            const SizedBox(height: HomeStyles.spacingMedium),
+            Text(banner.subtitle, style: HomeStyles.bannerSubtitle),
           ],
         ),
       ),
@@ -612,19 +558,23 @@ class _BannerItem extends StatelessWidget {
   }
 }
 
-class _PageIndicator extends StatelessWidget {
+class PageIndicatorWidget extends StatelessWidget {
   final bool isActive;
-  const _PageIndicator({required this.isActive});
+  const PageIndicatorWidget({super.key, required this.isActive});
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      height: 8,
-      width: isActive ? 24 : 8,
+      margin: const EdgeInsets.symmetric(horizontal: HomeStyles.paddingSmall),
+      height: HomeStyles.indicatorHeight,
+      width:
+          isActive
+              ? HomeStyles.indicatorWidthActive
+              : HomeStyles.indicatorWidthInactive,
       decoration: BoxDecoration(
-        color: isActive ? Colors.blue : Colors.grey.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(4),
+        color:
+            isActive ? HomeStyles.blue : HomeStyles.textGrey.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(HomeStyles.borderRadiusSmall),
       ),
     );
   }
@@ -635,16 +585,14 @@ class CategorySectionWidget extends StatelessWidget {
   final String? selectedCategory;
   final double horizontalPadding;
   final Function(String) onCategorySelected;
-  final VoidCallback onClearFilter;
 
   const CategorySectionWidget({
-    Key? key,
+    super.key,
     required this.categories,
     required this.selectedCategory,
     required this.horizontalPadding,
     required this.onCategorySelected,
-    required this.onClearFilter,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -655,27 +603,25 @@ class CategorySectionWidget extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Kategori',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text('Kategori', style: HomeStyles.sectionTitle),
               if (selectedCategory != null)
-                _ClearFilterButton(onPressed: onClearFilter),
+                ClearFilterButtonWidget(
+                  onPressed: () => onCategorySelected(selectedCategory!),
+                ),
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: HomeStyles.spacingXXXLarge),
         SizedBox(
-          height: 110,
+          height: HomeStyles.categoryHeight,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             itemCount: categories.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 20),
+            separatorBuilder:
+                (context, index) =>
+                    const SizedBox(width: HomeStyles.spacingXXXXLarge),
             itemBuilder: (context, index) {
               final category = categories[index];
               return CategoryItemWidget(
@@ -691,24 +637,25 @@ class CategorySectionWidget extends StatelessWidget {
   }
 }
 
-class _ClearFilterButton extends StatelessWidget {
+class ClearFilterButtonWidget extends StatelessWidget {
   final VoidCallback onPressed;
-  const _ClearFilterButton({required this.onPressed});
+  const ClearFilterButtonWidget({super.key, required this.onPressed});
+
   @override
   Widget build(BuildContext context) {
     return TextButton.icon(
       onPressed: onPressed,
-      icon: Icon(Icons.close, size: 16, color: Colors.grey[800]),
-      label: Text(
-        'Hapus filter',
-        style: GoogleFonts.poppins(
-          fontSize: 13,
-          color: Colors.grey[800],
-          fontWeight: FontWeight.w500,
-        ),
+      icon: Icon(
+        Icons.close,
+        size: HomeStyles.iconSizeSmall,
+        color: HomeStyles.textGrey[800],
       ),
+      label: Text('Hapus filter', style: HomeStyles.clearFilter),
       style: TextButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(
+          horizontal: HomeStyles.paddingLarge,
+          vertical: HomeStyles.paddingMedium,
+        ),
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
@@ -722,11 +669,11 @@ class CategoryItemWidget extends StatelessWidget {
   final VoidCallback onTap;
 
   const CategoryItemWidget({
-    Key? key,
+    super.key,
     required this.category,
     required this.isSelected,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -736,14 +683,17 @@ class CategoryItemWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 64,
-            height: 64,
+            width: HomeStyles.categoryCircleSize,
+            height: HomeStyles.categoryCircleSize,
             decoration: BoxDecoration(
               color: category.color,
               shape: BoxShape.circle,
               border:
                   isSelected
-                      ? Border.all(color: Colors.black, width: 2.5)
+                      ? Border.all(
+                        color: Colors.black,
+                        width: HomeStyles.borderWidth,
+                      )
                       : null,
               boxShadow:
                   isSelected
@@ -757,32 +707,39 @@ class CategoryItemWidget extends StatelessWidget {
                       ]
                       : null,
             ),
-            child: Icon(category.icon, color: Colors.white, size: 26),
+            child: Icon(
+              category.icon,
+              color: HomeStyles.white,
+              size: HomeStyles.iconSizeXLarge,
+            ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: HomeStyles.spacingXLarge),
           SizedBox(
             width: 75,
             child: Column(
               children: [
                 Text(
                   category.name,
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                    color: isSelected ? Colors.black : Colors.black87,
-                  ),
+                  style:
+                      isSelected
+                          ? HomeStyles.categoryNameSelected
+                          : HomeStyles.categoryName,
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (isSelected)
                   Container(
-                    margin: const EdgeInsets.only(top: 4),
-                    width: 16,
-                    height: 3,
+                    margin: const EdgeInsets.only(
+                      top: HomeStyles.spacingMedium,
+                    ),
+                    width: HomeStyles.iconSizeSmall,
+                    height: HomeStyles.spacingSmall,
                     decoration: BoxDecoration(
                       color: category.color,
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(
+                        HomeStyles.borderRadiusSmall,
+                      ),
                     ),
                   ),
               ],
@@ -799,33 +756,28 @@ class AnnouncementsSectionWidget extends StatelessWidget {
   final bool isLoading;
   final String? selectedCategory;
   final double horizontalPadding;
-  final Color Function(String) getCategoryColor;
   final Function(Announcement) onAnnouncementTap;
-  final VoidCallback onClearFilter;
 
   const AnnouncementsSectionWidget({
-    Key? key,
+    super.key,
     required this.announcements,
     required this.isLoading,
     required this.selectedCategory,
     required this.horizontalPadding,
-    required this.getCategoryColor,
     required this.onAnnouncementTap,
-    required this.onClearFilter,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _AnnouncementsHeader(
+        AnnouncementsHeaderWidget(
           horizontalPadding: horizontalPadding,
           selectedCategory: selectedCategory,
-          getCategoryColor: getCategoryColor,
         ),
-        const SizedBox(height: 16),
-        _AnnouncementsList(
+        const SizedBox(height: HomeStyles.spacingXXXLarge),
+        AnnouncementsListWidget(
           announcements: announcements,
           isLoading: isLoading,
           selectedCategory: selectedCategory,
@@ -837,15 +789,14 @@ class AnnouncementsSectionWidget extends StatelessWidget {
   }
 }
 
-class _AnnouncementsHeader extends StatelessWidget {
+class AnnouncementsHeaderWidget extends StatelessWidget {
   final double horizontalPadding;
   final String? selectedCategory;
-  final Color Function(String) getCategoryColor;
 
-  const _AnnouncementsHeader({
+  const AnnouncementsHeaderWidget({
+    super.key,
     required this.horizontalPadding,
     required this.selectedCategory,
-    required this.getCategoryColor,
   });
 
   @override
@@ -855,42 +806,28 @@ class _AnnouncementsHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Pengumuman Terbaru',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text('Pengumuman Terbaru', style: HomeStyles.sectionTitle),
           if (selectedCategory != null)
             Padding(
-              padding: const EdgeInsets.only(top: 4.0),
+              padding: const EdgeInsets.only(top: HomeStyles.spacingMedium),
               child: Row(
                 children: [
                   Text(
                     'Difilter berdasarkan:  ',
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
+                    style: HomeStyles.filterLabel,
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
+                      horizontal: HomeStyles.paddingMedium,
+                      vertical: HomeStyles.paddingSmall,
                     ),
                     decoration: BoxDecoration(
-                      color: getCategoryColor(selectedCategory!),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      selectedCategory!,
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                      color: DataService.getCategoryColor(selectedCategory!),
+                      borderRadius: BorderRadius.circular(
+                        HomeStyles.borderRadiusMedium,
                       ),
                     ),
+                    child: Text(selectedCategory!, style: HomeStyles.filterTag),
                   ),
                 ],
               ),
@@ -901,14 +838,15 @@ class _AnnouncementsHeader extends StatelessWidget {
   }
 }
 
-class _AnnouncementsList extends StatelessWidget {
+class AnnouncementsListWidget extends StatelessWidget {
   final List<Announcement> announcements;
   final bool isLoading;
   final String? selectedCategory;
   final double horizontalPadding;
   final Function(Announcement) onAnnouncementTap;
 
-  const _AnnouncementsList({
+  const AnnouncementsListWidget({
+    super.key,
     required this.announcements,
     required this.isLoading,
     required this.selectedCategory,
@@ -922,14 +860,14 @@ class _AnnouncementsList extends StatelessWidget {
       return Padding(
         padding: EdgeInsets.symmetric(
           horizontal: horizontalPadding,
-          vertical: 30,
+          vertical: HomeStyles.paddingXXXXLarge,
         ),
         child: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (announcements.isEmpty) {
-      return _EmptyState(
+      return EmptyStateWidget(
         horizontalPadding: horizontalPadding,
         selectedCategory: selectedCategory,
       );
@@ -939,7 +877,9 @@ class _AnnouncementsList extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: announcements.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 16),
+      separatorBuilder:
+          (context, index) =>
+              const SizedBox(height: HomeStyles.spacingXXXLarge),
       itemBuilder: (context, index) {
         final announcement = announcements[index];
         return AnnouncementCardWidget(
@@ -952,11 +892,12 @@ class _AnnouncementsList extends StatelessWidget {
   }
 }
 
-class _EmptyState extends StatelessWidget {
+class EmptyStateWidget extends StatelessWidget {
   final double horizontalPadding;
   final String? selectedCategory;
 
-  const _EmptyState({
+  const EmptyStateWidget({
+    super.key,
     required this.horizontalPadding,
     required this.selectedCategory,
   });
@@ -966,29 +907,29 @@ class _EmptyState extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: horizontalPadding,
-        vertical: 40,
+        vertical: HomeStyles.paddingXXXXXLarge,
       ),
       child: Column(
         children: [
-          Icon(Icons.announcement_outlined, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
+          Icon(
+            Icons.announcement_outlined,
+            size: HomeStyles.iconSizeXXLarge,
+            color: HomeStyles.textGrey[400],
+          ),
+          const SizedBox(height: HomeStyles.spacingXXXLarge),
           Text(
             selectedCategory != null
-                ? 'Tidak ditemukan pengumuman untuk"$selectedCategory"'
+                ? 'Tidak ditemukan pengumuman untuk "$selectedCategory"'
                 : 'Tidak ada pengumuman tersedia',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
+            style: HomeStyles.emptyTitle,
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: HomeStyles.spacingXLarge),
           Text(
             selectedCategory != null
                 ? 'Coba pilih kategori lain atau hapus filter.'
                 : 'Cek kembali nanti untuk pengumuman baru.',
-            style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500]),
+            style: HomeStyles.emptySubtitle,
             textAlign: TextAlign.center,
           ),
         ],
@@ -1003,25 +944,29 @@ class AnnouncementCardWidget extends StatelessWidget {
   final VoidCallback onTap;
 
   const AnnouncementCardWidget({
-    Key? key,
+    super.key,
     required this.announcement,
     required this.horizontalPadding,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isUrgent =
+        announcement.tag.toLowerCase() == 'urgent' ||
+        announcement.tag.toLowerCase() == 'penting';
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: horizontalPadding),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(HomeStyles.paddingXLarge),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          color: HomeStyles.white,
+          borderRadius: BorderRadius.circular(HomeStyles.borderRadiusLarge),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: HomeStyles.textGrey.withOpacity(0.1),
               spreadRadius: 1,
               blurRadius: 6,
               offset: const Offset(0, 2),
@@ -1035,69 +980,49 @@ class AnnouncementCardWidget extends StatelessWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
+                    horizontal: HomeStyles.paddingMedium,
+                    vertical: HomeStyles.paddingSmall,
                   ),
                   decoration: BoxDecoration(
                     color: announcement.tagColor,
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(
+                      HomeStyles.borderRadiusSmall,
+                    ),
                   ),
                   child: Text(
                     announcement.tag,
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: HomeStyles.announcementTag,
                   ),
                 ),
                 const Spacer(),
-                Text(
-                  announcement.timeAgo,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: Colors.grey[500],
-                  ),
-                ),
+                Text(announcement.timeAgo, style: HomeStyles.announcementTime),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: HomeStyles.spacingXXLarge),
             Text(
               announcement.title,
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
+              style: HomeStyles.announcementTitle,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: HomeStyles.spacingXLarge),
             Text(
               announcement.description,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: Colors.grey[600],
-                height: 1.4,
-              ),
+              style: HomeStyles.announcementDescription,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
-            if (announcement.tag.toLowerCase() == 'urgent' ||
-                announcement.tag.toLowerCase() == 'penting') ...[
-              const SizedBox(height: 12),
+            if (isUrgent) ...[
+              const SizedBox(height: HomeStyles.spacingXXLarge),
               Row(
                 children: [
-                  Icon(Icons.priority_high, size: 16, color: Colors.red[600]),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Penting',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: Colors.red[600],
-                      fontWeight: FontWeight.w600,
-                    ),
+                  Icon(
+                    Icons.priority_high,
+                    size: HomeStyles.iconSizeSmall,
+                    color: HomeStyles.red,
                   ),
+                  const SizedBox(width: HomeStyles.spacingMedium),
+                  Text('Penting', style: HomeStyles.urgentLabel),
                 ],
               ),
             ],
@@ -1105,34 +1030,5 @@ class AnnouncementCardWidget extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Color _getCategoryColor(String category) {
-    final categoryColors = {
-      'Akademik': Color(0xFF6C5CE7),
-      'Acara':Color(0xFF45B7D1),
-      'Umum': Colors.orange,
-      'Darurat': Colors.red,
-      'Olahraga': Colors.purple,
-      'Perpustakaan': Colors.teal,
-    };
-    return categoryColors[category] ?? Colors.grey;
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays > 7) {
-      return '${date.day}/${date.month}/${date.year}';
-    } else if (difference.inDays > 0) {
-      return '${difference.inDays} hari lalu';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} jam lalu';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} menit lalu';
-    } else {
-      return 'Baru saja';
-    }
   }
 }

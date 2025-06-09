@@ -5,10 +5,7 @@ class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return const MainLayout(
-      selectedIndex: 0,
-      child: HomeContent(),
-    );
+    return const MainLayout(selectedIndex: 0, child: HomeContent());
   }
 }
 
@@ -20,72 +17,16 @@ class HomeContent extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.home,
-            size: 80,
-            color: Color(0xFF57B4BA),
-          ),
+          Icon(Icons.home, size: 80, color: Color(0xFF57B4BA)),
           SizedBox(height: 16),
           Text(
             'Home Page',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 8),
           Text(
             'Welcome to your dashboard',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class SaveScreen extends StatelessWidget {
-  const SaveScreen({Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return const MainLayout(
-      selectedIndex: 1,
-      child: SavedContent(),
-    );
-  }
-}
-
-class SavedContent extends StatelessWidget {
-  const SavedContent({Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.bookmark,
-            size: 80,
-            color: Color(0xFF57B4BA),
-          ),
-          SizedBox(height: 16),
-          Text(
-            'Bookmarks Page',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Your saved items will appear here',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
         ],
       ),
@@ -97,10 +38,7 @@ class CalendarPage extends StatelessWidget {
   const CalendarPage({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return const MainLayout(
-      selectedIndex: 2,
-      child: CalendarContent(),
-    );
+    return const MainLayout(selectedIndex: 1, child: CalendarContent());
   }
 }
 
@@ -121,10 +59,7 @@ class _CalendarContentState extends State<CalendarContent> {
         children: [
           const Text(
             'Calendar',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
           Card(
@@ -136,10 +71,7 @@ class _CalendarContentState extends State<CalendarContent> {
                 children: [
                   const Text(
                     'Select Date:',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 10),
                   CalendarDatePicker(
@@ -175,10 +107,7 @@ class ProfilePage extends StatelessWidget {
   const ProfilePage({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return const MainLayout(
-      selectedIndex: 3,
-      child: ProfileContent(),
-    );
+    return const MainLayout(selectedIndex: 2, child: ProfileContent());
   }
 }
 
@@ -194,41 +123,22 @@ class ProfileContent extends StatelessWidget {
           CircleAvatar(
             radius: 60,
             backgroundColor: Color(0xFF57B4BA),
-            child: Icon(
-              Icons.person,
-              size: 60,
-              color: Colors.white,
-            ),
+            child: Icon(Icons.person, size: 60, color: Colors.white),
           ),
           SizedBox(height: 20),
           Text(
             'Profile Page',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 8),
           Text(
             'Manage your account settings',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
           SizedBox(height: 32),
-          ProfileMenuItem(
-            icon: Icons.settings,
-            title: 'Settings',
-          ),
-          ProfileMenuItem(
-            icon: Icons.help,
-            title: 'Help & Support',
-          ),
-          ProfileMenuItem(
-            icon: Icons.info,
-            title: 'About',
-          ),
+          ProfileMenuItem(icon: Icons.settings, title: 'Settings'),
+          ProfileMenuItem(icon: Icons.help, title: 'Help & Support'),
+          ProfileMenuItem(icon: Icons.info, title: 'About'),
         ],
       ),
     );
@@ -238,26 +148,17 @@ class ProfileContent extends StatelessWidget {
 class ProfileMenuItem extends StatelessWidget {
   final IconData icon;
   final String title;
-  const ProfileMenuItem({
-    Key? key,
-    required this.icon,
-    required this.title,
-  }) : super(key: key);
+  const ProfileMenuItem({Key? key, required this.icon, required this.title})
+    : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
-        leading: Icon(
-          icon,
-          color: const Color(0xFF57B4BA),
-        ),
+        leading: Icon(icon, color: const Color(0xFF57B4BA)),
         title: Text(
           title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         trailing: const Icon(
           Icons.arrow_forward_ios,
@@ -265,9 +166,9 @@ class ProfileMenuItem extends StatelessWidget {
           color: Colors.grey,
         ),
         onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$title tapped')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('$title tapped')));
         },
       ),
     );
@@ -279,11 +180,8 @@ class ProfileMenuItem extends StatelessWidget {
 class MainLayout extends StatefulWidget {
   final Widget child;
   final int selectedIndex;
-  const MainLayout({
-    Key? key,
-    required this.child,
-    this.selectedIndex = 0,
-  }) : super(key: key);
+  const MainLayout({Key? key, required this.child, this.selectedIndex = 0})
+    : super(key: key);
   @override
   State<MainLayout> createState() => _MainLayoutState();
 }
@@ -295,6 +193,7 @@ class _MainLayoutState extends State<MainLayout> {
     super.initState();
     _selectedIndex = widget.selectedIndex;
   }
+
   @override
   void didUpdateWidget(MainLayout oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -307,9 +206,14 @@ class _MainLayoutState extends State<MainLayout> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(child: widget.child),
-      bottomNavigationBar: SimpleNavigationBar(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
+      floatingActionButton: null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: Container(
+        margin: const EdgeInsets.fromLTRB(40, 0, 40, 20),
+        child: FloatingNavigationBar(
+          selectedIndex: _selectedIndex,
+          onItemTapped: _onItemTapped,
+        ),
       ),
     );
   }
@@ -324,31 +228,36 @@ class _MainLayoutState extends State<MainLayout> {
   }
 }
 
-// ------------------- Simple Navigation Bar -------------------
+// ------------------- Floating Navigation Bar -------------------
 
-class SimpleNavigationBar extends StatelessWidget {
+class FloatingNavigationBar extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onItemTapped;
-  const SimpleNavigationBar({
+  const FloatingNavigationBar({
     Key? key,
     required this.selectedIndex,
     required this.onItemTapped,
   }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 70,
+      height: 60,
       decoration: BoxDecoration(
         color: NavigationConfig.navBarColor,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
+        borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: NavigationConfig.navBarColor.withOpacity(0.25),
             blurRadius: 10,
-            offset: const Offset(0, -2),
+            offset: const Offset(0, 3),
+            spreadRadius: -3,
           ),
         ],
       ),
@@ -368,32 +277,43 @@ class SimpleNavigationBar extends StatelessWidget {
     return GestureDetector(
       onTap: () => onItemTapped(index),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected 
-              ? NavigationConfig.activeBackgroundColor 
-              : Colors.transparent,
+          color:
+              isSelected
+                  ? NavigationConfig.activeBackgroundColor
+                  : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              isSelected ? item.activeIcon : item.inactiveIcon,
-              color: isSelected
-                  ? NavigationConfig.activeIconColor
-                  : NavigationConfig.inactiveIconColor,
-              size: 24,
+            AnimatedScale(
+              scale: isSelected ? 1.05 : 1.0,
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                isSelected ? item.activeIcon : item.inactiveIcon,
+                color:
+                    isSelected
+                        ? NavigationConfig.activeIconColor
+                        : NavigationConfig.inactiveIconColor,
+                size: 22,
+              ),
             ),
             if (isSelected) ...[
-              const SizedBox(width: 8),
-              Text(
-                item.label,
-                style: TextStyle(
-                  color: NavigationConfig.activeIconColor,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+              const SizedBox(width: 4),
+              AnimatedOpacity(
+                opacity: isSelected ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 200),
+                child: Text(
+                  item.label,
+                  style: TextStyle(
+                    color: NavigationConfig.activeIconColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
@@ -409,18 +329,14 @@ class SimpleNavigationBar extends StatelessWidget {
 class NavigationConfig {
   static const Color navBarColor = Color(0xFF57B4BA);
   static const Color activeIconColor = Colors.white;
-  static final Color inactiveIconColor = Colors.white.withOpacity(0.6);
-  static final Color activeBackgroundColor = Colors.white.withOpacity(0.2);
+  static final Color inactiveIconColor = Colors.white.withOpacity(0.7);
+  static final Color activeBackgroundColor = Colors.white.withOpacity(0.25);
+
   static const List<NavigationItem> items = [
     NavigationItem(
       label: 'Home',
       activeIcon: Icons.home,
       inactiveIcon: Icons.home_outlined,
-    ),
-    NavigationItem(
-      label: 'Saved',
-      activeIcon: Icons.bookmark,
-      inactiveIcon: Icons.bookmark_border,
     ),
     NavigationItem(
       label: 'Calendar',
@@ -436,13 +352,12 @@ class NavigationConfig {
 
   static Map<String, WidgetBuilder> get routes => {
     '/home': (context) => const HomePage(),
-    '/save': (context) => const SaveScreen(),
     '/calendar': (context) => const CalendarPage(),
     '/profile': (context) => const ProfilePage(),
   };
 
   static String getRouteNameByIndex(int index) {
-    const routes = ['/home', '/save', '/calendar', '/profile'];
+    const routes = ['/home', '/calendar', '/profile'];
     return index < routes.length ? routes[index] : '/home';
   }
 }

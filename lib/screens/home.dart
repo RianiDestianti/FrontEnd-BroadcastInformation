@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../screens/login.dart'; // Import SignInPage
 import 'popup.dart';
 import '../layouts/layout.dart';
 import '../models/model.dart';
@@ -9,17 +11,20 @@ import '../constants/constant.dart';
 
 class ApiService {
   static const String _baseUrl = 'http://localhost:8000/api/informasi';
-  static Future<List<Announcement>> fetchAnnouncements() async {
+
+  static Future<List<Announcement>> fetchAnnouncements(String token) async {
     try {
       final response = await http.get(
         Uri.parse(_baseUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as List<dynamic>;
-        return data
-            .map((item) => DataService.mapApiToAnnouncement(item))
-            .toList();
+        return data.map((item) => DataService.mapApiToAnnouncement(item)).toList();
       } else {
         throw Exception('Failed to load data: ${response.statusCode}');
       }
@@ -163,12 +168,11 @@ class DataService {
     return categories
         .firstWhere(
           (cat) => cat.name == categoryName,
-          orElse:
-              () => const CategoryData(
-                name: 'Bawaan',
-                color: Colors.grey,
-                icon: Icons.circle,
-              ),
+          orElse: () => const CategoryData(
+            name: 'Bawaan',
+            color: Colors.grey,
+            icon: Icons.circle,
+          ),
         )
         .color;
   }
@@ -176,6 +180,7 @@ class DataService {
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -188,11 +193,13 @@ class _HomePageState extends State<HomePage> {
   int _currentBannerIndex = 0;
   List<Announcement> _allAnnouncements = [];
   List<Announcement> _filteredAnnouncements = [];
+  String? _userName;
+  String? _authToken;
 
   @override
   void initState() {
     super.initState();
-    _initializeData();
+    _checkSession();
   }
 
   @override
@@ -200,6 +207,41 @@ class _HomePageState extends State<HomePage> {
     _searchController.dispose();
     _bannerController.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    final name = prefs.getString('nama');
+
+    if (token == null) {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const SignInPage()),
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _authToken = token;
+      _userName = name ?? 'User';
+    });
+
+    final profile = await AuthService.getProfile();
+    if (profile == null) {
+      await prefs.clear();
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const SignInPage()),
+        );
+      }
+      return;
+    }
+
+    _initializeData();
   }
 
   void _initializeData() {
@@ -225,9 +267,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _fetchAnnouncements() async {
+    if (_authToken == null) return;
     setState(() => _isLoading = true);
     try {
-      final announcements = await ApiService.fetchAnnouncements();
+      final announcements = await ApiService.fetchAnnouncements(_authToken!);
       setState(() {
         _allAnnouncements = announcements;
         _filteredAnnouncements = List.from(_allAnnouncements);
@@ -235,35 +278,33 @@ class _HomePageState extends State<HomePage> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Gagal memuat data: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat data: $e')),
+        );
+      }
     }
   }
 
   void _filterAnnouncements() {
     final query = _searchController.text.toLowerCase();
     setState(() {
-      _filteredAnnouncements =
-          _allAnnouncements.where((announcement) {
-            final matchesCategory =
-                _selectedCategory == null ||
-                announcement.tag == _selectedCategory;
-            final matchesQuery =
-                query.isEmpty ||
-                announcement.title.toLowerCase().contains(query) ||
-                announcement.description.toLowerCase().contains(query) ||
-                announcement.department.toLowerCase().contains(query) ||
-                announcement.tag.toLowerCase().contains(query);
-            return matchesCategory && matchesQuery;
-          }).toList();
+      _filteredAnnouncements = _allAnnouncements.where((announcement) {
+        final matchesCategory =
+            _selectedCategory == null || announcement.tag == _selectedCategory;
+        final matchesQuery = query.isEmpty ||
+            announcement.title.toLowerCase().contains(query) ||
+            announcement.description.toLowerCase().contains(query) ||
+            announcement.department.toLowerCase().contains(query) ||
+            announcement.tag.toLowerCase().contains(query);
+        return matchesCategory && matchesQuery;
+      }).toList();
     });
   }
 
   void _selectCategory(String categoryName) {
     setState(() {
-      _selectedCategory =
-          _selectedCategory == categoryName ? null : categoryName;
+      _selectedCategory = _selectedCategory == categoryName ? null : categoryName;
       _filterAnnouncements();
     });
   }
@@ -271,16 +312,27 @@ class _HomePageState extends State<HomePage> {
   void _showAnnouncementDetail(Announcement announcement) {
     showDialog(
       context: context,
-      builder:
-          (_) => Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(
-                HomeStyles.borderRadiusXXLarge,
-              ),
-            ),
-            child: AnnouncementDetailPopup(announcement: announcement),
-          ),
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(HomeStyles.borderRadiusXXLarge),
+        ),
+        child: AnnouncementDetailPopup(announcement: announcement),
+      ),
     );
+  }
+
+  Future<void> _handleLogout() async {
+    final success = await AuthService.logout();
+    if (success && mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const SignInPage()),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Gagal logout, coba lagi.')),
+      );
+    }
   }
 
   @override
@@ -302,7 +354,11 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  HeaderWidget(horizontalPadding: horizontalPadding),
+                  HeaderWidget(
+                    horizontalPadding: horizontalPadding,
+                    userName: _userName,
+                    onLogout: _handleLogout,
+                  ),
                   const SizedBox(height: HomeStyles.spacingXXXLarge),
                   SearchBarWidget(
                     controller: _searchController,
@@ -314,8 +370,7 @@ class _HomePageState extends State<HomePage> {
                     controller: _bannerController,
                     currentIndex: _currentBannerIndex,
                     horizontalPadding: horizontalPadding,
-                    onPageChanged:
-                        (index) => setState(() => _currentBannerIndex = index),
+                    onPageChanged: (index) => setState(() => _currentBannerIndex = index),
                   ),
                   const SizedBox(height: HomeStyles.spacingXXXXXXLarge),
                   CategorySectionWidget(
@@ -345,16 +400,38 @@ class _HomePageState extends State<HomePage> {
 
 class HeaderWidget extends StatelessWidget {
   final double horizontalPadding;
-  const HeaderWidget({super.key, required this.horizontalPadding});
+  final String? userName;
+  final VoidCallback onLogout;
+
+  const HeaderWidget({
+    super.key,
+    required this.horizontalPadding,
+    required this.userName,
+    required this.onLogout,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('Selamat datang, Rika!', style: HomeStyles.welcome),
-          Text(DateService.formatDate(DateTime.now()), style: HomeStyles.date),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Selamat datang, ${userName ?? 'User'}!',
+                style: HomeStyles.welcome,
+              ),
+              Text(DateService.formatDate(DateTime.now()), style: HomeStyles.date),
+            ],
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: HomeStyles.textGrey),
+            onPressed: onLogout,
+            tooltip: 'Logout',
+          ),
         ],
       ),
     );
@@ -401,23 +478,19 @@ class SearchBarWidget extends StatelessWidget {
             ),
             suffixIcon: ValueListenableBuilder<TextEditingValue>(
               valueListenable: controller,
-              builder:
-                  (_, value, __) =>
-                      value.text.isNotEmpty
-                          ? IconButton(
-                            icon: Icon(
-                              Icons.clear,
-                              size: HomeStyles.iconSizeMedium,
-                              color: HomeStyles.textGrey[500],
-                            ),
-                            onPressed: controller.clear,
-                          )
-                          : const SizedBox.shrink(),
+              builder: (_, value, __) => value.text.isNotEmpty
+                  ? IconButton(
+                      icon: Icon(
+                        Icons.clear,
+                        size: HomeStyles.iconSizeMedium,
+                        color: HomeStyles.textGrey[500],
+                      ),
+                      onPressed: controller.clear,
+                    )
+                  : const SizedBox.shrink(),
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(
-                HomeStyles.borderRadiusXXXLarge,
-              ),
+              borderRadius: BorderRadius.circular(HomeStyles.borderRadiusXXXLarge),
               borderSide: BorderSide.none,
             ),
             filled: true,
@@ -464,11 +537,10 @@ class BannerSectionWidget extends StatelessWidget {
             controller: controller,
             itemCount: banners.length,
             onPageChanged: onPageChanged,
-            itemBuilder:
-                (context, index) => BannerItemWidget(
-                  banner: banners[index],
-                  horizontalPadding: horizontalPadding,
-                ),
+            itemBuilder: (context, index) => BannerItemWidget(
+              banner: banners[index],
+              horizontalPadding: horizontalPadding,
+            ),
           ),
         ),
         const SizedBox(height: HomeStyles.spacingXXLarge),
@@ -536,9 +608,7 @@ class BannerItemWidget extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: banner.tagColor,
-                borderRadius: BorderRadius.circular(
-                  HomeStyles.borderRadiusMedium,
-                ),
+                borderRadius: BorderRadius.circular(HomeStyles.borderRadiusMedium),
               ),
               child: Text(banner.tag, style: HomeStyles.bannerTag),
             ),
@@ -560,20 +630,18 @@ class BannerItemWidget extends StatelessWidget {
 
 class PageIndicatorWidget extends StatelessWidget {
   final bool isActive;
+
   const PageIndicatorWidget({super.key, required this.isActive});
+
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
       margin: const EdgeInsets.symmetric(horizontal: HomeStyles.paddingSmall),
       height: HomeStyles.indicatorHeight,
-      width:
-          isActive
-              ? HomeStyles.indicatorWidthActive
-              : HomeStyles.indicatorWidthInactive,
+      width: isActive ? HomeStyles.indicatorWidthActive : HomeStyles.indicatorWidthInactive,
       decoration: BoxDecoration(
-        color:
-            isActive ? HomeStyles.blue : HomeStyles.textGrey.withOpacity(0.5),
+        color: isActive ? HomeStyles.blue : HomeStyles.textGrey.withOpacity(0.5),
         borderRadius: BorderRadius.circular(HomeStyles.borderRadiusSmall),
       ),
     );
@@ -619,9 +687,7 @@ class CategorySectionWidget extends StatelessWidget {
             physics: const BouncingScrollPhysics(),
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             itemCount: categories.length,
-            separatorBuilder:
-                (context, index) =>
-                    const SizedBox(width: HomeStyles.spacingXXXXLarge),
+            separatorBuilder: (context, index) => const SizedBox(width: HomeStyles.spacingXXXXLarge),
             itemBuilder: (context, index) {
               final category = categories[index];
               return CategoryItemWidget(
@@ -639,6 +705,7 @@ class CategorySectionWidget extends StatelessWidget {
 
 class ClearFilterButtonWidget extends StatelessWidget {
   final VoidCallback onPressed;
+
   const ClearFilterButtonWidget({super.key, required this.onPressed});
 
   @override
@@ -688,24 +755,22 @@ class CategoryItemWidget extends StatelessWidget {
             decoration: BoxDecoration(
               color: category.color,
               shape: BoxShape.circle,
-              border:
-                  isSelected
-                      ? Border.all(
-                        color: Colors.black,
-                        width: HomeStyles.borderWidth,
-                      )
-                      : null,
-              boxShadow:
-                  isSelected
-                      ? [
-                        BoxShadow(
-                          color: category.color.withOpacity(0.4),
-                          spreadRadius: 1,
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                      : null,
+              border: isSelected
+                  ? Border.all(
+                      color: Colors.black,
+                      width: HomeStyles.borderWidth,
+                    )
+                  : null,
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: category.color.withOpacity(0.4),
+                        spreadRadius: 1,
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
             ),
             child: Icon(
               category.icon,
@@ -720,26 +785,19 @@ class CategoryItemWidget extends StatelessWidget {
               children: [
                 Text(
                   category.name,
-                  style:
-                      isSelected
-                          ? HomeStyles.categoryNameSelected
-                          : HomeStyles.categoryName,
+                  style: isSelected ? HomeStyles.categoryNameSelected : HomeStyles.categoryName,
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (isSelected)
                   Container(
-                    margin: const EdgeInsets.only(
-                      top: HomeStyles.spacingMedium,
-                    ),
+                    margin: const EdgeInsets.only(top: HomeStyles.spacingMedium),
                     width: HomeStyles.iconSizeSmall,
                     height: HomeStyles.spacingSmall,
                     decoration: BoxDecoration(
                       color: category.color,
-                      borderRadius: BorderRadius.circular(
-                        HomeStyles.borderRadiusSmall,
-                      ),
+                      borderRadius: BorderRadius.circular(HomeStyles.borderRadiusSmall),
                     ),
                   ),
               ],
@@ -823,9 +881,7 @@ class AnnouncementsHeaderWidget extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: DataService.getCategoryColor(selectedCategory!),
-                      borderRadius: BorderRadius.circular(
-                        HomeStyles.borderRadiusMedium,
-                      ),
+                      borderRadius: BorderRadius.circular(HomeStyles.borderRadiusMedium),
                     ),
                     child: Text(selectedCategory!, style: HomeStyles.filterTag),
                   ),
@@ -877,9 +933,7 @@ class AnnouncementsListWidget extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: announcements.length,
-      separatorBuilder:
-          (context, index) =>
-              const SizedBox(height: HomeStyles.spacingXXXLarge),
+      separatorBuilder: (context, index) => const SizedBox(height: HomeStyles.spacingXXXLarge),
       itemBuilder: (context, index) {
         final announcement = announcements[index];
         return AnnouncementCardWidget(
@@ -953,8 +1007,7 @@ class AnnouncementCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isUrgent =
-        announcement.tag.toLowerCase() == 'urgent' ||
-        announcement.tag.toLowerCase() == 'penting';
+        announcement.tag.toLowerCase() == 'urgent' || announcement.tag.toLowerCase() == 'penting';
 
     return GestureDetector(
       onTap: onTap,
@@ -985,9 +1038,7 @@ class AnnouncementCardWidget extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: announcement.tagColor,
-                    borderRadius: BorderRadius.circular(
-                      HomeStyles.borderRadiusSmall,
-                    ),
+                    borderRadius: BorderRadius.circular(HomeStyles.borderRadiusSmall),
                   ),
                   child: Text(
                     announcement.tag,

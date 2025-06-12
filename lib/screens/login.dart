@@ -1,7 +1,209 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'home.dart';
 import '../constants/constant.dart';
+
+class AuthService {
+  static const String baseUrl = 'http://localhost:8000/api';
+
+  static Future<LoginResponse> login(String id, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({'login': id, 'password': password}),
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        return LoginResponse.fromJson(responseData);
+      } else {
+        final responseData = jsonDecode(response.body);
+        return LoginResponse(
+          success: false,
+          message: responseData['message'] ?? 'Login failed',
+        );
+      }
+    } catch (e) {
+      print('Login error: $e');
+      return LoginResponse(
+        success: false,
+        message: 'Network error: ${e.toString()}',
+      );
+    }
+  }
+
+  static Future<bool> logout() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token != null) {
+        final response = await http.post(
+          Uri.parse('$baseUrl/auth/logout'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        if (response.statusCode == 200) {
+          await prefs.clear();
+          return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      print('Logout error: $e');
+      return false;
+    }
+  }
+
+  static Future<Map<String, dynamic>?> getProfile() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token != null) {
+        final response = await http.get(
+          Uri.parse('$baseUrl/auth/profile'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        if (response.statusCode == 200) {
+          return jsonDecode(response.body);
+        }
+      }
+      return null;
+    } catch (e) {
+      print('Profile error: $e');
+      return null;
+    }
+  }
+
+  static Future<void> saveLoginData(LoginResponse loginResponse) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('auth_token', loginResponse.token ?? '');
+    await prefs.setString('user_type', loginResponse.userType ?? '');
+    await prefs.setInt('user_id', loginResponse.user?.id ?? 0);
+    await prefs.setString('username', loginResponse.user?.username ?? '');
+
+    if (loginResponse.guru != null) {
+      await prefs.setString('nama', loginResponse.guru!.nama);
+      await prefs.setInt('profile_id', loginResponse.guru!.id);
+    } else if (loginResponse.siswa != null) {
+      await prefs.setString('nama', loginResponse.siswa!.nama);
+      await prefs.setInt('profile_id', loginResponse.siswa!.id);
+    }
+  }
+}
+
+class LoginResponse {
+  final bool success;
+  final String message;
+  final User? user;
+  final String? userType;
+  final Guru? guru;
+  final Siswa? siswa;
+  final String? token;
+  final String? tokenType;
+
+  LoginResponse({
+    required this.success,
+    required this.message,
+    this.user,
+    this.userType,
+    this.guru,
+    this.siswa,
+    this.token,
+    this.tokenType,
+  });
+
+  factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    final data = json['data'];
+    return LoginResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      user: data != null && data['user'] != null
+          ? User.fromJson(data['user'])
+          : null,
+      userType: data != null ? data['user_type'] : null,
+      guru: data != null && data['guru'] != null
+          ? Guru.fromJson(data['guru'])
+          : null,
+      siswa: data != null && data['siswa'] != null
+          ? Siswa.fromJson(data['siswa'])
+          : null,
+      token: data != null ? data['token'] : null,
+      tokenType: data != null ? data['token_type'] : null,
+    );
+  }
+}
+
+class Siswa {
+  final int id;
+  final String username;
+  final String nama;
+
+  Siswa({required this.id, required this.username, required this.nama});
+
+  factory Siswa.fromJson(Map<String, dynamic> json) {
+    return Siswa(
+      id: json['id'],
+      username: json['username'],
+      nama: json['nama'],
+    );
+  }
+}
+
+class Guru {
+  final int id;
+  final String username;
+  final String nama;
+
+  Guru({required this.id, required this.username, required this.nama});
+
+  factory Guru.fromJson(Map<String, dynamic> json) {
+    return Guru(id: json['id'], username: json['username'], nama: json['nama']);
+  }
+}
+
+class User {
+  final int id;
+  final String username;
+  final String role;
+  final String createdAt;
+
+  User({
+    required this.id,
+    required this.username,
+    required this.role,
+    required this.createdAt,
+  });
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'],
+      username: json['username'].toString(),
+      role: json['role'].toString(),
+      createdAt: json['created_at'],
+    );
+  }
+}
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -13,6 +215,7 @@ class _SignInPageState extends State<SignInPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -33,16 +236,16 @@ class _SignInPageState extends State<SignInPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: const [
-                  SizedBox(height: AppConstants.spacingXL),
-                  HeaderWidget(),
-                  SizedBox(height: AppConstants.spacingXL),
-                  UsernameField(),
-                  SizedBox(height: AppConstants.spacingM),
-                  PasswordField(),
-                  SizedBox(height: AppConstants.spacingL),
-                  SignInButton(),
-                  SizedBox(height: AppConstants.spacingM),
+                children: [
+                  const SizedBox(height: AppConstants.spacingXL),
+                  const HeaderWidget(),
+                  const SizedBox(height: AppConstants.spacingXL),
+                  const UsernameField(),
+                  const SizedBox(height: AppConstants.spacingM),
+                  const PasswordField(),
+                  const SizedBox(height: AppConstants.spacingL),
+                  SignInButton(isLoading: _isLoading),
+                  const SizedBox(height: AppConstants.spacingM),
                 ],
               ),
             ),
@@ -164,12 +367,14 @@ class InputField extends StatelessWidget {
 }
 
 class SignInButton extends StatelessWidget {
-  const SignInButton({super.key});
+  final bool isLoading;
+
+  const SignInButton({super.key, required this.isLoading});
   @override
   Widget build(BuildContext context) {
     final state = context.findAncestorStateOfType<_SignInPageState>()!;
     return ElevatedButton(
-      onPressed: () => _handleSignIn(context, state),
+      onPressed: isLoading ? null : () => _handleSignIn(context, state),
       style: ElevatedButton.styleFrom(
         backgroundColor: SignInStyles.primaryColor,
         padding: const EdgeInsets.symmetric(vertical: SignInStyles.buttonPaddingVertical),
@@ -178,16 +383,43 @@ class SignInButton extends StatelessWidget {
         ),
         elevation: 0,
       ),
-      child: Text('Login', style: SignInStyles.buttonText),
+      child: isLoading
+          ? const SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
+            )
+          : Text('Login', style: SignInStyles.buttonText),
     );
   }
 
-  void _handleSignIn(BuildContext context, _SignInPageState state) {
-    if (_validateInputs(context, state)) {
+  void _handleSignIn(BuildContext context, _SignInPageState state) async {
+    if (!_validateInputs(context, state)) return;
+
+    state.setState(() {
+      state._isLoading = true;
+    });
+
+    final loginResponse = await AuthService.login(
+      state._usernameController.text.trim(),
+      state._passwordController.text.trim(),
+    );
+
+    state.setState(() {
+      state._isLoading = false;
+    });
+
+    if (loginResponse.success) {
+      await AuthService.saveLoginData(loginResponse);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const HomePage()),
       );
+    } else {
+      _showErrorSnackBar(context, loginResponse.message);
     }
   }
 

@@ -27,14 +27,18 @@ class _CalendarPageState extends State<CalendarPage> {
       setState(() => _isLoading = true);
       final response = await http.get(
         Uri.parse('http://localhost:8000/api/informasi'),
-        headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
       );
 
       if (response.statusCode == 200) {
         setState(() {
-          _events = (json.decode(response.body) as List<dynamic>)
-              .map((item) => InformasiEvent.fromJson(item))
-              .toList();
+          _events =
+              (json.decode(response.body) as List<dynamic>)
+                  .map((item) => InformasiEvent.fromJson(item))
+                  .toList();
           _isLoading = false;
         });
       } else {
@@ -52,12 +56,21 @@ class _CalendarPageState extends State<CalendarPage> {
 
   void _navigateMonth(int monthOffset) {
     setState(() {
-      _selectedDate = DateTime(_selectedDate.year, _selectedDate.month + monthOffset, 1);
+      _selectedDate = DateTime(
+        _selectedDate.year,
+        _selectedDate.month + monthOffset,
+        1,
+      );
     });
   }
 
   List<InformasiEvent> _getEventsForDate(DateTime date) {
-    return _events.where((event) => _isDateInRange(date, event.tanggalMulai, event.tanggalSelesai)).toList();
+    return _events
+        .where(
+          (event) =>
+              _isDateInRange(date, event.tanggalMulai, event.tanggalSelesai),
+        )
+        .toList();
   }
 
   bool _isDateInRange(DateTime date, DateTime startDate, DateTime endDate) {
@@ -74,10 +87,13 @@ class _CalendarPageState extends State<CalendarPage> {
     if (eventsForDay.isEmpty) return;
     showDialog(
       context: context,
-      builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: CalendarEventPopup(date: date, events: eventsForDay),
-      ),
+      builder:
+          (_) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: CalendarEventPopup(date: date, events: eventsForDay),
+          ),
     );
   }
 
@@ -87,15 +103,18 @@ class _CalendarPageState extends State<CalendarPage> {
       selectedIndex: 1,
       child: Container(
         color: Colors.white,
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-            : _CalendarContent(
-                selectedDate: _selectedDate,
-                events: _events,
-                onNavigate: _navigateMonth,
-                onDayTap: _showEventPopup,
-                getEventsForDate: _getEventsForDate,
-              ),
+        child:
+            _isLoading
+                ? const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                )
+                : _CalendarContent(
+                  selectedDate: _selectedDate,
+                  events: _events,
+                  onNavigate: _navigateMonth,
+                  onDayTap: _showEventPopup,
+                  getEventsForDate: _getEventsForDate,
+                ),
       ),
     );
   }
@@ -128,7 +147,10 @@ class _CalendarContent extends StatelessWidget {
               child: CalendarContainer(
                 child: Column(
                   children: [
-                    MonthNavigation(selectedDate: selectedDate, onNavigate: onNavigate),
+                    MonthNavigation(
+                      selectedDate: selectedDate,
+                      onNavigate: onNavigate,
+                    ),
                     const SizedBox(height: 24),
                     const WeekdayHeaders(),
                     const SizedBox(height: 20),
@@ -183,13 +205,21 @@ class InformasiEvent {
       id: json['IDInformasi'] ?? 0,
       judul: json['Judul'] ?? '',
       deskripsi: json['Deskripsi'] ?? '',
-      tanggalMulai: DateTime.parse(json['TanggalMulai'] ?? DateTime.now().toString()),
-      tanggalSelesai: DateTime.parse(json['TanggalSelesai'] ?? DateTime.now().toString()),
+      tanggalMulai: DateTime.parse(
+        json['TanggalMulai'] ?? DateTime.now().toString(),
+      ),
+      tanggalSelesai: DateTime.parse(
+        json['TanggalSelesai'] ?? DateTime.now().toString(),
+      ),
       thumbnail: json['Thumbnail'] ?? '',
       kategori: CategoryMapper.mapIdToCategory(json['IDKategoriInformasi']),
       operator: json['IDOperator']?.toString() ?? '',
-      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toString()),
-      updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toString()),
+      createdAt: DateTime.parse(
+        json['created_at'] ?? DateTime.now().toString(),
+      ),
+      updatedAt: DateTime.parse(
+        json['updated_at'] ?? DateTime.now().toString(),
+      ),
     );
   }
 
@@ -215,7 +245,8 @@ class CategoryMapper {
     };
   }
 
-  static Color getColor(String category) => _categoryColors[category] ?? _categoryColors['Umum']!;
+  static Color getColor(String category) =>
+      _categoryColors[category] ?? _categoryColors['Umum']!;
   static Map<String, Color> get categoryColors => _categoryColors;
 }
 
@@ -252,7 +283,9 @@ class DateUtils {
 
   static bool isToday(DateTime date) {
     final now = DateTime.now();
-    return date.year == now.year && date.month == now.month && date.day == now.day;
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
   }
 
   static String formatDateRange(DateTime start, DateTime end) =>
@@ -298,9 +331,15 @@ class MonthNavigation extends StatelessWidget {
         MonthDisplay(monthYear: DateUtils.formatMonthYear(selectedDate)),
         Row(
           children: [
-            NavigationButton(icon: Icons.chevron_left, onPressed: () => onNavigate(-1)),
+            NavigationButton(
+              icon: Icons.chevron_left,
+              onPressed: () => onNavigate(-1),
+            ),
             const SizedBox(width: 8),
-            NavigationButton(icon: Icons.chevron_right, onPressed: () => onNavigate(1)),
+            NavigationButton(
+              icon: Icons.chevron_right,
+              onPressed: () => onNavigate(1),
+            ),
           ],
         ),
       ],
@@ -334,13 +373,20 @@ class MonthDisplay extends StatelessWidget {
 class NavigationButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;
-  const NavigationButton({super.key, required this.icon, required this.onPressed});
+  const NavigationButton({
+    super.key,
+    required this.icon,
+    required this.onPressed,
+  });
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 40,
       height: 40,
-      decoration: BoxDecoration(color: Colors.grey[300], shape: BoxShape.circle),
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        shape: BoxShape.circle,
+      ),
       child: IconButton(
         padding: EdgeInsets.zero,
         icon: Icon(icon, size: 24),
@@ -357,22 +403,23 @@ class WeekdayHeaders extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: _weekdays
-          .map(
-            (day) => SizedBox(
-              width: 36,
-              child: Text(
-                day,
-                style: GoogleFonts.poppins(
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
+      children:
+          _weekdays
+              .map(
+                (day) => SizedBox(
+                  width: 36,
+                  child: Text(
+                    day,
+                    style: GoogleFonts.poppins(
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          )
-          .toList(),
+              )
+              .toList(),
     );
   }
 }
@@ -393,7 +440,8 @@ class CalendarGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final daysInMonth = DateTime(selectedDate.year, selectedDate.month + 1, 0).day;
+    final daysInMonth =
+        DateTime(selectedDate.year, selectedDate.month + 1, 0).day;
     final firstDayOfMonth = DateTime(selectedDate.year, selectedDate.month, 1);
     final firstWeekdayOfMonth = firstDayOfMonth.weekday % 7;
     final totalCells = ((firstWeekdayOfMonth + daysInMonth) / 7).ceil() * 7;
@@ -411,9 +459,14 @@ class CalendarGrid extends StatelessWidget {
         final dayOffset = index - firstWeekdayOfMonth;
         final dayNumber = dayOffset + 1;
 
-        if (dayOffset < 0 || dayNumber > daysInMonth) return const SizedBox.shrink();
+        if (dayOffset < 0 || dayNumber > daysInMonth)
+          return const SizedBox.shrink();
 
-        final currentDate = DateTime(selectedDate.year, selectedDate.month, dayNumber);
+        final currentDate = DateTime(
+          selectedDate.year,
+          selectedDate.month,
+          dayNumber,
+        );
         final eventsForDay = getEventsForDate(currentDate);
 
         return CalendarDay(
@@ -453,14 +506,20 @@ class CalendarDay extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isToday ? AppColors.primaryLight : hasEvents ? AppColors.primaryUltraLight : Colors.transparent,
+              color:
+                  isToday
+                      ? AppColors.primaryLight
+                      : hasEvents
+                      ? AppColors.primaryUltraLight
+                      : Colors.transparent,
             ),
             child: Text(
               date.day.toString(),
               style: GoogleFonts.poppins(
                 fontWeight: isToday ? FontWeight.bold : FontWeight.w500,
                 fontSize: 16,
-                color: (isToday || hasEvents) ? AppColors.primary : Colors.black87,
+                color:
+                    (isToday || hasEvents) ? AppColors.primary : Colors.black87,
               ),
             ),
           ),
@@ -469,17 +528,21 @@ class CalendarDay extends StatelessWidget {
               bottom: 0,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: events
-                    .take(3)
-                    .map(
-                      (event) => Container(
-                        width: 6,
-                        height: 6,
-                        margin: const EdgeInsets.symmetric(horizontal: 1),
-                        decoration: BoxDecoration(color: event.categoryColor, shape: BoxShape.circle),
-                      ),
-                    )
-                    .toList(),
+                children:
+                    events
+                        .take(3)
+                        .map(
+                          (event) => Container(
+                            width: 6,
+                            height: 6,
+                            margin: const EdgeInsets.symmetric(horizontal: 1),
+                            decoration: BoxDecoration(
+                              color: event.categoryColor,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        )
+                        .toList(),
               ),
             ),
         ],
@@ -494,27 +557,34 @@ class CategoryLegend extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: CategoryMapper.categoryColors.entries
-          .map(
-            (entry) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Row(
-                children: [
-                  Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(color: entry.value, shape: BoxShape.circle),
+      children:
+          CategoryMapper.categoryColors.entries
+              .map(
+                (entry) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: entry.value,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        entry.key,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    entry.key,
-                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[700]),
-                  ),
-                ],
-              ),
-            ),
-          )
-          .toList(),
+                ),
+              )
+              .toList(),
     );
   }
 }
@@ -522,10 +592,19 @@ class CategoryLegend extends StatelessWidget {
 class CalendarEventPopup extends StatelessWidget {
   final DateTime date;
   final List<InformasiEvent> events;
-  const CalendarEventPopup({super.key, required this.date, required this.events});
+  const CalendarEventPopup({
+    super.key,
+    required this.date,
+    required this.events,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+      ),
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.6,
         maxWidth: MediaQuery.of(context).size.width * 0.85,
@@ -608,7 +687,11 @@ class EventCard extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           'Periode: ${DateUtils.formatDateRange(event.tanggalMulai, event.tanggalSelesai)}',
-          style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600], fontStyle: FontStyle.italic),
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            color: Colors.grey[600],
+            fontStyle: FontStyle.italic,
+          ),
         ),
         const SizedBox(height: 6),
         Align(
@@ -617,7 +700,11 @@ class EventCard extends StatelessWidget {
             onPressed: () => _showDetailDialog(context),
             child: Text(
               'Lihat detail →',
-              style: GoogleFonts.poppins(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500),
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: AppColors.primary,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ),
@@ -639,6 +726,7 @@ class _EventDetailDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      backgroundColor: const Color(0xFFF8FAFC),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       title: Text(
         event.judul,
@@ -655,7 +743,8 @@ class _EventDetailDialog extends StatelessWidget {
             const SizedBox(height: 12),
             _DetailSection(
               title: 'Periode:',
-              content: '${DateUtils.formatFullDate(event.tanggalMulai)} - ${DateUtils.formatFullDate(event.tanggalSelesai)}',
+              content:
+                  '${DateUtils.formatFullDate(event.tanggalMulai)} - ${DateUtils.formatFullDate(event.tanggalSelesai)}',
             ),
           ],
         ),
@@ -663,7 +752,10 @@ class _EventDetailDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text('Tutup', style: GoogleFonts.poppins(color: AppColors.primary)),
+          child: Text(
+            'Tutup',
+            style: GoogleFonts.poppins(color: AppColors.primary),
+          ),
         ),
       ],
     );
@@ -698,13 +790,16 @@ class CategoryTag extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Text(
         category,
         style: GoogleFonts.poppins(
           fontSize: 12,
           fontWeight: FontWeight.w500,
-          color: category == 'Berita' ? Colors.white : Colors.black87,
+          color: Colors.white,
         ),
       ),
     );
@@ -717,7 +812,10 @@ class PopupCloseButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.cardBackground),
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.cardBackground,
+        ),
         child: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),

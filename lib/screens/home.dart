@@ -24,7 +24,9 @@ class ApiService {
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as List<dynamic>;
-        return data.map((item) => DataService.mapApiToAnnouncement(item)).toList();
+        return data
+            .map((item) => DataService.mapApiToAnnouncement(item))
+            .toList();
       } else {
         throw Exception('Failed to load data: ${response.statusCode}');
       }
@@ -168,11 +170,12 @@ class DataService {
     return categories
         .firstWhere(
           (cat) => cat.name == categoryName,
-          orElse: () => const CategoryData(
-            name: 'Bawaan',
-            color: Colors.grey,
-            icon: Icons.circle,
-          ),
+          orElse:
+              () => const CategoryData(
+                name: 'Bawaan',
+                color: Colors.grey,
+                icon: Icons.circle,
+              ),
         )
         .color;
   }
@@ -279,9 +282,9 @@ class _HomePageState extends State<HomePage> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memuat data: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat data: $e')));
       }
     }
   }
@@ -289,22 +292,26 @@ class _HomePageState extends State<HomePage> {
   void _filterAnnouncements() {
     final query = _searchController.text.toLowerCase();
     setState(() {
-      _filteredAnnouncements = _allAnnouncements.where((announcement) {
-        final matchesCategory =
-            _selectedCategory == null || announcement.tag == _selectedCategory;
-        final matchesQuery = query.isEmpty ||
-            announcement.title.toLowerCase().contains(query) ||
-            announcement.description.toLowerCase().contains(query) ||
-            announcement.department.toLowerCase().contains(query) ||
-            announcement.tag.toLowerCase().contains(query);
-        return matchesCategory && matchesQuery;
-      }).toList();
+      _filteredAnnouncements =
+          _allAnnouncements.where((announcement) {
+            final matchesCategory =
+                _selectedCategory == null ||
+                announcement.tag == _selectedCategory;
+            final matchesQuery =
+                query.isEmpty ||
+                announcement.title.toLowerCase().contains(query) ||
+                announcement.description.toLowerCase().contains(query) ||
+                announcement.department.toLowerCase().contains(query) ||
+                announcement.tag.toLowerCase().contains(query);
+            return matchesCategory && matchesQuery;
+          }).toList();
     });
   }
 
   void _selectCategory(String categoryName) {
     setState(() {
-      _selectedCategory = _selectedCategory == categoryName ? null : categoryName;
+      _selectedCategory =
+          _selectedCategory == categoryName ? null : categoryName;
       _filterAnnouncements();
     });
   }
@@ -312,12 +319,15 @@ class _HomePageState extends State<HomePage> {
   void _showAnnouncementDetail(Announcement announcement) {
     showDialog(
       context: context,
-      builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(HomeStyles.borderRadiusXXLarge),
-        ),
-        child: AnnouncementDetailPopup(announcement: announcement),
-      ),
+      builder:
+          (_) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                HomeStyles.borderRadiusXXLarge,
+              ),
+            ),
+            child: AnnouncementDetailPopup(announcement: announcement),
+          ),
     );
   }
 
@@ -329,9 +339,9 @@ class _HomePageState extends State<HomePage> {
         MaterialPageRoute(builder: (_) => const SignInPage()),
       );
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal logout, coba lagi.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Gagal logout, coba lagi.')));
     }
   }
 
@@ -370,7 +380,8 @@ class _HomePageState extends State<HomePage> {
                     controller: _bannerController,
                     currentIndex: _currentBannerIndex,
                     horizontalPadding: horizontalPadding,
-                    onPageChanged: (index) => setState(() => _currentBannerIndex = index),
+                    onPageChanged:
+                        (index) => setState(() => _currentBannerIndex = index),
                   ),
                   const SizedBox(height: HomeStyles.spacingXXXXXXLarge),
                   CategorySectionWidget(
@@ -415,22 +426,27 @@ class HeaderWidget extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Selamat datang, ${userName ?? 'User'}!',
-                style: HomeStyles.welcome,
-              ),
-              Text(DateService.formatDate(DateTime.now()), style: HomeStyles.date),
-            ],
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout, color: HomeStyles.textGrey),
-            onPressed: onLogout,
-            tooltip: 'Logout',
+          // Bagian teks diberi Expanded agar ambil ruang maksimal yang tersedia
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Selamat Datang, ${userName ?? 'User'}!',
+                  style: HomeStyles.welcome,
+                  overflow:
+                      TextOverflow
+                          .ellipsis, // Kalau terlalu panjang, dipotong dengan ...
+                  maxLines: 1,
+                ),
+                Text(
+                  DateService.formatDate(DateTime.now()),
+                  style: HomeStyles.date,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -455,11 +471,11 @@ class SearchBarWidget extends StatelessWidget {
       child: Container(
         height: HomeStyles.searchBarHeight,
         decoration: BoxDecoration(
-          color: HomeStyles.white,
+          color: const Color.fromARGB(255, 208, 208, 208),
           borderRadius: BorderRadius.circular(HomeStyles.borderRadiusXXXLarge),
           boxShadow: [
             BoxShadow(
-              color: HomeStyles.textGrey.withOpacity(0.15),
+              color: const Color.fromARGB(255, 40, 40, 40).withOpacity(0.15),
               spreadRadius: 2,
               blurRadius: 6,
               offset: const Offset(0, 3),
@@ -470,31 +486,37 @@ class SearchBarWidget extends StatelessWidget {
           controller: controller,
           decoration: InputDecoration(
             hintText: 'Cari',
-            hintStyle: HomeStyles.searchHint,
+            hintStyle: HomeStyles.searchHint.copyWith(
+              color: Color.fromARGB(255, 104, 104, 104),
+            ),
             prefixIcon: const Icon(
               Icons.search,
-              color: HomeStyles.textGrey,
+              color: Color.fromARGB(255, 104, 104, 104),
               size: HomeStyles.iconSizeLarge,
             ),
             suffixIcon: ValueListenableBuilder<TextEditingValue>(
               valueListenable: controller,
-              builder: (_, value, __) => value.text.isNotEmpty
-                  ? IconButton(
-                      icon: Icon(
-                        Icons.clear,
-                        size: HomeStyles.iconSizeMedium,
-                        color: HomeStyles.textGrey[500],
-                      ),
-                      onPressed: controller.clear,
-                    )
-                  : const SizedBox.shrink(),
+              builder:
+                  (_, value, __) =>
+                      value.text.isNotEmpty
+                          ? IconButton(
+                            icon: Icon(
+                              Icons.clear,
+                              size: HomeStyles.iconSizeMedium,
+                              color: const Color.fromARGB(255, 0, 0, 0),
+                            ),
+                            onPressed: controller.clear,
+                          )
+                          : const SizedBox.shrink(),
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(HomeStyles.borderRadiusXXXLarge),
+              borderRadius: BorderRadius.circular(
+                HomeStyles.borderRadiusXXXLarge,
+              ),
               borderSide: BorderSide.none,
             ),
             filled: true,
-            fillColor: HomeStyles.white,
+            fillColor: const Color.fromARGB(255, 255, 255, 255),
             contentPadding: const EdgeInsets.symmetric(
               vertical: HomeStyles.paddingXLarge,
             ),
@@ -537,10 +559,11 @@ class BannerSectionWidget extends StatelessWidget {
             controller: controller,
             itemCount: banners.length,
             onPageChanged: onPageChanged,
-            itemBuilder: (context, index) => BannerItemWidget(
-              banner: banners[index],
-              horizontalPadding: horizontalPadding,
-            ),
+            itemBuilder:
+                (context, index) => BannerItemWidget(
+                  banner: banners[index],
+                  horizontalPadding: horizontalPadding,
+                ),
           ),
         ),
         const SizedBox(height: HomeStyles.spacingXXLarge),
@@ -608,7 +631,9 @@ class BannerItemWidget extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: banner.tagColor,
-                borderRadius: BorderRadius.circular(HomeStyles.borderRadiusMedium),
+                borderRadius: BorderRadius.circular(
+                  HomeStyles.borderRadiusMedium,
+                ),
               ),
               child: Text(banner.tag, style: HomeStyles.bannerTag),
             ),
@@ -639,9 +664,13 @@ class PageIndicatorWidget extends StatelessWidget {
       duration: const Duration(milliseconds: 150),
       margin: const EdgeInsets.symmetric(horizontal: HomeStyles.paddingSmall),
       height: HomeStyles.indicatorHeight,
-      width: isActive ? HomeStyles.indicatorWidthActive : HomeStyles.indicatorWidthInactive,
+      width:
+          isActive
+              ? HomeStyles.indicatorWidthActive
+              : HomeStyles.indicatorWidthInactive,
       decoration: BoxDecoration(
-        color: isActive ? HomeStyles.blue : HomeStyles.textGrey.withOpacity(0.5),
+        color:
+            isActive ? HomeStyles.blue : HomeStyles.textGrey.withOpacity(0.5),
         borderRadius: BorderRadius.circular(HomeStyles.borderRadiusSmall),
       ),
     );
@@ -687,7 +716,9 @@ class CategorySectionWidget extends StatelessWidget {
             physics: const BouncingScrollPhysics(),
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             itemCount: categories.length,
-            separatorBuilder: (context, index) => const SizedBox(width: HomeStyles.spacingXXXXLarge),
+            separatorBuilder:
+                (context, index) =>
+                    const SizedBox(width: HomeStyles.spacingXXXXLarge),
             itemBuilder: (context, index) {
               final category = categories[index];
               return CategoryItemWidget(
@@ -755,22 +786,24 @@ class CategoryItemWidget extends StatelessWidget {
             decoration: BoxDecoration(
               color: category.color,
               shape: BoxShape.circle,
-              border: isSelected
-                  ? Border.all(
-                      color: Colors.black,
-                      width: HomeStyles.borderWidth,
-                    )
-                  : null,
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: category.color.withOpacity(0.4),
-                        spreadRadius: 1,
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]
-                  : null,
+              border:
+                  isSelected
+                      ? Border.all(
+                        color: Colors.black,
+                        width: HomeStyles.borderWidth,
+                      )
+                      : null,
+              boxShadow:
+                  isSelected
+                      ? [
+                        BoxShadow(
+                          color: category.color.withOpacity(0.4),
+                          spreadRadius: 1,
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                      : null,
             ),
             child: Icon(
               category.icon,
@@ -780,24 +813,32 @@ class CategoryItemWidget extends StatelessWidget {
           ),
           const SizedBox(height: HomeStyles.spacingXLarge),
           SizedBox(
-            width: 75,
+            width: 90,
             child: Column(
               children: [
-                Text(
-                  category.name,
-                  style: isSelected ? HomeStyles.categoryNameSelected : HomeStyles.categoryName,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    category.name,
+                    style:
+                        isSelected
+                            ? HomeStyles.categoryNameSelected
+                            : HomeStyles.categoryName,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
                 if (isSelected)
                   Container(
-                    margin: const EdgeInsets.only(top: HomeStyles.spacingMedium),
+                    margin: const EdgeInsets.only(
+                      top: HomeStyles.spacingMedium,
+                    ),
                     width: HomeStyles.iconSizeSmall,
                     height: HomeStyles.spacingSmall,
                     decoration: BoxDecoration(
                       color: category.color,
-                      borderRadius: BorderRadius.circular(HomeStyles.borderRadiusSmall),
+                      borderRadius: BorderRadius.circular(
+                        HomeStyles.borderRadiusSmall,
+                      ),
                     ),
                   ),
               ],
@@ -881,7 +922,9 @@ class AnnouncementsHeaderWidget extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: DataService.getCategoryColor(selectedCategory!),
-                      borderRadius: BorderRadius.circular(HomeStyles.borderRadiusMedium),
+                      borderRadius: BorderRadius.circular(
+                        HomeStyles.borderRadiusMedium,
+                      ),
                     ),
                     child: Text(selectedCategory!, style: HomeStyles.filterTag),
                   ),
@@ -933,7 +976,9 @@ class AnnouncementsListWidget extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: announcements.length,
-      separatorBuilder: (context, index) => const SizedBox(height: HomeStyles.spacingXXXLarge),
+      separatorBuilder:
+          (context, index) =>
+              const SizedBox(height: HomeStyles.spacingXXXLarge),
       itemBuilder: (context, index) {
         final announcement = announcements[index];
         return AnnouncementCardWidget(
@@ -958,35 +1003,39 @@ class EmptyStateWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: horizontalPadding,
-        vertical: HomeStyles.paddingXXXXXLarge,
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.announcement_outlined,
-            size: HomeStyles.iconSizeXXLarge,
-            color: HomeStyles.textGrey[400],
-          ),
-          const SizedBox(height: HomeStyles.spacingXXXLarge),
-          Text(
-            selectedCategory != null
-                ? 'Tidak ditemukan pengumuman untuk "$selectedCategory"'
-                : 'Tidak ada pengumuman tersedia',
-            style: HomeStyles.emptyTitle,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: HomeStyles.spacingXLarge),
-          Text(
-            selectedCategory != null
-                ? 'Coba pilih kategori lain atau hapus filter.'
-                : 'Cek kembali nanti untuk pengumuman baru.',
-            style: HomeStyles.emptySubtitle,
-            textAlign: TextAlign.center,
-          ),
-        ],
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding,
+          vertical: HomeStyles.paddingXXXXXLarge,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center, // ✅ Tambahkan ini
+          crossAxisAlignment: CrossAxisAlignment.center, // ✅ Tambahkan ini
+          children: [
+            Icon(
+              Icons.announcement_outlined,
+              size: HomeStyles.iconSizeXXLarge,
+              color: HomeStyles.textGrey[400],
+            ),
+            const SizedBox(height: HomeStyles.spacingXXXLarge),
+            Text(
+              selectedCategory != null
+                  ? 'Tidak ditemukan pengumuman untuk "$selectedCategory"'
+                  : 'Tidak ada pengumuman tersedia',
+              style: HomeStyles.emptyTitle,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: HomeStyles.spacingXLarge),
+            Text(
+              selectedCategory != null
+                  ? 'Coba pilih kategori lain atau hapus filter.'
+                  : 'Cek kembali nanti untuk pengumuman baru.',
+              style: HomeStyles.emptySubtitle,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1007,7 +1056,8 @@ class AnnouncementCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isUrgent =
-        announcement.tag.toLowerCase() == 'urgent' || announcement.tag.toLowerCase() == 'penting';
+        announcement.tag.toLowerCase() == 'urgent' ||
+        announcement.tag.toLowerCase() == 'penting';
 
     return GestureDetector(
       onTap: onTap,
@@ -1038,7 +1088,9 @@ class AnnouncementCardWidget extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: announcement.tagColor,
-                    borderRadius: BorderRadius.circular(HomeStyles.borderRadiusSmall),
+                    borderRadius: BorderRadius.circular(
+                      HomeStyles.borderRadiusSmall,
+                    ),
                   ),
                   child: Text(
                     announcement.tag,

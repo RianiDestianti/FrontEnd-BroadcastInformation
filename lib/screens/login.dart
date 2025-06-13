@@ -138,16 +138,19 @@ class LoginResponse {
     return LoginResponse(
       success: json['success'] ?? false,
       message: json['message'] ?? '',
-      user: data != null && data['user'] != null
-          ? User.fromJson(data['user'])
-          : null,
+      user:
+          data != null && data['user'] != null
+              ? User.fromJson(data['user'])
+              : null,
       userType: data != null ? data['user_type'] : null,
-      guru: data != null && data['guru'] != null
-          ? Guru.fromJson(data['guru'])
-          : null,
-      siswa: data != null && data['siswa'] != null
-          ? Siswa.fromJson(data['siswa'])
-          : null,
+      guru:
+          data != null && data['guru'] != null
+              ? Guru.fromJson(data['guru'])
+              : null,
+      siswa:
+          data != null && data['siswa'] != null
+              ? Siswa.fromJson(data['siswa'])
+              : null,
       token: data != null ? data['token'] : null,
       tokenType: data != null ? data['token_type'] : null,
     );
@@ -207,6 +210,7 @@ class User {
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
+
   @override
   State<SignInPage> createState() => _SignInPageState();
 }
@@ -230,7 +234,9 @@ class _SignInPageState extends State<SignInPage> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppConstants.horizontalPadding),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppConstants.horizontalPadding,
+          ),
           child: Center(
             child: SingleChildScrollView(
               child: Column(
@@ -239,13 +245,13 @@ class _SignInPageState extends State<SignInPage> {
                 children: [
                   const SizedBox(height: AppConstants.spacingXL),
                   const HeaderWidget(),
-                  const SizedBox(height: AppConstants.spacingXL),
+                  const SizedBox(height: AppConstants.spacingXL * 1.5),
                   const UsernameField(),
                   const SizedBox(height: AppConstants.spacingM),
                   const PasswordField(),
-                  const SizedBox(height: AppConstants.spacingL),
+                  const SizedBox(height: AppConstants.spacingL * 1.5),
                   SignInButton(isLoading: _isLoading),
-                  const SizedBox(height: AppConstants.spacingM),
+                  const SizedBox(height: AppConstants.spacingXL),
                 ],
               ),
             ),
@@ -258,16 +264,50 @@ class _SignInPageState extends State<SignInPage> {
 
 class HeaderWidget extends StatelessWidget {
   const HeaderWidget({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text('Login', textAlign: TextAlign.center, style: SignInStyles.titleText),
-        const SizedBox(height: AppConstants.spacingS),
+        // Logo section with divider
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/smkn.png', 
+              height: 70, 
+              width: 70,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(width: AppConstants.spacingM),
+            Container(
+              height: 60,
+              width: 2,
+              color: Colors.grey.shade400,
+            ),
+            const SizedBox(width: AppConstants.spacingM),
+            Image.asset(
+              'assets/logo.png', 
+              height: 70, 
+              width: 70,
+              fit: BoxFit.contain,
+            ),
+          ],
+        ),
+        const SizedBox(height: AppConstants.spacingL),
         Text(
-          'Halo! Update Informasi penting menanti Anda.',
+          'Login',
           textAlign: TextAlign.center,
-          style: SignInStyles.subtitleText,
+          style: SignInStyles.titleText,
+        ),
+        const SizedBox(height: AppConstants.spacingS),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Text(
+            'Halo! Update Informasi penting menanti Anda.',
+            textAlign: TextAlign.center,
+            style: SignInStyles.subtitleText,
+          ),
         ),
       ],
     );
@@ -276,6 +316,7 @@ class HeaderWidget extends StatelessWidget {
 
 class UsernameField extends StatelessWidget {
   const UsernameField({super.key});
+
   @override
   Widget build(BuildContext context) {
     final state = context.findAncestorStateOfType<_SignInPageState>()!;
@@ -289,6 +330,7 @@ class UsernameField extends StatelessWidget {
 
 class PasswordField extends StatelessWidget {
   const PasswordField({super.key});
+
   @override
   Widget build(BuildContext context) {
     final state = context.findAncestorStateOfType<_SignInPageState>()!;
@@ -303,7 +345,10 @@ class PasswordField extends StatelessWidget {
           state._isPasswordVisible ? Icons.visibility : Icons.visibility_off,
           color: SignInStyles.hintColor,
         ),
-        onPressed: () => state.setState(() => state._isPasswordVisible = !state._isPasswordVisible),
+        onPressed:
+            () => state.setState(
+              () => state._isPasswordVisible = !state._isPasswordVisible,
+            ),
       ),
     );
   }
@@ -346,16 +391,28 @@ class InputField extends StatelessWidget {
               vertical: SignInStyles.inputPaddingVertical,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppConstants.inputBorderRadius),
+              borderRadius: BorderRadius.circular(
+                AppConstants.inputBorderRadius,
+              ),
               borderSide: const BorderSide(color: Colors.grey, width: 1),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppConstants.inputBorderRadius),
-              borderSide: BorderSide(color: SignInStyles.disabledBorderColor, width: 1),
+              borderRadius: BorderRadius.circular(
+                AppConstants.inputBorderRadius,
+              ),
+              borderSide: BorderSide(
+                color: SignInStyles.disabledBorderColor,
+                width: 1,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppConstants.inputBorderRadius),
-              borderSide: const BorderSide(color: SignInStyles.primaryColor, width: 2),
+              borderRadius: BorderRadius.circular(
+                AppConstants.inputBorderRadius,
+              ),
+              borderSide: const BorderSide(
+                color: SignInStyles.primaryColor,
+                width: 2,
+              ),
             ),
             filled: true,
             fillColor: Colors.white,
@@ -370,29 +427,38 @@ class SignInButton extends StatelessWidget {
   final bool isLoading;
 
   const SignInButton({super.key, required this.isLoading});
+
   @override
   Widget build(BuildContext context) {
     final state = context.findAncestorStateOfType<_SignInPageState>()!;
-    return ElevatedButton(
-      onPressed: isLoading ? null : () => _handleSignIn(context, state),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: SignInStyles.primaryColor,
-        padding: const EdgeInsets.symmetric(vertical: SignInStyles.buttonPaddingVertical),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius),
+    return Center(
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.6, // Mengecilkan lebar tombol
+        child: ElevatedButton(
+          onPressed: isLoading ? null : () => _handleSignIn(context, state),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: SignInStyles.primaryColor,
+            padding: const EdgeInsets.symmetric(
+              vertical: 12.0, // Mengurangi padding vertikal
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius),
+            ),
+            elevation: 2,
+          ),
+          child:
+              isLoading
+                  ? const SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                  : Text('Login', style: SignInStyles.buttonText),
         ),
-        elevation: 0,
       ),
-      child: isLoading
-          ? const SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2,
-              ),
-            )
-          : Text('Login', style: SignInStyles.buttonText),
     );
   }
 

@@ -1,22 +1,101 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../layouts/layout.dart';
 import 'login.dart';
 import '../models/model.dart';
 import '../constants/constant.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
-  static const UserProfile _userProfile = UserProfile(
-    name: 'Elara Zafira',
-    studentId: '093264',
-    role: 'Siswa',
-    email: 'laraza@gmail.com',
-    department: 'Rekayasa Perangkat Lunak',
-  );
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  UserProfile? _userProfile;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      final nama = prefs.getString('nama') ?? 'User';
+      final userType = prefs.getString('user_type') ?? 'Unknown';
+      final username = prefs.getString('username') ?? '';
+      final profileId = prefs.getInt('profile_id') ?? 0;
+
+      final email =
+          username.isNotEmpty
+              ? '$username@smkn11bdg.sch.id'
+              : 'user@smkn11bdg.sch.id';
+
+      String department = '';
+      String role = '';
+      String studentId = '';
+
+      if (userType.toLowerCase() == 'siswa') {
+        department = 'Rekayasa Perangkat Lunak';
+        role = 'Siswa';
+        studentId = profileId.toString();
+      } else if (userType.toLowerCase() == 'guru') {
+        department = 'Pengajar';
+        role = 'Guru';
+        studentId = profileId.toString();
+      } else {
+        department = 'SMKN 11 Bandung';
+        role = userType;
+        studentId = username;
+      }
+
+      setState(() {
+        _userProfile = UserProfile(
+          name: nama,
+          studentId: studentId,
+          role: role,
+          email: email,
+          department: department,
+        );
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading user profile: $e');
+      setState(() {
+        _userProfile = const UserProfile(
+          name: 'User',
+          studentId: 'Unknown',
+          role: 'Unknown',
+          email: 'user@smkn11bdg.sch.id',
+          department: 'SMKN 11 Bandung',
+        );
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return MainLayout(
+        selectedIndex: 2,
+        child: Container(
+          color: Colors.white,
+          child: const Center(
+            child: CircularProgressIndicator(
+              color: AppThemeProfile.primaryColor,
+            ),
+          ),
+        ),
+      );
+    }
+
     return MainLayout(
       selectedIndex: 2,
       child: Container(
@@ -24,15 +103,15 @@ class ProfilePage extends StatelessWidget {
         child: SafeArea(
           child: SingleChildScrollView(
             child: Column(
-              children: const [
-                ProfileHeader(userProfile: _userProfile),
-                SizedBox(height: 24),
-                PersonalInformationCard(userProfile: _userProfile),
-                SizedBox(height: 24),
-                ActionButtonsSection(),
-                SizedBox(height: 40),
-                AppFooter(),
-                SizedBox(height: 30),
+              children: [
+                ProfileHeader(userProfile: _userProfile!),
+                const SizedBox(height: 24),
+                PersonalInformationCard(userProfile: _userProfile!),
+                const SizedBox(height: 24),
+                const ActionButtonsSection(),
+                const SizedBox(height: 40),
+                const AppFooter(),
+                const SizedBox(height: 30),
               ],
             ),
           ),
@@ -45,6 +124,7 @@ class ProfilePage extends StatelessWidget {
 class ProfileHeader extends StatelessWidget {
   const ProfileHeader({super.key, required this.userProfile});
   final UserProfile userProfile;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -59,8 +139,8 @@ class ProfileHeader extends StatelessWidget {
       child: Column(
         children: [
           const HeaderNavigation(),
-          const SizedBox(height: 20),
-          const ProfileAvatar(),
+          const SizedBox(height: 40),
+          ProfileAvatar(userProfile: userProfile),
           const SizedBox(height: AppTheme.defaultSpacing),
           ProfileName(name: userProfile.name),
           DepartmentBadge(department: userProfile.department),
@@ -72,21 +152,27 @@ class ProfileHeader extends StatelessWidget {
 
 class HeaderNavigation extends StatelessWidget {
   const HeaderNavigation({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.defaultSpacing),
-      child: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-        ],
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [Container(), Container()],
       ),
     );
   }
 }
 
 class ProfileAvatar extends StatelessWidget {
-  const ProfileAvatar({super.key});
+  const ProfileAvatar({super.key, required this.userProfile});
+  final UserProfile userProfile;
+
   @override
   Widget build(BuildContext context) {
+    String initials = _getInitials(userProfile.name);
+
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -103,21 +189,37 @@ class ProfileAvatar extends StatelessWidget {
         backgroundColor: Colors.white,
         child: CircleAvatar(
           radius: ProfileStyles.innerAvatarRadius,
-          backgroundColor: const Color(0x3357B4BA),
-          child: const Icon(
-            Icons.person,
-            size: 50,
-            color: AppThemeProfile.primaryColor,
+          backgroundColor: AppThemeProfile.primaryColor.withOpacity(0.2),
+          child: Text(
+            initials,
+            style: GoogleFonts.poppins(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppThemeProfile.primaryColor,
+            ),
           ),
         ),
       ),
     );
+  }
+
+  String _getInitials(String name) {
+    if (name.isEmpty) return '?';
+
+    List<String> nameParts = name.split(' ');
+    if (nameParts.length == 1) {
+      return nameParts[0].substring(0, 1).toUpperCase();
+    } else {
+      return (nameParts[0].substring(0, 1) + nameParts[1].substring(0, 1))
+          .toUpperCase();
+    }
   }
 }
 
 class ProfileName extends StatelessWidget {
   const ProfileName({super.key, required this.name});
   final String name;
+
   @override
   Widget build(BuildContext context) {
     return Text(name, style: ProfileStyles.nameStyle);
@@ -127,6 +229,7 @@ class ProfileName extends StatelessWidget {
 class DepartmentBadge extends StatelessWidget {
   const DepartmentBadge({super.key, required this.department});
   final String department;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -162,6 +265,7 @@ class DepartmentBadge extends StatelessWidget {
 class PersonalInformationCard extends StatelessWidget {
   const PersonalInformationCard({super.key, required this.userProfile});
   final UserProfile userProfile;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -187,7 +291,7 @@ class PersonalInformationCard extends StatelessWidget {
                 icon: Icons.badge_outlined,
               ),
               InfoRow(
-                label: 'ID Siswa',
+                label: userProfile.role == 'Siswa' ? 'NIS' : 'NIP',
                 value: userProfile.studentId,
                 icon: Icons.credit_card,
               ),
@@ -197,9 +301,9 @@ class PersonalInformationCard extends StatelessWidget {
                 icon: Icons.school_outlined,
               ),
               InfoRow(
-                label: 'Email',
-                value: userProfile.email,
-                icon: Icons.email_outlined,
+                label: 'Jurusan/Bagian',
+                value: userProfile.department,
+                icon: Icons.work_outline,
               ),
             ],
           ),
@@ -213,6 +317,7 @@ class SectionTitle extends StatelessWidget {
   const SectionTitle({super.key, required this.title, required this.icon});
   final String title;
   final IconData icon;
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -253,7 +358,14 @@ class InfoRow extends StatelessWidget {
           ),
           const SizedBox(width: AppTheme.defaultSpacing),
           Expanded(child: Text(label, style: ProfileStyles.labelStyle)),
-          Text(value, style: ProfileStyles.valueStyle),
+          Flexible(
+            child: Text(
+              value,
+              style: ProfileStyles.valueStyle,
+              textAlign: TextAlign.end,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );
@@ -262,17 +374,22 @@ class InfoRow extends StatelessWidget {
 
 class ActionButtonsSection extends StatelessWidget {
   const ActionButtonsSection({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppThemeProfile.horizontalPadding,
       ),
-      child: ActionButton(
-        onTap: () => _showLogoutDialog(context),
-        icon: Icons.logout,
-        label: 'Logout',
-        color: Colors.red,
+      child: Column(
+        children: [
+          ActionButton(
+            onTap: () => _showLogoutDialog(context),
+            icon: Icons.logout,
+            label: 'Logout',
+            color: Colors.red,
+          ),
+        ],
       ),
     );
   }
@@ -284,6 +401,7 @@ class ActionButtonsSection extends StatelessWidget {
 
 class AppFooter extends StatelessWidget {
   const AppFooter({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -337,6 +455,7 @@ class LogoWithText extends StatelessWidget {
   const LogoWithText({super.key, required this.assetPath, required this.text});
   final String assetPath;
   final String text;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -373,6 +492,7 @@ class LogoWithText extends StatelessWidget {
 class CardContainer extends StatelessWidget {
   const CardContainer({super.key, required this.child});
   final Widget child;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -436,9 +556,11 @@ class ActionButton extends StatelessWidget {
 
 class LogoutDialog extends StatelessWidget {
   const LogoutDialog({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      backgroundColor: Color(0xFFF8FAFC),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
       child: Padding(
         padding: const EdgeInsets.all(ProfileStyles.dialogPadding),
@@ -484,6 +606,7 @@ class LogoutDialog extends StatelessWidget {
 
 class DialogCancelButton extends StatelessWidget {
   const DialogCancelButton({super.key});
+
   @override
   Widget build(BuildContext context) {
     return TextButton(
@@ -508,14 +631,22 @@ class DialogCancelButton extends StatelessWidget {
 
 class DialogLogoutButton extends StatelessWidget {
   const DialogLogoutButton({super.key});
+
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {
-        Navigator.pop(context);
-        Navigator.pushReplacement(
+      onPressed: () async {
+        Navigator.pop(context); // Close dialog
+
+        // Perform logout
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.clear(); // Clear all stored preferences
+
+        // Navigate to login page and remove all previous routes
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const SignInPage()),
+          (route) => false,
         );
       },
       style: ElevatedButton.styleFrom(

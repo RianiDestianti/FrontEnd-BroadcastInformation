@@ -34,7 +34,9 @@ class AppTheme {
   static const Color cardBackground = Color(0xFFF8F8F8);
   static const Color shadowColor = Color(0x0D000000);
   static const Color iconColor = Color(0xFF9E9E9E);
-  static const EdgeInsets horizontalPadding = EdgeInsets.symmetric(horizontal: 20);
+  static const EdgeInsets horizontalPadding = EdgeInsets.symmetric(
+    horizontal: 20,
+  );
   static const EdgeInsets cardBottomMargin = EdgeInsets.only(bottom: 12);
   static const double defaultSpacing = 16.0;
   static const double smallSpacing = 8.0;
@@ -42,20 +44,20 @@ class AppTheme {
   static const double cardRadius = 25.0;
   static const double badgeRadius = 24.0;
   static const double containerRadius = 12.0;
-  
+
   static const TextStyle titleStyle = TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.bold,
     fontFamily: 'Poppins',
     color: textPrimary,
   );
-  
+
   static const TextStyle subtitleStyle = TextStyle(
     fontSize: 14,
     color: textSecondary,
     fontFamily: 'Poppins',
   );
-  
+
   static const TextStyle cardTitleStyle = TextStyle(
     fontWeight: FontWeight.w600,
     fontSize: 14,
@@ -63,7 +65,7 @@ class AppTheme {
     color: textPrimary,
     height: 1.3,
   );
-  
+
   static const TextStyle infoTextStyle = TextStyle(
     color: textTertiary,
     fontSize: 11,
@@ -101,7 +103,6 @@ class AppConstants {
         1,
       );
     }
-
     return MaterialColor(color.value, swatch);
   }
 }
@@ -182,7 +183,9 @@ class SplashStyles {
 class SignInStyles {
   static const Color primaryColor = AppConstants.primaryColor;
   static const Color hintColor = Colors.grey;
-  static const Color disabledBorderColor = Color(0xFFEEEEEE); // Colors.grey[300]
+  static const Color disabledBorderColor = Color(
+    0xFFEEEEEE,
+  ); 
   static const Color errorColor = Colors.red;
   static const double titleFontSize = 28.0;
   static const double subtitleFontSize = 16.0;

@@ -222,7 +222,6 @@ class InformasiEvent {
       ),
     );
   }
-
   Color get categoryColor => CategoryMapper.getColor(kategori);
 }
 
@@ -317,7 +316,6 @@ class CalendarContainer extends StatelessWidget {
 class MonthNavigation extends StatelessWidget {
   final DateTime selectedDate;
   final Function(int) onNavigate;
-
   const MonthNavigation({
     super.key,
     required this.selectedDate,

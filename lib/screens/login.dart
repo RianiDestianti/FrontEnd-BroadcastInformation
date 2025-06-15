@@ -8,7 +8,6 @@ import '../constants/constant.dart';
 
 class AuthService {
   static const String baseUrl = 'http://localhost:8000/api';
-
   static Future<LoginResponse> login(String id, String password) async {
     try {
       final response = await http.post(
@@ -210,7 +209,6 @@ class User {
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
-
   @override
   State<SignInPage> createState() => _SignInPageState();
 }
@@ -220,7 +218,6 @@ class _SignInPageState extends State<SignInPage> {
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isLoading = false;
-
   @override
   void dispose() {
     _usernameController.dispose();
@@ -264,31 +261,25 @@ class _SignInPageState extends State<SignInPage> {
 
 class HeaderWidget extends StatelessWidget {
   const HeaderWidget({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Logo section with divider
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/smkn.png', 
-              height: 70, 
+              'assets/smkn.png',
+              height: 70,
               width: 70,
               fit: BoxFit.contain,
             ),
             const SizedBox(width: AppConstants.spacingM),
-            Container(
-              height: 60,
-              width: 2,
-              color: Colors.grey.shade400,
-            ),
+            Container(height: 60, width: 2, color: Colors.grey.shade400),
             const SizedBox(width: AppConstants.spacingM),
             Image.asset(
-              'assets/logo.png', 
-              height: 70, 
+              'assets/logo.png',
+              height: 70,
               width: 70,
               fit: BoxFit.contain,
             ),
@@ -316,7 +307,6 @@ class HeaderWidget extends StatelessWidget {
 
 class UsernameField extends StatelessWidget {
   const UsernameField({super.key});
-
   @override
   Widget build(BuildContext context) {
     final state = context.findAncestorStateOfType<_SignInPageState>()!;
@@ -330,7 +320,6 @@ class UsernameField extends StatelessWidget {
 
 class PasswordField extends StatelessWidget {
   const PasswordField({super.key});
-
   @override
   Widget build(BuildContext context) {
     final state = context.findAncestorStateOfType<_SignInPageState>()!;
@@ -425,24 +414,25 @@ class InputField extends StatelessWidget {
 
 class SignInButton extends StatelessWidget {
   final bool isLoading;
-
   const SignInButton({super.key, required this.isLoading});
-
   @override
   Widget build(BuildContext context) {
     final state = context.findAncestorStateOfType<_SignInPageState>()!;
     return Center(
       child: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.6, // Mengecilkan lebar tombol
+        width:
+            MediaQuery.of(context).size.width * 0.6, 
         child: ElevatedButton(
           onPressed: isLoading ? null : () => _handleSignIn(context, state),
           style: ElevatedButton.styleFrom(
             backgroundColor: SignInStyles.primaryColor,
             padding: const EdgeInsets.symmetric(
-              vertical: 12.0, // Mengurangi padding vertikal
+              vertical: 12.0, 
             ),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppConstants.buttonBorderRadius),
+              borderRadius: BorderRadius.circular(
+                AppConstants.buttonBorderRadius,
+              ),
             ),
             elevation: 2,
           ),

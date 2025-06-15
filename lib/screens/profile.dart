@@ -8,7 +8,6 @@ import '../constants/constant.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
-
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
@@ -16,7 +15,6 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   UserProfile? _userProfile;
   bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
@@ -26,12 +24,10 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _loadUserProfile() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-
       final nama = prefs.getString('nama') ?? 'User';
       final userType = prefs.getString('user_type') ?? 'Unknown';
       final username = prefs.getString('username') ?? '';
       final profileId = prefs.getInt('profile_id') ?? 0;
-
       final email =
           username.isNotEmpty
               ? '$username@smkn11bdg.sch.id'
@@ -124,7 +120,6 @@ class _ProfilePageState extends State<ProfilePage> {
 class ProfileHeader extends StatelessWidget {
   const ProfileHeader({super.key, required this.userProfile});
   final UserProfile userProfile;
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -152,7 +147,6 @@ class ProfileHeader extends StatelessWidget {
 
 class HeaderNavigation extends StatelessWidget {
   const HeaderNavigation({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -168,11 +162,9 @@ class HeaderNavigation extends StatelessWidget {
 class ProfileAvatar extends StatelessWidget {
   const ProfileAvatar({super.key, required this.userProfile});
   final UserProfile userProfile;
-
   @override
   Widget build(BuildContext context) {
     String initials = _getInitials(userProfile.name);
-
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -205,7 +197,6 @@ class ProfileAvatar extends StatelessWidget {
 
   String _getInitials(String name) {
     if (name.isEmpty) return '?';
-
     List<String> nameParts = name.split(' ');
     if (nameParts.length == 1) {
       return nameParts[0].substring(0, 1).toUpperCase();
@@ -219,7 +210,6 @@ class ProfileAvatar extends StatelessWidget {
 class ProfileName extends StatelessWidget {
   const ProfileName({super.key, required this.name});
   final String name;
-
   @override
   Widget build(BuildContext context) {
     return Text(name, style: ProfileStyles.nameStyle);
@@ -229,7 +219,6 @@ class ProfileName extends StatelessWidget {
 class DepartmentBadge extends StatelessWidget {
   const DepartmentBadge({super.key, required this.department});
   final String department;
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -265,7 +254,6 @@ class DepartmentBadge extends StatelessWidget {
 class PersonalInformationCard extends StatelessWidget {
   const PersonalInformationCard({super.key, required this.userProfile});
   final UserProfile userProfile;
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -317,7 +305,6 @@ class SectionTitle extends StatelessWidget {
   const SectionTitle({super.key, required this.title, required this.icon});
   final String title;
   final IconData icon;
-
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -374,7 +361,6 @@ class InfoRow extends StatelessWidget {
 
 class ActionButtonsSection extends StatelessWidget {
   const ActionButtonsSection({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -401,7 +387,6 @@ class ActionButtonsSection extends StatelessWidget {
 
 class AppFooter extends StatelessWidget {
   const AppFooter({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -455,7 +440,6 @@ class LogoWithText extends StatelessWidget {
   const LogoWithText({super.key, required this.assetPath, required this.text});
   final String assetPath;
   final String text;
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -492,7 +476,6 @@ class LogoWithText extends StatelessWidget {
 class CardContainer extends StatelessWidget {
   const CardContainer({super.key, required this.child});
   final Widget child;
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -556,7 +539,6 @@ class ActionButton extends StatelessWidget {
 
 class LogoutDialog extends StatelessWidget {
   const LogoutDialog({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -606,7 +588,6 @@ class LogoutDialog extends StatelessWidget {
 
 class DialogCancelButton extends StatelessWidget {
   const DialogCancelButton({super.key});
-
   @override
   Widget build(BuildContext context) {
     return TextButton(
@@ -631,18 +612,13 @@ class DialogCancelButton extends StatelessWidget {
 
 class DialogLogoutButton extends StatelessWidget {
   const DialogLogoutButton({super.key});
-
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: () async {
-        Navigator.pop(context); // Close dialog
-
-        // Perform logout
+        Navigator.pop(context);
         final prefs = await SharedPreferences.getInstance();
-        await prefs.clear(); // Clear all stored preferences
-
-        // Navigate to login page and remove all previous routes
+        await prefs.clear();
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const SignInPage()),

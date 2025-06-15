@@ -23,7 +23,8 @@ class Announcement {
   final String description;
   final String fullContent;
   final String department;
-  final String? imageUrl;
+  final String thumbnail; 
+  final String? imageUrl; 
 
   Announcement({
     required this.id,
@@ -34,15 +35,9 @@ class Announcement {
     required this.description,
     required this.fullContent,
     required this.department,
+    required this.thumbnail,
     this.imageUrl,
   });
-}
-
-// model
-class EventCategory {
-  final String name;
-  final Color color;
-  const EventCategory({required this.name, required this.color});
 }
 
 // profile

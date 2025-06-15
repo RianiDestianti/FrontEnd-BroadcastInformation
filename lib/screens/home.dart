@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../screens/login.dart'; // Import SignInPage
+import '../screens/login.dart';
 import 'popup.dart';
 import '../layouts/layout.dart';
 import '../models/model.dart';
@@ -11,7 +11,6 @@ import '../constants/constant.dart';
 
 class ApiService {
   static const String _baseUrl = 'http://localhost:8000/api/informasi';
-
   static Future<List<Announcement>> fetchAnnouncements(String token) async {
     try {
       final response = await http.get(
@@ -62,18 +61,37 @@ class DateService {
   ];
 
   static String formatDate(DateTime date) {
-    return '${_days[date.weekday - 1]}, ${_months[date.month - 1]} ${date.day}, ${date.year}';
+    return '${_days[date.weekday - 1]}, ${date.day} ${_months[date.month - 1]} ${date.year}';
   }
 
   static String calculateTimeAgo(String? dateString) {
     if (dateString == null) return 'Tidak diketahui';
+
     try {
-      final date = DateTime.parse(dateString);
-      final difference = DateTime.now().difference(date);
-      if (difference.inDays > 0) return '${difference.inDays} hari lalu';
-      if (difference.inHours > 0) return '${difference.inHours} jam lalu';
-      if (difference.inMinutes > 0) return '${difference.inMinutes} menit lalu';
-      return 'Baru saja';
+      final date = DateTime.parse(dateString).toLocal(); 
+      final now = DateTime.now();
+      final difference = now.difference(date);
+
+      if (difference.inDays >= 365) {
+        final years = (difference.inDays / 365).floor();
+        return '$years tahun lalu';
+      } else if (difference.inDays >= 30) {
+        final months = (difference.inDays / 30).floor();
+        return '$months bulan lalu';
+      } else if (difference.inDays >= 7) {
+        final weeks = (difference.inDays / 7).floor();
+        return '$weeks minggu lalu';
+      } else if (difference.inDays > 0) {
+        return '${difference.inDays} hari lalu';
+      } else if (difference.inHours > 0) {
+        return '${difference.inHours} jam lalu';
+      } else if (difference.inMinutes > 0) {
+        return '${difference.inMinutes} menit lalu';
+      } else if (difference.inSeconds > 0) {
+        return '${difference.inSeconds} detik lalu';
+      } else {
+        return 'Baru saja';
+      }
     } catch (e) {
       return 'Tidak diketahui';
     }
@@ -102,7 +120,7 @@ class DataService {
       id: '3',
       title: 'Workshop VR DKV',
       subtitle: '18 Mei • Lab Multimedia',
-      imageUrl: 'assets/akl.jpg',
+      imageUrl: 'assets/dkvaja.jpg',
       tag: 'Acara',
       tagColor: Color(0xFF45B7D1),
     ),
@@ -110,7 +128,7 @@ class DataService {
       id: '4',
       title: 'Pemaparan Materi oleh PT Cakrawala',
       subtitle: '25 Mei • TEFA Perkantoran',
-      imageUrl: 'assets/akl.jpg',
+      imageUrl: 'assets/otkpbiru.jpg',
       tag: 'Akademik',
       tagColor: Color(0xFF6C5CE7),
     ),
@@ -147,24 +165,26 @@ class DataService {
     '4': {'tag': 'Pengumuman', 'color': Color(0xFFE17055)},
   };
 
-  static Announcement mapApiToAnnouncement(Map<String, dynamic> apiData) {
-    final categoryId = apiData['IDKategoriInformasi']?.toString();
-    final category =
-        _categoryMapping[categoryId] ??
-        {'tag': 'Pengumuman', 'color': const Color(0xFFE17055)};
+ static Announcement mapApiToAnnouncement(Map<String, dynamic> apiData) {
+  final categoryId = apiData['IDKategoriInformasi']?.toString();
+  final category =
+      _categoryMapping[categoryId] ??
+      {'tag': 'Pengumuman', 'color': const Color(0xFFE17055)};
 
-    return Announcement(
-      id: apiData['IDInformasi'].toString(),
-      tag: category['tag'] as String,
-      tagColor: category['color'] as Color,
-      timeAgo: DateService.calculateTimeAgo(apiData['created_at']),
-      title: apiData['Judul'] ?? 'Tidak Ada Judul',
-      description: apiData['Deskripsi'] ?? 'Tidak Ada Deskripsi',
-      fullContent: apiData['Deskripsi'] ?? 'Tidak Ada Konten',
-      department:
-          'Dari: ${apiData['IDOperator'] ?? 'Departemen Tidak Dikenal'}',
-    );
-  }
+  return Announcement(
+    id: apiData['IDInformasi'].toString(),
+    tag: category['tag'] as String,
+    tagColor: category['color'] as Color,
+    timeAgo: DateService.calculateTimeAgo(apiData['created_at']),
+    title: apiData['Judul'] ?? 'Tidak Ada Judul',
+    description: apiData['Deskripsi'] ?? 'Tidak Ada Deskripsi',
+    fullContent: apiData['Deskripsi'] ?? 'Tidak Ada Konten',
+    department:
+        'Dari: ${apiData['IDOperator'] ?? 'Departemen Tidak Dikenal'}',
+    thumbnail: apiData['Thumbnail'] ?? 'placeholder.jpg', // Added thumbnail
+    imageUrl: apiData['Thumbnail'], // Optional, for compatibility
+  );
+}
 
   static Color getCategoryColor(String categoryName) {
     return categories
@@ -183,7 +203,6 @@ class DataService {
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -198,7 +217,6 @@ class _HomePageState extends State<HomePage> {
   List<Announcement> _filteredAnnouncements = [];
   String? _userName;
   String? _authToken;
-
   @override
   void initState() {
     super.initState();
@@ -243,7 +261,6 @@ class _HomePageState extends State<HomePage> {
       }
       return;
     }
-
     _initializeData();
   }
 
@@ -428,7 +445,6 @@ class HeaderWidget extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Bagian teks diberi Expanded agar ambil ruang maksimal yang tersedia
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -436,9 +452,7 @@ class HeaderWidget extends StatelessWidget {
                 Text(
                   'Selamat Datang, ${userName ?? 'User'}!',
                   style: HomeStyles.welcome,
-                  overflow:
-                      TextOverflow
-                          .ellipsis, // Kalau terlalu panjang, dipotong dengan ...
+                  overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),
                 Text(
@@ -655,9 +669,7 @@ class BannerItemWidget extends StatelessWidget {
 
 class PageIndicatorWidget extends StatelessWidget {
   final bool isActive;
-
   const PageIndicatorWidget({super.key, required this.isActive});
-
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
@@ -736,9 +748,7 @@ class CategorySectionWidget extends StatelessWidget {
 
 class ClearFilterButtonWidget extends StatelessWidget {
   final VoidCallback onPressed;
-
   const ClearFilterButtonWidget({super.key, required this.onPressed});
-
   @override
   Widget build(BuildContext context) {
     return TextButton.icon(
@@ -1010,8 +1020,8 @@ class EmptyStateWidget extends StatelessWidget {
           vertical: HomeStyles.paddingXXXXXLarge,
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center, // ✅ Tambahkan ini
-          crossAxisAlignment: CrossAxisAlignment.center, // ✅ Tambahkan ini
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(
               Icons.announcement_outlined,
@@ -1058,7 +1068,6 @@ class AnnouncementCardWidget extends StatelessWidget {
     final isUrgent =
         announcement.tag.toLowerCase() == 'urgent' ||
         announcement.tag.toLowerCase() == 'penting';
-
     return GestureDetector(
       onTap: onTap,
       child: Container(

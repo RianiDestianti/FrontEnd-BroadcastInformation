@@ -10,7 +10,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
   late final List<AnimationController> _controllers;
   late final SplashAnimations _animations;
   @override
@@ -23,13 +24,25 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   }
 
   List<AnimationController> _createControllers() => [
-        AnimationController(duration: SplashConstants.animationDuration, vsync: this)..forward(),
-        AnimationController(duration: SplashConstants.animationDuration, vsync: this),
-        AnimationController(duration: SplashConstants.rotationDuration, vsync: this)..repeat(),
-        AnimationController(duration: SplashConstants.pulseDuration, vsync: this)..repeat(reverse: true),
-        AnimationController(duration: SplashConstants.textAnimationDuration, vsync: this),
-        AnimationController(duration: SplashConstants.loadingDuration, vsync: this)..repeat(),
-      ];
+    AnimationController(
+      duration: SplashConstants.animationDuration,
+      vsync: this,
+    )..forward(),
+    AnimationController(
+      duration: SplashConstants.animationDuration,
+      vsync: this,
+    ),
+    AnimationController(duration: SplashConstants.rotationDuration, vsync: this)
+      ..repeat(),
+    AnimationController(duration: SplashConstants.pulseDuration, vsync: this)
+      ..repeat(reverse: true),
+    AnimationController(
+      duration: SplashConstants.textAnimationDuration,
+      vsync: this,
+    ),
+    AnimationController(duration: SplashConstants.loadingDuration, vsync: this)
+      ..repeat(),
+  ];
 
   void _startAnimations() {
     Timer(SplashConstants.smknLogoDelay, () => _controllers[1].forward());
@@ -43,10 +56,14 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         context,
         PageRouteBuilder(
           pageBuilder: (_, __, ___) => const SignInPage(),
-          transitionsBuilder: (_, animation, __, child) => FadeTransition(
-            opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-            child: child,
-          ),
+          transitionsBuilder:
+              (_, animation, __, child) => FadeTransition(
+                opacity: CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOut,
+                ),
+                child: child,
+              ),
           transitionDuration: SplashConstants.navigationTransitionDuration,
         ),
       );
@@ -85,15 +102,18 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 class SplashAnimations {
   SplashAnimations(this.controllers) {
     pulse = Tween<double>(begin: 0.95, end: 1.05).animate(controllers[3]);
-    fadeIn = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: controllers[4], curve: Curves.easeIn),
-    );
-    slide = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-      CurvedAnimation(parent: controllers[4], curve: Curves.easeOut),
-    );
-    smknFade = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: controllers[1], curve: Curves.easeIn),
-    );
+    fadeIn = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: controllers[4], curve: Curves.easeIn));
+    slide = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: controllers[4], curve: Curves.easeOut));
+    smknFade = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: controllers[1], curve: Curves.easeIn));
   }
 
   final List<AnimationController> controllers;
@@ -126,23 +146,26 @@ class RotatingBackgroundLogo extends StatelessWidget {
   final AnimationController controller;
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context).width * SplashStyles.backgroundLogoSizeFactor;
+    final size =
+        MediaQuery.sizeOf(context).width *
+        SplashStyles.backgroundLogoSizeFactor;
     return Center(
       child: AnimatedBuilder(
         animation: controller,
-        builder: (_, __) => Transform.translate(
-          offset: const Offset(0, -80),
-          child: Transform.rotate(
-            angle: controller.value * 2 * math.pi,
-            child: Opacity(
-              opacity: SplashStyles.backgroundLogoOpacity,
-              child: SizedBox.square(
-                dimension: size,
-                child: Image.asset('assets/logo.png', fit: BoxFit.contain),
+        builder:
+            (_, __) => Transform.translate(
+              offset: const Offset(0, -80),
+              child: Transform.rotate(
+                angle: controller.value * 2 * math.pi,
+                child: Opacity(
+                  opacity: SplashStyles.backgroundLogoOpacity,
+                  child: SizedBox.square(
+                    dimension: size,
+                    child: Image.asset('assets/logo.png', fit: BoxFit.contain),
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
       ),
     );
   }
@@ -200,23 +223,24 @@ class RotatingGradientCircle extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
-      builder: (_, __) => Transform.rotate(
-        angle: -controller.value * 2 * math.pi,
-        child: Container(
-          width: SplashStyles.circleSize,
-          height: SplashStyles.circleSize,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: SweepGradient(
-              colors: [
-                SplashStyles.themeColor.withOpacity(0.1),
-                SplashStyles.themeColor.withOpacity(0.3),
-                SplashStyles.themeColor.withOpacity(0.1),
-              ],
+      builder:
+          (_, __) => Transform.rotate(
+            angle: -controller.value * 2 * math.pi,
+            child: Container(
+              width: SplashStyles.circleSize,
+              height: SplashStyles.circleSize,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: SweepGradient(
+                  colors: [
+                    SplashStyles.themeColor.withOpacity(0.1),
+                    SplashStyles.themeColor.withOpacity(0.3),
+                    SplashStyles.themeColor.withOpacity(0.1),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
     );
   }
 }
@@ -228,23 +252,24 @@ class RotatingDots extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
-      builder: (_, __) => Transform.rotate(
-        angle: controller.value * 2 * math.pi * 1.5,
-        child: SizedBox(
-          width: 320,
-          height: 320,
-          child: Stack(
-            children: List.generate(8, (index) {
-              final angle = (index / 8) * 2 * math.pi;
-              return Positioned(
-                left: 160 + 145 * math.cos(angle),
-                top: 160 + 145 * math.sin(angle),
-                child: const Dot(),
-              );
-            }),
+      builder:
+          (_, __) => Transform.rotate(
+            angle: controller.value * 2 * math.pi * 1.5,
+            child: SizedBox(
+              width: 320,
+              height: 320,
+              child: Stack(
+                children: List.generate(8, (index) {
+                  final angle = (index / 8) * 2 * math.pi;
+                  return Positioned(
+                    left: 160 + 145 * math.cos(angle),
+                    top: 160 + 145 * math.sin(angle),
+                    child: const Dot(),
+                  );
+                }),
+              ),
+            ),
           ),
-        ),
-      ),
     );
   }
 }
@@ -309,14 +334,16 @@ class AnimatedLogo extends StatelessWidget {
       scale: scaleController,
       child: AnimatedBuilder(
         animation: pulseAnimation,
-        builder: (_, __) => Transform.scale(
-          scale: pulseAnimation.value,
-          child: LogoContainer(logoPath: logoPath),
-        ),
+        builder:
+            (_, __) => Transform.scale(
+              scale: pulseAnimation.value,
+              child: LogoContainer(logoPath: logoPath),
+            ),
       ),
     );
-
-    return fadeAnimation != null ? FadeTransition(opacity: fadeAnimation!, child: logo) : logo;
+    return fadeAnimation != null
+        ? FadeTransition(opacity: fadeAnimation!, child: logo)
+        : logo;
   }
 }
 
@@ -332,13 +359,17 @@ class LogoContainer extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: SplashStyles.themeColor.withOpacity(SplashStyles.shadowOpacity),
+            color: SplashStyles.themeColor.withOpacity(
+              SplashStyles.shadowOpacity,
+            ),
             blurRadius: 15,
             spreadRadius: 2,
           ),
         ],
         border: Border.all(
-          color: SplashStyles.themeColor.withOpacity(SplashStyles.borderOpacity),
+          color: SplashStyles.themeColor.withOpacity(
+            SplashStyles.borderOpacity,
+          ),
           width: 2,
         ),
       ),
@@ -358,13 +389,19 @@ class LogoSeparator extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         SeparatorLine(
-          colors: [SplashStyles.themeColor.withOpacity(0.3), SplashStyles.themeColor.withOpacity(0.7)],
+          colors: [
+            SplashStyles.themeColor.withOpacity(0.3),
+            SplashStyles.themeColor.withOpacity(0.7),
+          ],
         ),
         const SizedBox(height: 5),
         const SeparatorDot(),
         const SizedBox(height: 5),
         SeparatorLine(
-          colors: [SplashStyles.themeColor.withOpacity(0.7), SplashStyles.themeColor.withOpacity(0.3)],
+          colors: [
+            SplashStyles.themeColor.withOpacity(0.7),
+            SplashStyles.themeColor.withOpacity(0.3),
+          ],
         ),
       ],
     );
@@ -447,17 +484,18 @@ class LoadingIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: controller,
-      builder: (_, __) => SizedBox(
-        width: 60,
-        height: SplashStyles.loadingDotSize,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(3, (index) {
-            final delayedValue = (controller.value + index * 0.2) % 1.0;
-            return LoadingDot(animationValue: delayedValue);
-          }),
-        ),
-      ),
+      builder:
+          (_, __) => SizedBox(
+            width: 60,
+            height: SplashStyles.loadingDotSize,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(3, (index) {
+                final delayedValue = (controller.value + index * 0.2) % 1.0;
+                return LoadingDot(animationValue: delayedValue);
+              }),
+            ),
+          ),
     );
   }
 }

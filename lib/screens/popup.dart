@@ -42,7 +42,7 @@ class ContentWidget extends StatelessWidget {
           children: [
             TagWidget(tag: announcement.tag, color: announcement.tagColor),
             const SizedBox(height: PopupStyles.spacingXLarge),
-            HeaderImageWidget(),
+            HeaderImageWidget(thumbnail: announcement.thumbnail),
             const SizedBox(height: PopupStyles.spacingXXLarge),
             TitleWidget(title: announcement.title),
             const SizedBox(height: PopupStyles.spacingSmall),
@@ -73,12 +73,13 @@ class TagWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(PopupStyles.tagRadius),
       ),
       child: Text(tag, style: PopupStyles.tag),
-    );
+    );  
   }
 }
 
 class HeaderImageWidget extends StatelessWidget {
-  const HeaderImageWidget({super.key});
+  final String thumbnail;
+  const HeaderImageWidget({super.key, required this.thumbnail});
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -86,7 +87,22 @@ class HeaderImageWidget extends StatelessWidget {
       child: SizedBox(
         width: double.infinity,
         height: PopupStyles.imageHeight,
-        child: Image.asset('assets/akl.jpg', fit: BoxFit.cover),
+        child: Image.asset(
+          'assets/$thumbnail', 
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: Colors.grey[300],
+              child: const Center(
+                child: Icon(
+                  Icons.broken_image,
+                  size: 50,
+                  color: Colors.grey,
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -144,17 +160,28 @@ class ContentParserWidget extends StatelessWidget {
 class ContentParserService {
   static const _patterns = {
     '📍 Lokasi:': _InfoConfig(icon: Icons.location_on, prefix: '📍 Lokasi:'),
-    '📅 Periode Berlaku:': _InfoConfig(icon: Icons.calendar_today, prefix: '📅 Periode Berlaku:'),
-    '🕗 Jam Operasional Baru:': _InfoConfig(icon: Icons.access_time, prefix: '🕗 Jam Operasional Baru:'),
-    '⚡Keterangan Tambahan:': _InfoConfig(isSectionTitle: true, prefix: '⚡Keterangan Tambahan:'),
-    '📌 Catatan Penting:': _InfoConfig(isSectionTitle: true, prefix: '📌 Catatan Penting:'),
+    '📅 Periode Berlaku:': _InfoConfig(
+      icon: Icons.calendar_today,
+      prefix: '📅 Periode Berlaku:',
+    ),
+    '🕗 Jam Operasional Baru:': _InfoConfig(
+      icon: Icons.access_time,
+      prefix: '🕗 Jam Operasional Baru:',
+    ),
+    '⚡Keterangan Tambahan:': _InfoConfig(
+      isSectionTitle: true,
+      prefix: '⚡Keterangan Tambahan:',
+    ),
+    '📌 Catatan Penting:': _InfoConfig(
+      isSectionTitle: true,
+      prefix: '📌 Catatan Penting:',
+    ),
     '• ': _InfoConfig(isBullet: true, prefix: '• '),
   };
 
   static List<Widget> parse(String content) {
     final lines = content.split('\n');
     final widgets = <Widget>[];
-
     for (final line in lines) {
       if (line.trim().isEmpty) {
         widgets.add(const SizedBox(height: PopupStyles.spacingMedium));
@@ -162,7 +189,6 @@ class ContentParserService {
       }
       widgets.add(_parseLine(line));
     }
-
     return widgets;
   }
 
@@ -170,14 +196,15 @@ class ContentParserService {
     if (line.contains('Tetap semangat belajar')) {
       return ConclusionTextWidget(text: line);
     }
-
     for (final pattern in _patterns.keys) {
       if (line.startsWith(pattern)) {
         final config = _patterns[pattern]!;
         if (config.isSectionTitle) {
           return SectionTitleWidget(title: line);
         } else if (config.isBullet) {
-          return BulletPointWidget(text: line.replaceFirst(config.prefix, '').trim());
+          return BulletPointWidget(
+            text: line.replaceFirst(config.prefix, '').trim(),
+          );
         } else {
           return InfoRowWidget(
             icon: config.icon!,
@@ -186,7 +213,6 @@ class ContentParserService {
         }
       }
     }
-
     return DefaultTextWidget(text: line);
   }
 }
@@ -265,9 +291,7 @@ class SectionTitleWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: PopupStyles.spacingMedium,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: PopupStyles.spacingMedium),
       child: Text(title, style: PopupStyles.sectionTitle),
     );
   }

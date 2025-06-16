@@ -218,6 +218,13 @@ class _SignInPageState extends State<SignInPage> {
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isLoading = false;
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _isPasswordVisible = !_isPasswordVisible;
+    });
+  }
+
   @override
   void dispose() {
     _usernameController.dispose();
@@ -243,17 +250,70 @@ class _SignInPageState extends State<SignInPage> {
                   const SizedBox(height: AppConstants.spacingXL),
                   const HeaderWidget(),
                   const SizedBox(height: AppConstants.spacingXL * 1.5),
-                  const UsernameField(),
+                  UsernameField(controller: _usernameController),
                   const SizedBox(height: AppConstants.spacingM),
-                  const PasswordField(),
+                  PasswordField(
+                    controller: _passwordController,
+                    isPasswordVisible: _isPasswordVisible,
+                    onToggleVisibility: _togglePasswordVisibility,
+                  ),
                   const SizedBox(height: AppConstants.spacingL * 1.5),
-                  SignInButton(isLoading: _isLoading),
+                  SignInButton(isLoading: _isLoading, onPressed: _handleSignIn),
                   const SizedBox(height: AppConstants.spacingXL),
                 ],
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _handleSignIn() async {
+    if (!_validateInputs()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final loginResponse = await AuthService.login(
+      _usernameController.text.trim(),
+      _passwordController.text.trim(),
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (loginResponse.success) {
+      await AuthService.saveLoginData(loginResponse);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
+    } else {
+      _showErrorSnackBar(loginResponse.message);
+    }
+  }
+
+  bool _validateInputs() {
+    if (_usernameController.text.trim().isEmpty) {
+      _showErrorSnackBar('Please enter your username');
+      return false;
+    }
+    if (_passwordController.text.trim().isEmpty) {
+      _showErrorSnackBar('Please enter your password');
+      return false;
+    }
+    return true;
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: SignInStyles.errorColor,
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -306,38 +366,44 @@ class HeaderWidget extends StatelessWidget {
 }
 
 class UsernameField extends StatelessWidget {
-  const UsernameField({super.key});
+  final TextEditingController controller;
+  const UsernameField({super.key, required this.controller});
   @override
   Widget build(BuildContext context) {
-    final state = context.findAncestorStateOfType<_SignInPageState>()!;
     return InputField(
       label: 'NIS/NIP',
-      controller: state._usernameController,
+      controller: controller,
       hintText: 'Masukkan NIS/NIP anda',
     );
   }
 }
 
 class PasswordField extends StatelessWidget {
-  const PasswordField({super.key});
+  final TextEditingController controller;
+  final bool isPasswordVisible;
+  final VoidCallback onToggleVisibility;
+
+  const PasswordField({
+    super.key,
+    required this.controller,
+    required this.isPasswordVisible,
+    required this.onToggleVisibility,
+  });
+
   @override
   Widget build(BuildContext context) {
-    final state = context.findAncestorStateOfType<_SignInPageState>()!;
     return InputField(
       label: 'Password',
-      controller: state._passwordController,
+      controller: controller,
       hintText: 'Masukkan password anda',
       isPassword: true,
-      obscureText: !state._isPasswordVisible,
+      obscureText: !isPasswordVisible,
       suffixIcon: IconButton(
         icon: Icon(
-          state._isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+          isPasswordVisible ? Icons.visibility : Icons.visibility_off,
           color: SignInStyles.hintColor,
         ),
-        onPressed:
-            () => state.setState(
-              () => state._isPasswordVisible = !state._isPasswordVisible,
-            ),
+        onPressed: onToggleVisibility,
       ),
     );
   }
@@ -414,21 +480,24 @@ class InputField extends StatelessWidget {
 
 class SignInButton extends StatelessWidget {
   final bool isLoading;
-  const SignInButton({super.key, required this.isLoading});
+  final VoidCallback onPressed;
+
+  const SignInButton({
+    super.key,
+    required this.isLoading,
+    required this.onPressed,
+  });
+
   @override
   Widget build(BuildContext context) {
-    final state = context.findAncestorStateOfType<_SignInPageState>()!;
     return Center(
       child: SizedBox(
-        width:
-            MediaQuery.of(context).size.width * 0.6, 
+        width: MediaQuery.of(context).size.width * 0.6,
         child: ElevatedButton(
-          onPressed: isLoading ? null : () => _handleSignIn(context, state),
+          onPressed: isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: SignInStyles.primaryColor,
-            padding: const EdgeInsets.symmetric(
-              vertical: 12.0, 
-            ),
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(
                 AppConstants.buttonBorderRadius,
@@ -448,55 +517,6 @@ class SignInButton extends StatelessWidget {
                   )
                   : Text('Login', style: SignInStyles.buttonText),
         ),
-      ),
-    );
-  }
-
-  void _handleSignIn(BuildContext context, _SignInPageState state) async {
-    if (!_validateInputs(context, state)) return;
-
-    state.setState(() {
-      state._isLoading = true;
-    });
-
-    final loginResponse = await AuthService.login(
-      state._usernameController.text.trim(),
-      state._passwordController.text.trim(),
-    );
-
-    state.setState(() {
-      state._isLoading = false;
-    });
-
-    if (loginResponse.success) {
-      await AuthService.saveLoginData(loginResponse);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomePage()),
-      );
-    } else {
-      _showErrorSnackBar(context, loginResponse.message);
-    }
-  }
-
-  bool _validateInputs(BuildContext context, _SignInPageState state) {
-    if (state._usernameController.text.trim().isEmpty) {
-      _showErrorSnackBar(context, 'Please enter your username');
-      return false;
-    }
-    if (state._passwordController.text.trim().isEmpty) {
-      _showErrorSnackBar(context, 'Please enter your password');
-      return false;
-    }
-    return true;
-  }
-
-  void _showErrorSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: SignInStyles.errorColor,
-        behavior: SnackBarBehavior.floating,
       ),
     );
   }

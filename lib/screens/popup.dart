@@ -46,6 +46,11 @@ class ContentWidget extends StatelessWidget {
             const SizedBox(height: PopupStyles.spacingXXLarge),
             TitleWidget(title: announcement.title),
             const SizedBox(height: PopupStyles.spacingSmall),
+            Text(
+              'Dari: ${announcement.department}',
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            ),
+            const SizedBox(height: PopupStyles.spacingSmall),
             const Divider(),
             const SizedBox(height: PopupStyles.spacingLarge),
             ContentParserWidget(content: announcement.fullContent),
@@ -73,7 +78,7 @@ class TagWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(PopupStyles.tagRadius),
       ),
       child: Text(tag, style: PopupStyles.tag),
-    );  
+    );
   }
 }
 
@@ -88,17 +93,13 @@ class HeaderImageWidget extends StatelessWidget {
         width: double.infinity,
         height: PopupStyles.imageHeight,
         child: Image.asset(
-          'assets/$thumbnail', 
+          'assets/$thumbnail',
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
             return Container(
               color: Colors.grey[300],
               child: const Center(
-                child: Icon(
-                  Icons.broken_image,
-                  size: 50,
-                  color: Colors.grey,
-                ),
+                child: Icon(Icons.broken_image, size: 50, color: Colors.grey),
               ),
             );
           },

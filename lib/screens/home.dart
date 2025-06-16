@@ -8,6 +8,8 @@ import 'popup.dart';
 import '../layouts/layout.dart';
 import '../models/model.dart';
 import '../constants/constant.dart';
+import 'tap.dart';
+import 'package:flutter/services.dart'; 
 
 class ApiService {
   static const String _baseUrl = 'http://localhost:8000/api/informasi';
@@ -68,7 +70,7 @@ class DateService {
     if (dateString == null) return 'Tidak diketahui';
 
     try {
-      final date = DateTime.parse(dateString).toLocal(); 
+      final date = DateTime.parse(dateString).toLocal();
       final now = DateTime.now();
       final difference = now.difference(date);
 
@@ -165,26 +167,37 @@ class DataService {
     '4': {'tag': 'Pengumuman', 'color': Color(0xFFE17055)},
   };
 
- static Announcement mapApiToAnnouncement(Map<String, dynamic> apiData) {
-  final categoryId = apiData['IDKategoriInformasi']?.toString();
-  final category =
-      _categoryMapping[categoryId] ??
-      {'tag': 'Pengumuman', 'color': const Color(0xFFE17055)};
+  static const Map<String, String> _departmentMapping = {
+    '1': 'Kesiswaan',
+    '2': 'SDM',
+    '3': 'Hubin',
+    '4': 'Kurikulum',
+    '5': 'Tata Usaha',
+  };
 
-  return Announcement(
-    id: apiData['IDInformasi'].toString(),
-    tag: category['tag'] as String,
-    tagColor: category['color'] as Color,
-    timeAgo: DateService.calculateTimeAgo(apiData['created_at']),
-    title: apiData['Judul'] ?? 'Tidak Ada Judul',
-    description: apiData['Deskripsi'] ?? 'Tidak Ada Deskripsi',
-    fullContent: apiData['Deskripsi'] ?? 'Tidak Ada Konten',
-    department:
-        'Dari: ${apiData['IDOperator'] ?? 'Departemen Tidak Dikenal'}',
-    thumbnail: apiData['Thumbnail'] ?? 'placeholder.jpg', // Added thumbnail
-    imageUrl: apiData['Thumbnail'], // Optional, for compatibility
-  );
-}
+  static Announcement mapApiToAnnouncement(Map<String, dynamic> apiData) {
+    final categoryId = apiData['IDKategoriInformasi']?.toString();
+    final category =
+        _categoryMapping[categoryId] ??
+        {'tag': 'Pengumuman', 'color': const Color(0xFFE17055)};
+
+    final operatorId = apiData['IDOperator']?.toString();
+    final departmentName =
+        _departmentMapping[operatorId] ?? 'Departemen Tidak Dikenal';
+
+    return Announcement(
+      id: apiData['IDInformasi'].toString(),
+      tag: category['tag'] as String,
+      tagColor: category['color'] as Color,
+      timeAgo: DateService.calculateTimeAgo(apiData['created_at']),
+      title: apiData['Judul'] ?? 'Tidak Ada Judul',
+      description: apiData['Deskripsi'] ?? 'Tidak Ada Deskripsi',
+      fullContent: apiData['Deskripsi'] ?? 'Tidak Ada Konten',
+      department: departmentName,
+      thumbnail: apiData['Thumbnail'] ?? 'placeholder.jpg',
+      imageUrl: apiData['Thumbnail'],
+    );
+  }
 
   static Color getCategoryColor(String categoryName) {
     return categories
@@ -198,6 +211,9 @@ class DataService {
               ),
         )
         .color;
+  }
+  static String getDepartmentName(String operatorId) {
+    return _departmentMapping[operatorId] ?? 'Departemen Tidak Dikenal';
   }
 }
 
@@ -450,7 +466,7 @@ class HeaderWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Selamat Datang, ${userName ?? 'User'}!',
+                  'Hallo, ${userName ?? 'User'}!',
                   style: HomeStyles.welcome,
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
@@ -787,10 +803,15 @@ class CategoryItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      onLongPress: () {
+        HapticFeedback.mediumImpact();
+        CategoryTapHandler.showCategoryDescription(context, category);
+      },
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
             width: HomeStyles.categoryCircleSize,
             height: HomeStyles.categoryCircleSize,
             decoration: BoxDecoration(
@@ -813,12 +834,37 @@ class CategoryItemWidget extends StatelessWidget {
                           offset: const Offset(0, 2),
                         ),
                       ]
-                      : null,
+                      : [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          spreadRadius: 0,
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
             ),
-            child: Icon(
-              category.icon,
-              color: HomeStyles.white,
-              size: HomeStyles.iconSizeXLarge,
+            child: Stack(
+              children: [
+                Center(
+                  child: Icon(
+                    category.icon,
+                    color: HomeStyles.white,
+                    size: HomeStyles.iconSizeXLarge,
+                  ),
+                ),
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: HomeStyles.white.withOpacity(0.8),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: HomeStyles.spacingXLarge),

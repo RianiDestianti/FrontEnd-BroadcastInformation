@@ -3,27 +3,10 @@ import '../constants/constant.dart';
 import '../models/model.dart';
 
 class CategoryTapHandler {
-  static const Map<String, String> categoryDescriptions = {
-    'Pengumuman':
-        'Berisi informasi umum yang ditujukan untuk seluruh sivitas akademika sekolah. Meliputi pengumuman resmi, pemberitahuan penting, dan informasi administratif.',
-    'Akademik':
-        'Informasi terkait kegiatan OSIS, ekstrakurikuler, pembelajaran, ujian, dan semua hal yang berkaitan dengan proses pendidikan di sekolah.',
-    'Acara':
-        'Berisi jadwal rapat, pelatihan, dan pengumuman untuk kegiatan sekolah seperti class meeting, workshop, seminar, dan acara-acara lainnya.',
-    'Berita':
-        'Menyediakan informasi tentang kurikulum, ujian, dan perkembangan terbaru seputar dunia pendidikan serta prestasi sekolah.',
-    'Artikel':
-        'Pengumuman umum seperti perbaikan fasilitas dan layanan sekolah, informasi teknis, serta artikel edukatif untuk siswa dan guru.',
-  };
-
   static void showCategoryDescription(
     BuildContext context,
     CategoryData category,
   ) {
-    final description =
-        categoryDescriptions[category.name] ??
-        'Deskripsi untuk kategori ${category.name} belum tersedia.';
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -33,7 +16,7 @@ class CategoryTapHandler {
           ),
           child: CategoryDescriptionPopup(
             category: category,
-            description: description,
+            description: category.description,
           ),
         );
       },
@@ -44,10 +27,6 @@ class CategoryTapHandler {
     BuildContext context,
     CategoryData category,
   ) {
-    final description =
-        categoryDescriptions[category.name] ??
-        'Deskripsi untuk kategori ${category.name} belum tersedia.';
-
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -55,7 +34,7 @@ class CategoryTapHandler {
       builder: (BuildContext context) {
         return CategoryBottomSheet(
           category: category,
-          description: description,
+          description: category.description,
         );
       },
     );
@@ -126,11 +105,9 @@ class CategoryDescriptionPopup extends StatelessWidget {
               ),
             ],
           ),
-
           const SizedBox(height: HomeStyles.spacingXXXLarge),
           Container(height: 1, color: Colors.grey.withOpacity(0.2)),
           const SizedBox(height: HomeStyles.spacingXXXLarge),
-
           Flexible(
             child: SingleChildScrollView(
               child: Column(
@@ -149,9 +126,7 @@ class CategoryDescriptionPopup extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(height: HomeStyles.spacingXXXLarge),
-
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -216,9 +191,7 @@ class CategoryBottomSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-
           const SizedBox(height: HomeStyles.spacingXXXLarge),
-
           Row(
             children: [
               Container(
@@ -252,9 +225,7 @@ class CategoryBottomSheet extends StatelessWidget {
               ),
             ],
           ),
-
           const SizedBox(height: HomeStyles.spacingXXXLarge),
-
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(HomeStyles.paddingXXLarge),
@@ -296,9 +267,7 @@ class CategoryBottomSheet extends StatelessWidget {
               ],
             ),
           ),
-
           const SizedBox(height: HomeStyles.spacingXXXLarge),
-
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -325,7 +294,6 @@ class CategoryBottomSheet extends StatelessWidget {
               ),
             ),
           ),
-
           SizedBox(height: MediaQuery.of(context).padding.bottom),
         ],
       ),

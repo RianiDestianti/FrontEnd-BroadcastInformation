@@ -23,8 +23,8 @@ class Announcement {
   final String description;
   final String fullContent;
   final String department;
-  final String thumbnail; 
-  final String? imageUrl; 
+  final String thumbnail;
+  final String? imageUrl;
 
   Announcement({
     required this.id,
@@ -81,10 +81,12 @@ class CategoryData {
   final String name;
   final Color color;
   final IconData icon;
+  final String description;
 
   const CategoryData({
     required this.name,
     required this.color,
     required this.icon,
+    required this.description,
   });
 }

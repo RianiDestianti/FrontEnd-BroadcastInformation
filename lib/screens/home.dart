@@ -9,14 +9,15 @@ import '../layouts/layout.dart';
 import '../models/model.dart';
 import '../constants/constant.dart';
 import 'tap.dart';
-import 'package:flutter/services.dart'; 
+import 'package:flutter/services.dart';
 
 class ApiService {
-  static const String _baseUrl = 'http://localhost:8000/api/informasi';
+  static const String _baseUrl = 'http://localhost:8000/api';
+
   static Future<List<Announcement>> fetchAnnouncements(String token) async {
     try {
       final response = await http.get(
-        Uri.parse(_baseUrl),
+        Uri.parse('$_baseUrl/informasi'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -25,14 +26,33 @@ class ApiService {
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as List<dynamic>;
-        return data
-            .map((item) => DataService.mapApiToAnnouncement(item))
-            .toList();
+        return data.map((item) => DataService.mapApiToAnnouncement(item)).toList();
       } else {
-        throw Exception('Failed to load data: ${response.statusCode}');
+        throw Exception('Failed to load announcements: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Error fetching data: $e');
+      throw Exception('Error fetching announcements: $e');
+    }
+  }
+
+  static Future<List<CategoryData>> fetchCategories(String token) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/kategori'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as List<dynamic>;
+        return data.map((item) => DataService.mapApiToCategory(item)).toList();
+      } else {
+        throw Exception('Failed to load categories: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching categories: $e');
     }
   }
 }
@@ -108,7 +128,7 @@ class DataService {
       subtitle: '20 April • Ruang AKL01',
       imageUrl: 'assets/akl.jpg',
       tag: 'Akademik',
-      tagColor: Color(0xFF6C5CE7),
+      tagColor: Color(0xFF0984E3),
     ),
     EventBanner(
       id: '2',
@@ -116,14 +136,14 @@ class DataService {
       subtitle: '17 Mei • Lapangan SMKN 11 Bandung',
       imageUrl: 'assets/rpl.jpg',
       tag: 'Acara',
-      tagColor: Color(0xFF45B7D1),
+      tagColor: Color(0xFF6C5CE7),
     ),
     EventBanner(
       id: '3',
       title: 'Workshop VR DKV',
       subtitle: '18 Mei • Lab Multimedia',
       imageUrl: 'assets/dkvaja.jpg',
-      tag: 'Acara',
+      tag: 'Umum',
       tagColor: Color(0xFF45B7D1),
     ),
     EventBanner(
@@ -131,41 +151,24 @@ class DataService {
       title: 'Pemaparan Materi oleh PT Cakrawala',
       subtitle: '25 Mei • TEFA Perkantoran',
       imageUrl: 'assets/otkpbiru.jpg',
-      tag: 'Akademik',
-      tagColor: Color(0xFF6C5CE7),
+      tag: 'Umum',
+      tagColor: Color(0xFF45B7D1),
     ),
   ];
 
-  static const List<CategoryData> categories = [
-    CategoryData(
-      name: 'Pengumuman',
-      color: Color(0xFFE17055),
-      icon: Icons.campaign,
-    ),
-    CategoryData(
-      name: 'Akademik',
-      color: Color(0xFF6C5CE7),
-      icon: Icons.school,
-    ),
-    CategoryData(name: 'Acara', color: Color(0xFF45B7D1), icon: Icons.event),
-    CategoryData(
-      name: 'Berita',
-      color: Color(0xFF0984E3),
-      icon: Icons.newspaper,
-    ),
-    CategoryData(
-      name: 'Artikel',
-      color: Color(0xFFFDCB6E),
-      icon: Icons.article,
-    ),
-  ];
+  static Map<String, Map<String, dynamic>> _categoryMapping = {};
+  static List<CategoryData> _categories = [];
 
-  static const Map<String, Map<String, dynamic>> _categoryMapping = {
-    '1': {'tag': 'Akademik', 'color': Color(0xFF6C5CE7)},
-    '2': {'tag': 'Acara', 'color': Color(0xFF45B7D1)},
-    '3': {'tag': 'Berita', 'color': Color(0xFF0984E3)},
-    '4': {'tag': 'Pengumuman', 'color': Color(0xFFE17055)},
-  };
+  static void updateCategoryMapping(List<CategoryData> categories) {
+    _categories = categories;
+    _categoryMapping = {
+      for (var i = 0; i < categories.length; i++)
+        (i + 1).toString(): {
+          'tag': categories[i].name,
+          'color': categories[i].color,
+        }
+    };
+  }
 
   static const Map<String, String> _departmentMapping = {
     '1': 'Kesiswaan',
@@ -175,15 +178,41 @@ class DataService {
     '5': 'Tata Usaha',
   };
 
+  static CategoryData mapApiToCategory(Map<String, dynamic> apiData) {
+    const List<Color> colors = [
+      Color(0xFFE17055),
+      Color(0xFF6C5CE7),
+      Color(0xFF45B7D1),
+      Color(0xFF0984E3),
+      Color(0xFFFDCB6E),
+    ];
+    const List<IconData> icons = [
+      Icons.campaign,
+      Icons.school,
+      Icons.event,
+      Icons.newspaper,
+      Icons.info,
+    ];
+
+    final int index = ((apiData['IDKategoriInformasi'] as int) - 1) % colors.length;
+
+    return CategoryData(
+      name: apiData['NamaKategori'] ?? 'Unknown',
+      color: colors[index],
+      icon: icons[index],
+      description: apiData['Deskripsi'] ?? 'No description available',
+    );
+  }
+
   static Announcement mapApiToAnnouncement(Map<String, dynamic> apiData) {
     final categoryId = apiData['IDKategoriInformasi']?.toString();
-    final category =
-        _categoryMapping[categoryId] ??
-        {'tag': 'Pengumuman', 'color': const Color(0xFFE17055)};
+    final category = _categoryMapping[categoryId] ?? {
+      'tag': 'Pengumuman Sekolah',
+      'color': const Color(0xFFE17055),
+    };
 
     final operatorId = apiData['IDOperator']?.toString();
-    final departmentName =
-        _departmentMapping[operatorId] ?? 'Departemen Tidak Dikenal';
+    final departmentName = _departmentMapping[operatorId] ?? 'Departemen Tidak Dikenal';
 
     return Announcement(
       id: apiData['IDInformasi'].toString(),
@@ -200,18 +229,19 @@ class DataService {
   }
 
   static Color getCategoryColor(String categoryName) {
-    return categories
+    return _categories
         .firstWhere(
           (cat) => cat.name == categoryName,
-          orElse:
-              () => const CategoryData(
-                name: 'Bawaan',
-                color: Colors.grey,
-                icon: Icons.circle,
-              ),
+          orElse: () => const CategoryData(
+            name: 'Bawaan',
+            color: Colors.grey,
+            icon: Icons.circle,
+            description: 'Default category',
+          ),
         )
         .color;
   }
+
   static String getDepartmentName(String operatorId) {
     return _departmentMapping[operatorId] ?? 'Departemen Tidak Dikenal';
   }
@@ -231,8 +261,10 @@ class _HomePageState extends State<HomePage> {
   int _currentBannerIndex = 0;
   List<Announcement> _allAnnouncements = [];
   List<Announcement> _filteredAnnouncements = [];
+  List<CategoryData> _categories = [];
   String? _userName;
   String? _authToken;
+
   @override
   void initState() {
     super.initState();
@@ -280,11 +312,12 @@ class _HomePageState extends State<HomePage> {
     _initializeData();
   }
 
-  void _initializeData() {
+  Future<void> _initializeData() async {
     _filteredAnnouncements = List.from(_allAnnouncements);
     _searchController.addListener(_filterAnnouncements);
     _setupBannerTimer();
-    _fetchAnnouncements();
+    await _fetchCategories();
+    await _fetchAnnouncements();
   }
 
   void _setupBannerTimer() {
@@ -302,6 +335,26 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> _fetchCategories() async {
+    if (_authToken == null) return;
+    setState(() => _isLoading = true);
+    try {
+      final categories = await ApiService.fetchCategories(_authToken!);
+      DataService.updateCategoryMapping(categories);
+      setState(() {
+        _categories = categories;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat kategori: $e')),
+        );
+      }
+    }
+  }
+
   Future<void> _fetchAnnouncements() async {
     if (_authToken == null) return;
     setState(() => _isLoading = true);
@@ -315,9 +368,9 @@ class _HomePageState extends State<HomePage> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Gagal memuat data: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat pengumuman: $e')),
+        );
       }
     }
   }
@@ -325,26 +378,22 @@ class _HomePageState extends State<HomePage> {
   void _filterAnnouncements() {
     final query = _searchController.text.toLowerCase();
     setState(() {
-      _filteredAnnouncements =
-          _allAnnouncements.where((announcement) {
-            final matchesCategory =
-                _selectedCategory == null ||
-                announcement.tag == _selectedCategory;
-            final matchesQuery =
-                query.isEmpty ||
-                announcement.title.toLowerCase().contains(query) ||
-                announcement.description.toLowerCase().contains(query) ||
-                announcement.department.toLowerCase().contains(query) ||
-                announcement.tag.toLowerCase().contains(query);
-            return matchesCategory && matchesQuery;
-          }).toList();
+      _filteredAnnouncements = _allAnnouncements.where((announcement) {
+        final matchesCategory =
+            _selectedCategory == null || announcement.tag == _selectedCategory;
+        final matchesQuery = query.isEmpty ||
+            announcement.title.toLowerCase().contains(query) ||
+            announcement.description.toLowerCase().contains(query) ||
+            announcement.department.toLowerCase().contains(query) ||
+            announcement.tag.toLowerCase().contains(query);
+        return matchesCategory && matchesQuery;
+      }).toList();
     });
   }
 
   void _selectCategory(String categoryName) {
     setState(() {
-      _selectedCategory =
-          _selectedCategory == categoryName ? null : categoryName;
+      _selectedCategory = _selectedCategory == categoryName ? null : categoryName;
       _filterAnnouncements();
     });
   }
@@ -352,15 +401,12 @@ class _HomePageState extends State<HomePage> {
   void _showAnnouncementDetail(Announcement announcement) {
     showDialog(
       context: context,
-      builder:
-          (_) => Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(
-                HomeStyles.borderRadiusXXLarge,
-              ),
-            ),
-            child: AnnouncementDetailPopup(announcement: announcement),
-          ),
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(HomeStyles.borderRadiusXXLarge),
+        ),
+        child: AnnouncementDetailPopup(announcement: announcement),
+      ),
     );
   }
 
@@ -372,9 +418,9 @@ class _HomePageState extends State<HomePage> {
         MaterialPageRoute(builder: (_) => const SignInPage()),
       );
     } else if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Gagal logout, coba lagi.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Gagal logout, coba lagi.')),
+      );
     }
   }
 
@@ -388,7 +434,10 @@ class _HomePageState extends State<HomePage> {
         color: HomeStyles.white,
         child: SafeArea(
           child: RefreshIndicator(
-            onRefresh: _fetchAnnouncements,
+            onRefresh: () async {
+              await _fetchCategories();
+              await _fetchAnnouncements();
+            },
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(
                 vertical: HomeStyles.paddingXXLarge,
@@ -413,12 +462,11 @@ class _HomePageState extends State<HomePage> {
                     controller: _bannerController,
                     currentIndex: _currentBannerIndex,
                     horizontalPadding: horizontalPadding,
-                    onPageChanged:
-                        (index) => setState(() => _currentBannerIndex = index),
+                    onPageChanged: (index) => setState(() => _currentBannerIndex = index),
                   ),
                   const SizedBox(height: HomeStyles.spacingXXXXXXLarge),
                   CategorySectionWidget(
-                    categories: DataService.categories,
+                    categories: _categories,
                     selectedCategory: _selectedCategory,
                     horizontalPadding: horizontalPadding,
                     onCategorySelected: _selectCategory,
@@ -526,23 +574,19 @@ class SearchBarWidget extends StatelessWidget {
             ),
             suffixIcon: ValueListenableBuilder<TextEditingValue>(
               valueListenable: controller,
-              builder:
-                  (_, value, __) =>
-                      value.text.isNotEmpty
-                          ? IconButton(
-                            icon: Icon(
-                              Icons.clear,
-                              size: HomeStyles.iconSizeMedium,
-                              color: const Color.fromARGB(255, 0, 0, 0),
-                            ),
-                            onPressed: controller.clear,
-                          )
-                          : const SizedBox.shrink(),
+              builder: (_, value, __) => value.text.isNotEmpty
+                  ? IconButton(
+                      icon: Icon(
+                        Icons.clear,
+                        size: HomeStyles.iconSizeMedium,
+                        color: const Color.fromARGB(255, 0, 0, 0),
+                      ),
+                      onPressed: controller.clear,
+                    )
+                  : const SizedBox.shrink(),
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(
-                HomeStyles.borderRadiusXXXLarge,
-              ),
+              borderRadius: BorderRadius.circular(HomeStyles.borderRadiusXXXLarge),
               borderSide: BorderSide.none,
             ),
             filled: true,
@@ -589,11 +633,10 @@ class BannerSectionWidget extends StatelessWidget {
             controller: controller,
             itemCount: banners.length,
             onPageChanged: onPageChanged,
-            itemBuilder:
-                (context, index) => BannerItemWidget(
-                  banner: banners[index],
-                  horizontalPadding: horizontalPadding,
-                ),
+            itemBuilder: (context, index) => BannerItemWidget(
+              banner: banners[index],
+              horizontalPadding: horizontalPadding,
+            ),
           ),
         ),
         const SizedBox(height: HomeStyles.spacingXXLarge),
@@ -661,9 +704,7 @@ class BannerItemWidget extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: banner.tagColor,
-                borderRadius: BorderRadius.circular(
-                  HomeStyles.borderRadiusMedium,
-                ),
+                borderRadius: BorderRadius.circular(HomeStyles.borderRadiusMedium),
               ),
               child: Text(banner.tag, style: HomeStyles.bannerTag),
             ),
@@ -692,13 +733,9 @@ class PageIndicatorWidget extends StatelessWidget {
       duration: const Duration(milliseconds: 150),
       margin: const EdgeInsets.symmetric(horizontal: HomeStyles.paddingSmall),
       height: HomeStyles.indicatorHeight,
-      width:
-          isActive
-              ? HomeStyles.indicatorWidthActive
-              : HomeStyles.indicatorWidthInactive,
+      width: isActive ? HomeStyles.indicatorWidthActive : HomeStyles.indicatorWidthInactive,
       decoration: BoxDecoration(
-        color:
-            isActive ? HomeStyles.blue : HomeStyles.textGrey.withOpacity(0.5),
+        color: isActive ? HomeStyles.blue : HomeStyles.textGrey.withOpacity(0.5),
         borderRadius: BorderRadius.circular(HomeStyles.borderRadiusSmall),
       ),
     );
@@ -744,9 +781,7 @@ class CategorySectionWidget extends StatelessWidget {
             physics: const BouncingScrollPhysics(),
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             itemCount: categories.length,
-            separatorBuilder:
-                (context, index) =>
-                    const SizedBox(width: HomeStyles.spacingXXXXLarge),
+            separatorBuilder: (context, index) => const SizedBox(width: HomeStyles.spacingXXXXLarge),
             itemBuilder: (context, index) {
               final category = categories[index];
               return CategoryItemWidget(
@@ -817,31 +852,29 @@ class CategoryItemWidget extends StatelessWidget {
             decoration: BoxDecoration(
               color: category.color,
               shape: BoxShape.circle,
-              border:
-                  isSelected
-                      ? Border.all(
-                        color: Colors.black,
-                        width: HomeStyles.borderWidth,
-                      )
-                      : null,
-              boxShadow:
-                  isSelected
-                      ? [
-                        BoxShadow(
-                          color: category.color.withOpacity(0.4),
-                          spreadRadius: 1,
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                      : [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          spreadRadius: 0,
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+              border: isSelected
+                  ? Border.all(
+                      color: Colors.black,
+                      width: HomeStyles.borderWidth,
+                    )
+                  : null,
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: category.color.withOpacity(0.4),
+                        spreadRadius: 1,
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        spreadRadius: 0,
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
             ),
             child: Stack(
               children: [
@@ -876,25 +909,18 @@ class CategoryItemWidget extends StatelessWidget {
                   fit: BoxFit.scaleDown,
                   child: Text(
                     category.name,
-                    style:
-                        isSelected
-                            ? HomeStyles.categoryNameSelected
-                            : HomeStyles.categoryName,
+                    style: isSelected ? HomeStyles.categoryNameSelected : HomeStyles.categoryName,
                     textAlign: TextAlign.center,
                   ),
                 ),
                 if (isSelected)
                   Container(
-                    margin: const EdgeInsets.only(
-                      top: HomeStyles.spacingMedium,
-                    ),
+                    margin: const EdgeInsets.only(top: HomeStyles.spacingMedium),
                     width: HomeStyles.iconSizeSmall,
                     height: HomeStyles.spacingSmall,
                     decoration: BoxDecoration(
                       color: category.color,
-                      borderRadius: BorderRadius.circular(
-                        HomeStyles.borderRadiusSmall,
-                      ),
+                      borderRadius: BorderRadius.circular(HomeStyles.borderRadiusSmall),
                     ),
                   ),
               ],
@@ -978,9 +1004,7 @@ class AnnouncementsHeaderWidget extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: DataService.getCategoryColor(selectedCategory!),
-                      borderRadius: BorderRadius.circular(
-                        HomeStyles.borderRadiusMedium,
-                      ),
+                      borderRadius: BorderRadius.circular(HomeStyles.borderRadiusMedium),
                     ),
                     child: Text(selectedCategory!, style: HomeStyles.filterTag),
                   ),
@@ -1032,9 +1056,7 @@ class AnnouncementsListWidget extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: announcements.length,
-      separatorBuilder:
-          (context, index) =>
-              const SizedBox(height: HomeStyles.spacingXXXLarge),
+      separatorBuilder: (context, index) => const SizedBox(height: HomeStyles.spacingXXXLarge),
       itemBuilder: (context, index) {
         final announcement = announcements[index];
         return AnnouncementCardWidget(
@@ -1111,9 +1133,7 @@ class AnnouncementCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isUrgent =
-        announcement.tag.toLowerCase() == 'urgent' ||
-        announcement.tag.toLowerCase() == 'penting';
+    final isUrgent = announcement.tag.toLowerCase() == 'urgent' || announcement.tag.toLowerCase() == 'penting';
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -1143,9 +1163,7 @@ class AnnouncementCardWidget extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: announcement.tagColor,
-                    borderRadius: BorderRadius.circular(
-                      HomeStyles.borderRadiusSmall,
-                    ),
+                    borderRadius: BorderRadius.circular(HomeStyles.borderRadiusSmall),
                   ),
                   child: Text(
                     announcement.tag,

@@ -14,6 +14,8 @@ class CategoryTapHandler {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(HomeStyles.borderRadiusXXLarge),
           ),
+          backgroundColor:
+              HomeStyles.white, 
           child: CategoryDescriptionPopup(
             category: category,
             description: category.description,
@@ -29,7 +31,8 @@ class CategoryTapHandler {
   ) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor:
+          Colors.transparent, 
       isScrollControlled: true,
       builder: (BuildContext context) {
         return CategoryBottomSheet(
@@ -57,6 +60,10 @@ class CategoryDescriptionPopup extends StatelessWidget {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.6,
         maxWidth: MediaQuery.of(context).size.width * 0.85,
+      ),
+      decoration: BoxDecoration(
+        color: HomeStyles.white, 
+        borderRadius: BorderRadius.circular(HomeStyles.borderRadiusXXLarge),
       ),
       padding: const EdgeInsets.all(HomeStyles.paddingXXLarge),
       child: Column(
@@ -173,7 +180,7 @@ class CategoryBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: HomeStyles.white,
+        color: HomeStyles.white, 
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(HomeStyles.borderRadiusXXLarge),
           topRight: Radius.circular(HomeStyles.borderRadiusXXLarge),

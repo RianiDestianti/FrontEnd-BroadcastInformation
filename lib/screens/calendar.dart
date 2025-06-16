@@ -227,25 +227,26 @@ class InformasiEvent {
 
 class CategoryMapper {
   static const _categoryColors = {
-    'Akademik': Color(0xFF6C5CE7),
-    'Acara': Color(0xFF45B7D1),
-    'Berita': Color(0xFF0984E3),
-    'Pengumuman': Color(0xFFE17055),
-    'Umum': Colors.orange,
+    'Pengumuman': Color(0xFFE17055), 
+    'Akademik':   Color(0xFF0984E3), 
+    'Acara':  Color(0xFF6C5CE7),   
+    'Berita':   Color(0xFFFDCB6E),  
+    'Umum':  Color(0xFF45B7D1),    
   };
 
   static String mapIdToCategory(dynamic kategoriId) {
     return switch (kategoriId?.toString()) {
-      '1' => 'Akademik',
+      '1' => 'Pengumuman',
       '2' => 'Acara',
-      '3' => 'Berita',
-      '4' => 'Pengumuman',
-      _ => 'Umum',
+      '3' => 'Umum',
+      '4' => 'Akademik',
+      _ => 'Berita',
     };
   }
 
   static Color getColor(String category) =>
       _categoryColors[category] ?? _categoryColors['Umum']!;
+
   static Map<String, Color> get categoryColors => _categoryColors;
 }
 
@@ -504,20 +505,14 @@ class CalendarDay extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color:
-                  isToday
-                      ? AppColors.primaryLight
-                      : hasEvents
-                      ? AppColors.primaryUltraLight
-                      : Colors.transparent,
+              color: isToday ? AppColors.primaryLight : Colors.transparent,
             ),
             child: Text(
               date.day.toString(),
               style: GoogleFonts.poppins(
                 fontWeight: isToday ? FontWeight.bold : FontWeight.w500,
                 fontSize: 16,
-                color:
-                    (isToday || hasEvents) ? AppColors.primary : Colors.black87,
+                color: isToday ? AppColors.primary : Colors.black87,
               ),
             ),
           ),

@@ -419,4 +419,9 @@ class HomeStyles {
     fontSize: fontSizeLarge,
     color: textGrey[500],
   );
+  static final TextStyle tooltipText = GoogleFonts.poppins(
+    fontSize: fontSizeSmall,
+    fontWeight: FontWeight.w500,
+    color: white,
+  );
 }

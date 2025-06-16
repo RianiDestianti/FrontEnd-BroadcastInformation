@@ -13,7 +13,6 @@ import 'package:flutter/services.dart';
 
 class ApiService {
   static const String _baseUrl = 'http://localhost:8000/api';
-
   static Future<List<Announcement>> fetchAnnouncements(String token) async {
     try {
       final response = await http.get(
@@ -26,7 +25,9 @@ class ApiService {
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as List<dynamic>;
-        return data.map((item) => DataService.mapApiToAnnouncement(item)).toList();
+        return data
+            .map((item) => DataService.mapApiToAnnouncement(item))
+            .toList();
       } else {
         throw Exception('Failed to load announcements: ${response.statusCode}');
       }
@@ -158,7 +159,6 @@ class DataService {
 
   static Map<String, Map<String, dynamic>> _categoryMapping = {};
   static List<CategoryData> _categories = [];
-
   static void updateCategoryMapping(List<CategoryData> categories) {
     _categories = categories;
     _categoryMapping = {
@@ -166,7 +166,7 @@ class DataService {
         (i + 1).toString(): {
           'tag': categories[i].name,
           'color': categories[i].color,
-        }
+        },
     };
   }
 
@@ -194,7 +194,8 @@ class DataService {
       Icons.info,
     ];
 
-    final int index = ((apiData['IDKategoriInformasi'] as int) - 1) % colors.length;
+    final int index =
+        ((apiData['IDKategoriInformasi'] as int) - 1) % colors.length;
 
     return CategoryData(
       name: apiData['NamaKategori'] ?? 'Unknown',
@@ -206,13 +207,13 @@ class DataService {
 
   static Announcement mapApiToAnnouncement(Map<String, dynamic> apiData) {
     final categoryId = apiData['IDKategoriInformasi']?.toString();
-    final category = _categoryMapping[categoryId] ?? {
-      'tag': 'Pengumuman Sekolah',
-      'color': const Color(0xFFE17055),
-    };
+    final category =
+        _categoryMapping[categoryId] ??
+        {'tag': 'Pengumuman Sekolah', 'color': const Color(0xFFE17055)};
 
     final operatorId = apiData['IDOperator']?.toString();
-    final departmentName = _departmentMapping[operatorId] ?? 'Departemen Tidak Dikenal';
+    final departmentName =
+        _departmentMapping[operatorId] ?? 'Departemen Tidak Dikenal';
 
     return Announcement(
       id: apiData['IDInformasi'].toString(),
@@ -232,12 +233,13 @@ class DataService {
     return _categories
         .firstWhere(
           (cat) => cat.name == categoryName,
-          orElse: () => const CategoryData(
-            name: 'Bawaan',
-            color: Colors.grey,
-            icon: Icons.circle,
-            description: 'Default category',
-          ),
+          orElse:
+              () => const CategoryData(
+                name: 'Bawaan',
+                color: Colors.grey,
+                icon: Icons.circle,
+                description: 'Default category',
+              ),
         )
         .color;
   }
@@ -264,11 +266,13 @@ class _HomePageState extends State<HomePage> {
   List<CategoryData> _categories = [];
   String? _userName;
   String? _authToken;
+  bool _showCategoryTooltip = false;
 
   @override
   void initState() {
     super.initState();
     _checkSession();
+    _checkTooltipStatus();
   }
 
   @override
@@ -276,6 +280,20 @@ class _HomePageState extends State<HomePage> {
     _searchController.dispose();
     _bannerController.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkTooltipStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenTooltip = prefs.getBool('has_seen_category_tooltip') ?? false;
+    if (!hasSeenTooltip) {
+      setState(() => _showCategoryTooltip = true);
+      await Future.delayed(const Duration(seconds: 8), () {
+        if (mounted) {
+          setState(() => _showCategoryTooltip = false);
+          prefs.setBool('has_seen_category_tooltip', true);
+        }
+      });
+    }
   }
 
   Future<void> _checkSession() async {
@@ -348,9 +366,9 @@ class _HomePageState extends State<HomePage> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memuat kategori: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat kategori: $e')));
       }
     }
   }
@@ -368,9 +386,9 @@ class _HomePageState extends State<HomePage> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memuat pengumuman: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat pengumuman: $e')));
       }
     }
   }
@@ -378,22 +396,26 @@ class _HomePageState extends State<HomePage> {
   void _filterAnnouncements() {
     final query = _searchController.text.toLowerCase();
     setState(() {
-      _filteredAnnouncements = _allAnnouncements.where((announcement) {
-        final matchesCategory =
-            _selectedCategory == null || announcement.tag == _selectedCategory;
-        final matchesQuery = query.isEmpty ||
-            announcement.title.toLowerCase().contains(query) ||
-            announcement.description.toLowerCase().contains(query) ||
-            announcement.department.toLowerCase().contains(query) ||
-            announcement.tag.toLowerCase().contains(query);
-        return matchesCategory && matchesQuery;
-      }).toList();
+      _filteredAnnouncements =
+          _allAnnouncements.where((announcement) {
+            final matchesCategory =
+                _selectedCategory == null ||
+                announcement.tag == _selectedCategory;
+            final matchesQuery =
+                query.isEmpty ||
+                announcement.title.toLowerCase().contains(query) ||
+                announcement.description.toLowerCase().contains(query) ||
+                announcement.department.toLowerCase().contains(query) ||
+                announcement.tag.toLowerCase().contains(query);
+            return matchesCategory && matchesQuery;
+          }).toList();
     });
   }
 
   void _selectCategory(String categoryName) {
     setState(() {
-      _selectedCategory = _selectedCategory == categoryName ? null : categoryName;
+      _selectedCategory =
+          _selectedCategory == categoryName ? null : categoryName;
       _filterAnnouncements();
     });
   }
@@ -401,12 +423,15 @@ class _HomePageState extends State<HomePage> {
   void _showAnnouncementDetail(Announcement announcement) {
     showDialog(
       context: context,
-      builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(HomeStyles.borderRadiusXXLarge),
-        ),
-        child: AnnouncementDetailPopup(announcement: announcement),
-      ),
+      builder:
+          (_) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                HomeStyles.borderRadiusXXLarge,
+              ),
+            ),
+            child: AnnouncementDetailPopup(announcement: announcement),
+          ),
     );
   }
 
@@ -418,9 +443,9 @@ class _HomePageState extends State<HomePage> {
         MaterialPageRoute(builder: (_) => const SignInPage()),
       );
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal logout, coba lagi.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Gagal logout, coba lagi.')));
     }
   }
 
@@ -462,7 +487,8 @@ class _HomePageState extends State<HomePage> {
                     controller: _bannerController,
                     currentIndex: _currentBannerIndex,
                     horizontalPadding: horizontalPadding,
-                    onPageChanged: (index) => setState(() => _currentBannerIndex = index),
+                    onPageChanged:
+                        (index) => setState(() => _currentBannerIndex = index),
                   ),
                   const SizedBox(height: HomeStyles.spacingXXXXXXLarge),
                   CategorySectionWidget(
@@ -470,6 +496,7 @@ class _HomePageState extends State<HomePage> {
                     selectedCategory: _selectedCategory,
                     horizontalPadding: horizontalPadding,
                     onCategorySelected: _selectCategory,
+                    showTooltip: _showCategoryTooltip,
                   ),
                   const SizedBox(height: HomeStyles.spacingXXXXXXLarge),
                   AnnouncementsSectionWidget(
@@ -563,7 +590,7 @@ class SearchBarWidget extends StatelessWidget {
         child: TextField(
           controller: controller,
           decoration: InputDecoration(
-            hintText: 'Cari',
+            hintText: 'Cari pengumuman...',
             hintStyle: HomeStyles.searchHint.copyWith(
               color: Color.fromARGB(255, 104, 104, 104),
             ),
@@ -574,19 +601,23 @@ class SearchBarWidget extends StatelessWidget {
             ),
             suffixIcon: ValueListenableBuilder<TextEditingValue>(
               valueListenable: controller,
-              builder: (_, value, __) => value.text.isNotEmpty
-                  ? IconButton(
-                      icon: Icon(
-                        Icons.clear,
-                        size: HomeStyles.iconSizeMedium,
-                        color: const Color.fromARGB(255, 0, 0, 0),
-                      ),
-                      onPressed: controller.clear,
-                    )
-                  : const SizedBox.shrink(),
+              builder:
+                  (_, value, __) =>
+                      value.text.isNotEmpty
+                          ? IconButton(
+                            icon: Icon(
+                              Icons.clear,
+                              size: HomeStyles.iconSizeMedium,
+                              color: const Color.fromARGB(255, 0, 0, 0),
+                            ),
+                            onPressed: controller.clear,
+                          )
+                          : const SizedBox.shrink(),
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(HomeStyles.borderRadiusXXXLarge),
+              borderRadius: BorderRadius.circular(
+                HomeStyles.borderRadiusXXXLarge,
+              ),
               borderSide: BorderSide.none,
             ),
             filled: true,
@@ -633,10 +664,11 @@ class BannerSectionWidget extends StatelessWidget {
             controller: controller,
             itemCount: banners.length,
             onPageChanged: onPageChanged,
-            itemBuilder: (context, index) => BannerItemWidget(
-              banner: banners[index],
-              horizontalPadding: horizontalPadding,
-            ),
+            itemBuilder:
+                (context, index) => BannerItemWidget(
+                  banner: banners[index],
+                  horizontalPadding: horizontalPadding,
+                ),
           ),
         ),
         const SizedBox(height: HomeStyles.spacingXXLarge),
@@ -704,7 +736,9 @@ class BannerItemWidget extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: banner.tagColor,
-                borderRadius: BorderRadius.circular(HomeStyles.borderRadiusMedium),
+                borderRadius: BorderRadius.circular(
+                  HomeStyles.borderRadiusMedium,
+                ),
               ),
               child: Text(banner.tag, style: HomeStyles.bannerTag),
             ),
@@ -733,9 +767,13 @@ class PageIndicatorWidget extends StatelessWidget {
       duration: const Duration(milliseconds: 150),
       margin: const EdgeInsets.symmetric(horizontal: HomeStyles.paddingSmall),
       height: HomeStyles.indicatorHeight,
-      width: isActive ? HomeStyles.indicatorWidthActive : HomeStyles.indicatorWidthInactive,
+      width:
+          isActive
+              ? HomeStyles.indicatorWidthActive
+              : HomeStyles.indicatorWidthInactive,
       decoration: BoxDecoration(
-        color: isActive ? HomeStyles.blue : HomeStyles.textGrey.withOpacity(0.5),
+        color:
+            isActive ? HomeStyles.blue : HomeStyles.textGrey.withOpacity(0.5),
         borderRadius: BorderRadius.circular(HomeStyles.borderRadiusSmall),
       ),
     );
@@ -747,6 +785,7 @@ class CategorySectionWidget extends StatelessWidget {
   final String? selectedCategory;
   final double horizontalPadding;
   final Function(String) onCategorySelected;
+  final bool showTooltip;
 
   const CategorySectionWidget({
     super.key,
@@ -754,21 +793,74 @@ class CategorySectionWidget extends StatelessWidget {
     required this.selectedCategory,
     required this.horizontalPadding,
     required this.onCategorySelected,
+    required this.showTooltip,
   });
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Column(
       children: [
         Padding(
           padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Stack(
+            clipBehavior: Clip.none,
             children: [
-              Text('Kategori', style: HomeStyles.sectionTitle),
-              if (selectedCategory != null)
-                ClearFilterButtonWidget(
-                  onPressed: () => onCategorySelected(selectedCategory!),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Kategori', style: HomeStyles.sectionTitle),
+                  if (selectedCategory != null)
+                    ClearFilterButtonWidget(
+                      onPressed: () => onCategorySelected(selectedCategory!),
+                    ),
+                ],
+              ),
+              if (showTooltip && categories.isNotEmpty)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top:
+                      HomeStyles.categoryHeight +
+                      HomeStyles.spacingXXXLarge +
+                      19,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: HomeStyles.paddingMedium,
+                        vertical: HomeStyles.paddingSmall,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppConstants.primaryColor.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(
+                          HomeStyles.borderRadiusMedium,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.info_outline,
+                            color: HomeStyles.white,
+                            size: HomeStyles.iconSizeSmall,
+                          ),
+                          const SizedBox(width: HomeStyles.spacingSmall),
+                          Text(
+                            'Tekan lama ikon untuk melihat penjelasan kategori',
+                            style: HomeStyles.tooltipText,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
             ],
           ),
@@ -781,7 +873,9 @@ class CategorySectionWidget extends StatelessWidget {
             physics: const BouncingScrollPhysics(),
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             itemCount: categories.length,
-            separatorBuilder: (context, index) => const SizedBox(width: HomeStyles.spacingXXXXLarge),
+            separatorBuilder:
+                (context, index) =>
+                    const SizedBox(width: HomeStyles.spacingXXXXLarge),
             itemBuilder: (context, index) {
               final category = categories[index];
               return CategoryItemWidget(
@@ -852,29 +946,31 @@ class CategoryItemWidget extends StatelessWidget {
             decoration: BoxDecoration(
               color: category.color,
               shape: BoxShape.circle,
-              border: isSelected
-                  ? Border.all(
-                      color: Colors.black,
-                      width: HomeStyles.borderWidth,
-                    )
-                  : null,
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: category.color.withOpacity(0.4),
-                        spreadRadius: 1,
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]
-                  : [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        spreadRadius: 0,
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+              border:
+                  isSelected
+                      ? Border.all(
+                        color: Colors.black,
+                        width: HomeStyles.borderWidth,
+                      )
+                      : null,
+              boxShadow:
+                  isSelected
+                      ? [
+                        BoxShadow(
+                          color: category.color.withOpacity(0.4),
+                          spreadRadius: 1,
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                      : [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          spreadRadius: 0,
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
             ),
             child: Stack(
               children: [
@@ -909,18 +1005,25 @@ class CategoryItemWidget extends StatelessWidget {
                   fit: BoxFit.scaleDown,
                   child: Text(
                     category.name,
-                    style: isSelected ? HomeStyles.categoryNameSelected : HomeStyles.categoryName,
+                    style:
+                        isSelected
+                            ? HomeStyles.categoryNameSelected
+                            : HomeStyles.categoryName,
                     textAlign: TextAlign.center,
                   ),
                 ),
                 if (isSelected)
                   Container(
-                    margin: const EdgeInsets.only(top: HomeStyles.spacingMedium),
+                    margin: const EdgeInsets.only(
+                      top: HomeStyles.spacingMedium,
+                    ),
                     width: HomeStyles.iconSizeSmall,
                     height: HomeStyles.spacingSmall,
                     decoration: BoxDecoration(
                       color: category.color,
-                      borderRadius: BorderRadius.circular(HomeStyles.borderRadiusSmall),
+                      borderRadius: BorderRadius.circular(
+                        HomeStyles.borderRadiusSmall,
+                      ),
                     ),
                   ),
               ],
@@ -1004,7 +1107,9 @@ class AnnouncementsHeaderWidget extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: DataService.getCategoryColor(selectedCategory!),
-                      borderRadius: BorderRadius.circular(HomeStyles.borderRadiusMedium),
+                      borderRadius: BorderRadius.circular(
+                        HomeStyles.borderRadiusMedium,
+                      ),
                     ),
                     child: Text(selectedCategory!, style: HomeStyles.filterTag),
                   ),
@@ -1056,7 +1161,9 @@ class AnnouncementsListWidget extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: announcements.length,
-      separatorBuilder: (context, index) => const SizedBox(height: HomeStyles.spacingXXXLarge),
+      separatorBuilder:
+          (context, index) =>
+              const SizedBox(height: HomeStyles.spacingXXXLarge),
       itemBuilder: (context, index) {
         final announcement = announcements[index];
         return AnnouncementCardWidget(
@@ -1133,7 +1240,9 @@ class AnnouncementCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isUrgent = announcement.tag.toLowerCase() == 'urgent' || announcement.tag.toLowerCase() == 'penting';
+    final isUrgent =
+        announcement.tag.toLowerCase() == 'urgent' ||
+        announcement.tag.toLowerCase() == 'penting';
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -1163,7 +1272,9 @@ class AnnouncementCardWidget extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: announcement.tagColor,
-                    borderRadius: BorderRadius.circular(HomeStyles.borderRadiusSmall),
+                    borderRadius: BorderRadius.circular(
+                      HomeStyles.borderRadiusSmall,
+                    ),
                   ),
                   child: Text(
                     announcement.tag,

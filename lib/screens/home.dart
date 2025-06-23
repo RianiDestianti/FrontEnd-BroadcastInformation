@@ -824,7 +824,7 @@ class CategorySectionWidget extends StatelessWidget {
                   top:
                       HomeStyles.categoryHeight +
                       HomeStyles.spacingXXXLarge +
-                      19,
+                      7,
                   child: Center(
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -844,21 +844,30 @@ class CategorySectionWidget extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.info_outline,
-                            color: HomeStyles.white,
-                            size: HomeStyles.iconSizeSmall,
-                          ),
-                          const SizedBox(width: HomeStyles.spacingSmall),
-                          Text(
-                            'Tekan lama ikon untuk melihat penjelasan kategori',
-                            style: HomeStyles.tooltipText,
-                          ),
-                        ],
-                      ),
+                     child: Column(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(
+          Icons.info_outline,
+          color: HomeStyles.white,
+          size: HomeStyles.iconSizeSmall,
+        ),
+        const SizedBox(width: HomeStyles.spacingSmall),
+        Text(
+          'Tekan lama ikon untuk melihat ',
+          style: HomeStyles.tooltipText,
+        ),
+      ],
+    ),
+    Text(
+      'penjelasan kategori',
+      style: HomeStyles.tooltipText,
+    ),
+  ],
+),
                     ),
                   ),
                 ),

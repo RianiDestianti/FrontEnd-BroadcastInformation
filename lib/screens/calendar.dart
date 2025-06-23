@@ -546,38 +546,79 @@ class CalendarDay extends StatelessWidget {
 
 class CategoryLegend extends StatelessWidget {
   const CategoryLegend({super.key});
+  
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children:
-          CategoryMapper.categoryColors.entries
+    final categories = CategoryMapper.categoryColors.entries.toList();
+    final firstRowCategories = categories.take(3).toList();
+    final secondRowCategories = categories.skip(3).toList();
+    
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: firstRowCategories
               .map(
                 (entry) => Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: entry.value,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        entry.key,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                    ],
+                  child: _CategoryItem(
+                    category: entry.key,
+                    color: entry.value,
                   ),
                 ),
               )
               .toList(),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: secondRowCategories
+              .map(
+                (entry) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: _CategoryItem(
+                    category: entry.key,
+                    color: entry.value,
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
+  }
+}
+class _CategoryItem extends StatelessWidget {
+  final String category;
+  final Color color;
+  
+  const _CategoryItem({
+    required this.category,
+    required this.color,
+  });
+  
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          category,
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            color: Colors.grey[700],
+          ),
+        ),
+      ],
     );
   }
 }
